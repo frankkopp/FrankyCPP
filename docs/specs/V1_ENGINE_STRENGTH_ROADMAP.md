@@ -2,19 +2,19 @@
 
 **Document Version:** 3.0  
 **Created:** 2026-02-01  
-**Last Updated:** 2026-03-31  
+**Last Updated:** 2026-04-11  
 **Status:** Active Development  
-**Target:** FrankyCPP v1.7 → v2.0  
+**Target:** FrankyCPP v1.8 → v2.0  
 **Focus:** Maximum Playing Strength Through Systematic Enhancement
 
 ---
 
 ## Executive Summary
 
-Prioritized roadmap for enhancing FrankyCPP's playing strength from v1.7 to v2.0, based on
+Prioritized roadmap for enhancing FrankyCPP's playing strength from v1.8 to v2.0, based on
 empirical data from top engines (Stockfish, Ethereal, Koivisto) and FrankyCPP's own gauntlet results.
 
-### Current State (v1.7.0 — March 2026)
+### Current State (v1.8.0 — April 2026)
 
 **Verified cumulative improvements:**
 - v1.1 → v1.2: +57 ELO (Singular/Check Extensions, Counter-Move History)
@@ -23,12 +23,14 @@ empirical data from top engines (Stockfish, Ethereal, Koivisto) and FrankyCPP's 
 - v1.4 → v1.5: +92.5 ELO (TT Buckets, XOR Key verification, SMP hardening)
 - v1.5 → v1.6: +81 ELO (Eval enrichment — mobility, king safety, threats, pawn structure)
 - v1.6 → v1.7: +60–78 ELO (Texel tuning, eval cleanup — 14 dead features removed)
-- **Total: ~+400–470 ELO** vs v1.1 baseline
-- Estimated strength: **~2800–2850 ELO**
+- v1.7 → v1.8: +114 ELO at 4T, +200 ELO at 8T (SMP thread scaling — per-thread TT stats, skip-table depth diversification)
+- **Total: ~+500–580 ELO** vs v1.1 baseline
+- Estimated strength: **~2900–3000 ELO** (thread-count dependent)
 
 **Strengths:**
 - ✅ Production-ready UCI engine, cross-platform (Windows/Linux)
 - ✅ Lazy SMP with TT buckets and XOR key verification (v1.4–v1.5)
+- ✅ SMP thread scaling: per-thread TT stats, skip-table depth diversification (v1.8)
 - ✅ Texel-tuned classical evaluation with dead features removed (v1.7)
 - ✅ Syzygy tablebase support (v1.2)
 - ✅ Automated tuning infrastructure (Texel, v1.7)
@@ -83,6 +85,11 @@ Logarithmic LMR with history adjustments, Late Move Pruning, PV Node fixes.
 Texel Tuning: PGN parser library, position extractor, multi-threaded optimizer.
 75 params tuned on 4.57M positions. 14 dead eval features removed (−503 lines, +3.5% NPS).
 See `docs/archive/PLAN_Texel_Tuning.md`.
+
+### Phase 8: SMP Thread Scaling (v1.8) ✅ — +114 ELO (4T), +200 ELO (8T)
+Per-thread TT statistics (eliminated false sharing, +235% NPS scaling at 16T),
+skip-table depth diversification for helper threads (−38% nodes at 8T, +39% main-search TT hits).
+See `docs/specs/PLAN_SMP_Thread_Scaling.md`.
 
 ---
 

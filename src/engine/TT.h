@@ -235,6 +235,50 @@ namespace engine {
                   "TTCluster must be cache-line aligned. Guarantees aligned heap allocation via C++17.");
     static constexpr uint64_t CLUSTER_BYTE_SIZE = sizeof(TTCluster);
 
+    /// R6 research instrumentation: tracks TT entry quality metrics under SMP.
+    /// When false, all instrumentation code is compiled out via if constexpr (zero cost).
+    /// Set to true, rebuild, and run bench at different thread counts to collect data.
+    /// See docs/specs/PLAN_SMP_Thread_Scaling.md § R6 for background.
+    static constexpr bool TT_INSTRUMENTATION = false;
+
+    /// Depth threshold for "deep entry" tracking in R6 instrumentation.
+    /// Entries with depth >= these are considered valuable; evictions of these are concerning.
+    static constexpr int DEEP_ENTRY_THRESHOLD = 4;
+
+    /// R6 instrumentation counters for TT entry quality analysis.
+    /// Tracked per-thread to avoid false sharing, aggregated on demand.
+    /// NOT cleared by clear() — persists across searches for cumulative measurement.
+#ifdef _MSC_VER
+#pragma warning(push)
+#pragma warning(disable : 4324) // structure was padded due to alignment specifier (intentional)
+#endif
+    struct alignas(CacheLineSize) InstrumentationStats {
+      // Victim replacement depth quality (put() overwrite path only)
+      uint64_t replaceDepthDown     = 0; ///< Replacements where new depth < victim depth (harmful eviction)
+      uint64_t replaceDepthUp       = 0; ///< Replacements where new depth > victim depth (beneficial)
+      uint64_t replaceDepthEqual    = 0; ///< Replacements where new depth == victim depth
+      int64_t  replaceDepthDeltaSum = 0; ///< Cumulative (newDepth - victimDepth) across all replacements
+      uint64_t replaceVictimDepthSum = 0; ///< Sum of victim.depth for all replacements (for avg)
+
+      // Deep entry eviction tracking (victim.depth >= DEEP_ENTRY_THRESHOLD)
+      uint64_t replaceDeepTotal     = 0; ///< Total replacements where victim was a deep entry
+      uint64_t replaceDeepDown      = 0; ///< Deep entries replaced by shallower entries (harmful)
+
+      // Probe counters (persist across clear(), unlike Stats)
+      uint64_t probes      = 0; ///< Total probes (mirrors Stats::numberOfProbes but not cleared)
+      uint64_t hits        = 0; ///< Total probe hits (mirrors Stats::numberOfHits but not cleared)
+
+      // Hit depth tracking
+      uint64_t hitDepthSum = 0; ///< Sum of entry.depth for all probe hits (avg = hitDepthSum / hits)
+      uint64_t hitsDepth0  = 0; ///< Probe hits on depth-0 entries (qsearch results)
+    };
+
+    static_assert(sizeof(InstrumentationStats) <= 2 * CacheLineSize,
+                  "InstrumentationStats must fit in two cache lines max");
+#ifdef _MSC_VER
+#pragma warning(pop)
+#endif
+
   private:
     // threads for clearing hash
     unsigned int noOfThreads = 1;
@@ -284,6 +328,9 @@ namespace engine {
 
     mutable std::array<Stats, MAX_SEARCH_THREADS> statsSlots{};
 
+    // R6 instrumentation slots — per-thread, NOT cleared by clear().
+    mutable std::array<InstrumentationStats, MAX_SEARCH_THREADS> instrSlots{};
+
     /// Aggregates statistics across all active thread slots.
     /// Called only on cold paths (str(), hashFull(), getters).
     [[nodiscard]] Stats aggregateStats() const {
@@ -298,6 +345,28 @@ namespace engine {
         total.numberOfProbes     += statsSlots[i].numberOfProbes;
         total.numberOfHits       += statsSlots[i].numberOfHits;
         total.numberOfMisses     += statsSlots[i].numberOfMisses;
+      }
+      return total;
+    }
+
+    /// Aggregates R6 instrumentation stats across all active thread slots.
+    /// Called only on cold paths (reporting).
+    [[nodiscard]] InstrumentationStats aggregateInstrumentationStats() const {
+      InstrumentationStats total{};
+      if constexpr (!TT_INSTRUMENTATION) return total;
+      const int count = numSmpThreads > 0 ? numSmpThreads : 1;
+      for (int i = 0; i < count; ++i) {
+        total.replaceDepthDown      += instrSlots[i].replaceDepthDown;
+        total.replaceDepthUp        += instrSlots[i].replaceDepthUp;
+        total.replaceDepthEqual     += instrSlots[i].replaceDepthEqual;
+        total.replaceDepthDeltaSum  += instrSlots[i].replaceDepthDeltaSum;
+        total.replaceVictimDepthSum += instrSlots[i].replaceVictimDepthSum;
+        total.replaceDeepTotal      += instrSlots[i].replaceDeepTotal;
+        total.replaceDeepDown       += instrSlots[i].replaceDeepDown;
+        total.probes                += instrSlots[i].probes;
+        total.hits                  += instrSlots[i].hits;
+        total.hitDepthSum           += instrSlots[i].hitDepthSum;
+        total.hitsDepth0            += instrSlots[i].hitsDepth0;
       }
       return total;
     }
@@ -407,6 +476,15 @@ namespace engine {
     /// Returns a string representation of the TT instance for debugging.
     /// @return  Debug string with size and statistics
     std::string str() const;
+
+    /// Resets R6 instrumentation counters to zero.
+    /// Call before a measurement session (e.g., before a bench run).
+    void resetInstrumentationStats() { instrSlots = {}; }
+
+    /// Returns a formatted R6 instrumentation report.
+    /// Includes replacement quality, hit rate, and depth metrics.
+    /// If TT_INSTRUMENTATION is false, returns a "disabled" message.
+    [[nodiscard]] std::string instrumentationStr() const;
 
   private:
     /// Returns the cluster index from the position key using bitmask.

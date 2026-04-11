@@ -297,7 +297,7 @@ The core search algorithm using alpha-beta with iterative deepening.
 
 **Threading Model (Lazy SMP):**
 - **Main search thread (T0):** Runs the full search with all features — iterative deepening, aspiration windows, time management, UCI `info` output, and best move reporting. Only T0 sends output to the UCI handler.
-- **Helper threads (T1..Tn):** Run the same full `iterativeDeepening()` code as T0 — aspiration windows, LMR, move ordering, etc. — but with `isMainThread()` guards suppressing UCI output and time management. Each helper starts at a different depth offset (1 + id % 3) for search diversification.
+- **Helper threads (T1..Tn):** Run the same full `iterativeDeepening()` code as T0 — aspiration windows, LMR, move ordering, etc. — but with `isMainThread()` guards suppressing UCI output and time management. Each helper uses skip-table depth diversification (interleaved skip-size/skip-phase pattern per thread ID) to ensure threads explore different depth levels and produce diverse TT entries.
 - The only shared state is the **transposition table (TT)** — threads communicate implicitly by reading/writing TT entries.
 - A shared `std::atomic_bool` stop flag coordinates shutdown; when T0 decides to stop (time limit, depth limit, or `stop` command), all threads exit.
 - After all threads stop, **best-thread selection** compares depth and score across all threads to pick the best result (not necessarily T0's).
@@ -559,7 +559,7 @@ FrankyCPP uses **Lazy SMP** for parallel search — multiple threads run indepen
 |-------------------------|-----------------------------------------------------------------------------------------------------------|
 | Main thread             | UCI command loop (`UciHandler::loop()`)                                                                   |
 | Search thread (T0)      | **Main search:** iterative deepening, aspiration windows, time management, UCI output, best move decision |
-| Helper threads (T1..Tn) | **Full search:** same iterative deepening as T0, with depth offset diversification, no UCI output         |
+| Helper threads (T1..Tn) | **Full search:** same iterative deepening as T0, with skip-table depth diversification, no UCI output     |
 | Timer thread            | Monitors time limits, sets stop flag                                                                      |
 
 **Main Search Thread (T0) Responsibilities:**
@@ -573,7 +573,7 @@ FrankyCPP uses **Lazy SMP** for parallel search — multiple threads run indepen
 - Run full `iterativeDeepening()` — same code as T0 (aspiration windows, LMR, etc.)
 - **No UCI output** — all `send*()` calls guarded by `isMainThread()`
 - **No time management** — only check `stopSearchFlag`, no time decisions
-- **Depth offset diversification** — start at depth (1 + id % 3) to spread search across different depths
+- **Skip-table depth diversification** — each helper skips certain iteration depths based on its thread ID (interleaved skip-size/skip-phase pattern), ensuring threads are spread across different depth levels at any moment for maximum TT entry diversity
 - Contribute to TT population — their search results help all threads find better moves
 - Track `completedIterationDepth` and `lastIterationValue` for best-thread selection
 - Exit immediately when stop flag is set

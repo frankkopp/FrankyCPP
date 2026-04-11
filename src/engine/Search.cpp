@@ -25,6 +25,7 @@
 #include "common/misc.h"
 
 #include <algorithm>
+#include <array>
 #include <chrono>
 #include <cmath>
 #include <iomanip>
@@ -701,12 +702,44 @@ SearchResult Search::iterativeDeepening(Position& p) {
   uint64_t lastIterationNodes = 0;
   uint64_t prevIterationNodes = 0;
 
-  // Helper threads start at different depths to diversify search.
-  // Main thread always starts at depth 1; helpers start at depth 1 + (id % 3).
-  // This spreads helpers across depths 2, 3, 1 (wrapping) for better TT utilization.
-  const Depth startingDepth = isMainThread() ? Depth{1} : Depth{1 + thread().id % 3};
+  // Thread depth diversification for Lazy SMP.
+  // Each helper thread searches a different subset of iteration depths to reduce redundant
+  // work and produce more diverse TT entries at varied depth levels.
+  //
+  // USE_SMP_DEPTH_SKIP = true (default):
+  //   Skip-table approach — each thread skips certain iteration depths based on its thread ID.
+  //   Threads with higher IDs skip more aggressively (size 2-4) with interleaved phases,
+  //   so at any given moment threads are spread across different depth levels.
+  //   Main thread always searches every depth.
+  //
+  // USE_SMP_DEPTH_SKIP = false (legacy):
+  //   Simple starting depth offset — helpers start at depth 1 + (id % 3), then search
+  //   every depth from there. Threads converge to the same depth after a few iterations.
+
+  // Skip tables: SkipSize controls how many depths to skip (1 = none),
+  // SkipPhase offsets within the pattern so threads with the same size are interleaved.
+  // Indexed by (threadId % TABLE_SIZE). 20 entries cover up to 20 helper threads;
+  // higher IDs wrap around and still get good diversity.
+  static constexpr int SKIP_TABLE_SIZE = 20;
+  static constexpr std::array SkipSize  = {1, 1, 2, 2, 2, 2, 3, 3, 3, 3, 3, 3, 4, 4, 4, 4, 4, 4, 4, 4};
+  static constexpr std::array SkipPhase = {0, 1, 0, 1, 2, 3, 0, 1, 2, 3, 4, 5, 0, 1, 2, 3, 4, 5, 6, 7};
+
+  const bool useDepthSkip = SearchConfig.USE_SMP_DEPTH_SKIP && !isMainThread();
+  const int skipSize  = useDepthSkip ? SkipSize[thread().id % SKIP_TABLE_SIZE]  : 1;
+  const int skipPhase = useDepthSkip ? SkipPhase[thread().id % SKIP_TABLE_SIZE] : 0;
+
+  // Legacy fallback: simple starting depth offset when skip tables are disabled
+  const Depth startingDepth = !SearchConfig.USE_SMP_DEPTH_SKIP && !isMainThread()
+                                ? Depth{1 + thread().id % 3}
+                                : Depth{1};
 
   for (auto iterationDepth = startingDepth; iterationDepth <= maxDepth; ++iterationDepth) {
+
+    // Skip-table depth diversification: helpers skip certain iteration depths
+    // so threads are spread across different depth levels at any given moment.
+    if (useDepthSkip && (static_cast<int>(iterationDepth) + skipPhase) % skipSize != 0) {
+      continue;
+    }
 
     // Before starting a new iteration, check if we have enough time left to likely complete it.
     // (main thread only - helpers just check stopSearchFlag)
@@ -930,7 +963,7 @@ SearchResult Search::iterativeDeepening(Position& p) {
 
     // These assertions only apply to main thread:
     // - Main thread always starts at depth 1 and completes at least one full iteration
-    // - Helper threads start at depth 2/3 and can be stopped before populating PV
+    // - Helper threads may start at different depths or skip iterations, and can be stopped before populating PV
     assert(!isMainThread() || (!thread().pv.empty() && thread().pv.first() != MOVE_NONE && "pv must contain a valid first move"));
     assert(!isMainThread() || (bestValue == thread().pv.first().value() || stopSearchFlag) && "bestValue should be equal value of thread().pv.first()");
 

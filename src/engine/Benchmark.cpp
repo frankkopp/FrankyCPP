@@ -21,6 +21,7 @@
 #include "BenchmarkPositions.h"
 #include "Search.h"
 #include "SearchLimits.h"
+#include "TT.h"
 #include "chesscore/Position.h"
 #include "common/Logging.h"
 #include "config/ConfigManager.h"
@@ -65,6 +66,11 @@ namespace engine {
     // Create a search instance (without UCI handler - we don't want UCI output during bench)
     Search search;
     search.newGame(); // Clear TT and history
+
+    // Reset R6 instrumentation counters for this bench session
+    if constexpr (TT::TT_INSTRUMENTATION) {
+      search.resetTTInstrumentation();
+    }
 
     // Set up search limits for depth-limited search
     SearchLimits limits;
@@ -121,6 +127,11 @@ namespace engine {
     // Calculate NPS using timeunits helper (handles zero-duration safely)
     result.nps = static_cast<double>(nps(result.totalNodes, totalSearchTime));
 
+    // Collect R6 TT instrumentation report (cumulative across all positions)
+    if constexpr (TT::TT_INSTRUMENTATION) {
+      result.ttInstrumentationReport = search.ttInstrumentationStr();
+    }
+
     std::cout << "\n"; // New line after progress indicator
 
     return result;
@@ -152,6 +163,11 @@ namespace engine {
     // Use std::format (without L) to guarantee no thousands separators even if
     // a locale has been imbued on std::cout by other code / tests.
     std::cout << std::format("\nBench: {}\n", result.signature) << std::flush;
+
+    // Print R6 TT instrumentation data if collected
+    if (!result.ttInstrumentationReport.empty()) {
+      std::cout << "\n" << result.ttInstrumentationReport << "\n" << std::flush;
+    }
   }
 
 } // namespace engine

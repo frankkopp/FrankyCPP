@@ -66,6 +66,7 @@ namespace config {
     CONFIG_CONST int SMP_HELPER_START_DEPTH     = 4;    // Depth at which to launch helper threads (allows TT priming)
     CONFIG_CONST bool USE_BEST_THREAD_SELECTION = true; // Select best result from any thread (not just main)
     CONFIG_CONST int BEST_THREAD_SCORE_MARGIN   = 50;   // Score margin (cp) for depth vs score comparison
+    CONFIG_CONST bool USE_SMP_DEPTH_SKIP        = true; // Skip-table depth diversification for helper threads
 
     // book
     CONFIG_ESSENTIAL bool USE_BOOK         = true;

@@ -92,7 +92,7 @@ Iterative deepening + PVS (Principal Variation Search) with:
 
 - **Main thread**: UCI command loop
 - **Search thread (T0)**: Full iterative deepening, aspiration windows, time management, UCI output
-- **Helper threads (T1..Tn)**: Full `iterativeDeepening()` (same code as T0, guarded by `isMainThread()`)
+- **Helper threads (T1..Tn)**: Full `iterativeDeepening()` (same code as T0, guarded by `isMainThread()`); skip-table depth diversification spreads threads across different iteration depths
 - **Timer thread**: time-limit enforcement
 - `std::atomic_bool stopSearchFlag`, `std::binary_semaphore` for init/running state. TT is shared (lock-free).
 - **Best-thread selection**: After search, `selectBestThread()` picks best result by depth+score across all threads.

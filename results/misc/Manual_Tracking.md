@@ -883,4 +883,110 @@ Match Complete: Tuning_Phase10_GauntletE-2_300s (v1.7 Phase 9 vs v1.6)
 ==================================================================
 ```
 
+```
+v1.8 after SMP improvements
+===================================================================
+Engine Summary: FrankyCPP v1.8.0
+===================================================================
+Test Suites (2026-04-10 23:39) [v1.8 SMP improvements - SkipTables]:
+  STS1-STS15_LAN:      950/1500  ( 63,33%)
+  crafty_test:         180/347   ( 51,87%)
+  ecm98:               591/769   ( 76,85%)
+  eigenmann-rapid-engine:  15/109   ( 13,76%)
+  franky_tests:         13/13    (100,00%)
+  kaufman:              20/25    ( 80,00%)
+  mate_test_suite:      18/20    ( 90,00%)
+  wac:                 190/201   ( 94,53%)
+-------------------------------------------------------------------
+  TOTAL:              1977/2984  ( 66,25%)
+  Total Nodes:      110.226.448.015
+  Total Time:       3h 29m 28s
+===================================================================
+===================================================================
+All Matches Complete
+===================================================================
+  v1.8_vs_v1.7_STC_10s: 329.0 - 171.0 (ELO: +113.7)
+  v1.8_vs_v1.7_STC_10s: 380.0 - 120.0 (ELO: +200.2)
+===================================================================
+================================================================================
+ENGINE COMPARISON REPORT
+================================================================================
+Generated: 2026-04-11 09:40:43
+Comparing: FrankyCPP v1.8.0
+Baselines: FrankyCPP v1.7.0
+================================================================================
+
+TEST SUITE RESULTS
+--------------------------------------------------------------------------------
+                        FrankyCPP v1.8.0FrankyCPP v1.7.0
+                        --------        --------
+
+STS1-STS15_LAN (1500 positions)
+  Solved:               950             922
+  Rate:                 63,3%           61,5%
+  vs FrankyCPP v1.7.0:  +28 (+1,9%)     baseline
+  Avg Time:             4,3s            4,1s
+
+crafty_test (347 positions)
+  Solved:               180             180
+  Rate:                 51,9%           51,9%
+  vs FrankyCPP v1.7.0:  0 (0,0%)        baseline
+  Avg Time:             4,2s            4,0s
+
+ecm98 (769 positions)
+  Solved:               591             574
+  Rate:                 76,9%           74,6%
+  vs FrankyCPP v1.7.0:  +17 (+2,2%)     baseline
+  Avg Time:             4,3s            4,3s
+
+eigenmann-rapid-engine (109 positions)
+  Solved:               15              9
+  Rate:                 13,8%           8,3%
+  vs FrankyCPP v1.7.0:  +6 (+5,5%)      baseline
+  Avg Time:             4,1s            4,2s
+
+franky_tests (13 positions)
+  Solved:               13              13
+  Rate:                 100,0%          100,0%
+  vs FrankyCPP v1.7.0:  0 (0,0%)        baseline
+  Avg Time:             2,9s            3,3s
+
+kaufman (25 positions)
+  Solved:               20              21
+  Rate:                 80,0%           84,0%
+  vs FrankyCPP v1.7.0:  -1 (-4,0%)      baseline
+  Avg Time:             4,3s            4,2s
+
+mate_test_suite (20 positions)
+  Solved:               18              18
+  Rate:                 90,0%           90,0%
+  vs FrankyCPP v1.7.0:  0 (0,0%)        baseline
+  Avg Time:             6,1s            8,5s
+
+wac (201 positions)
+  Solved:               190             194
+  Rate:                 94,5%           96,5%
+  vs FrankyCPP v1.7.0:  -4 (-2,0%)      baseline
+  Avg Time:             3,7s            3,7s
+
+--------------------------------------------------------------------------------
+TEST SUITE SUMMARY (FrankyCPP v1.8.0 vs FrankyCPP v1.7.0)
+--------------------------------------------------------------------------------
+  Total positions:      2984
+  Improvement:          +46 positions (+1,5%)
+  Suites improved:      3
+  Suites regressed:     2
+  Status:               [!] MIXED (some suites regressed)
+================================================================================
+
+================================================================================
+MATCH COMPARISON: FrankyCPP v1.8.0 vs Baselines
+================================================================================
+--------------------------------------------------------------------------------
+Opponent                    Games     Score       W/D/L           ELO         vs FrankyCPP..
+--------------------------------------------------------------------------------
+FrankyCPP v1.7.0            500       76,0%       293/174/33      +200        [baseline]
+================================================================================
+```
+
 ---

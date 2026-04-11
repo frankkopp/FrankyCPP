@@ -339,7 +339,7 @@ protected:
     SearchLimits sl{};
     sl.timeControl = true;
     sl.moveTime    = ERET_MOVE_TIME;
-    if (ERET_MAX_DEPTH > 0) {
+    if constexpr (ERET_MAX_DEPTH > 0) {
       sl.depth = ERET_MAX_DEPTH;
     }
 
@@ -386,7 +386,7 @@ protected:
     SearchLimits sl{};
     sl.timeControl = true;
     sl.moveTime    = ERET_MOVE_TIME;
-    if (ERET_MAX_DEPTH > 0) {
+    if constexpr (ERET_MAX_DEPTH > 0) {
       sl.depth = ERET_MAX_DEPTH;
     }
 

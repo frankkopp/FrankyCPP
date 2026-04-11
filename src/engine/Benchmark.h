@@ -76,6 +76,7 @@ namespace engine {
     int positionsRun = 0;      ///< Number of positions benchmarked
     std::string version;       ///< Engine version string
     uint64_t signature = 0;    ///< Deterministic bench signature (== totalNodes) for CI regression gate
+    std::string ttInstrumentationReport; ///< R6 TT instrumentation data (empty if TT_INSTRUMENTATION disabled)
   };
 
   /// Benchmark runner for standardized NPS measurement

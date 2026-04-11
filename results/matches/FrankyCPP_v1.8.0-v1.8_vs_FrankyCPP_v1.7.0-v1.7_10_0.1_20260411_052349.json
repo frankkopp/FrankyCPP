@@ -1,0 +1,30 @@
+{
+  "arenaVersion": "v1.8",
+  "durationMs": 8526496,
+  "engine1": {
+    "name": "FrankyCPP v1.8.0",
+    "path": "Release/FrankyCPP_v1.8/FrankyCPP_v1.8.exe",
+    "version": "v1.8"
+  },
+  "engine2": {
+    "name": "FrankyCPP v1.7.0",
+    "path": "Release/FrankyCPP_v1.7/FrankyCPP_v1.7.exe",
+    "version": "v1.7"
+  },
+  "match": {
+    "name": "v1.8_vs_v1.7_STC_10s",
+    "rounds": 500,
+    "timeControl": "10+0.1"
+  },
+  "pgnPath": "results/matches/v1.8_vs_v1.7_STC_10s.pgn",
+  "results": {
+    "draws": 174,
+    "eloDifference": 200.2409402276741,
+    "engine1Score": 380.0,
+    "engine1Wins": 293,
+    "engine2Score": 120.0,
+    "engine2Wins": 33
+  },
+  "tag": "v1.8 SMP improvements - SkipTables",
+  "timestamp": "2026-04-11T03:23:49Z"
+}

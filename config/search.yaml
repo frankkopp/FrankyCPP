@@ -23,6 +23,8 @@ _YAML_SMOKE_TEST_MARKER: true
 # USE_BEST_THREAD_SELECTION: true
 # Score margin (centipawns) for best-thread depth vs score comparison
 # BEST_THREAD_SCORE_MARGIN: 50
+# Skip-table depth diversification for helper threads (false = simple starting depth offset)
+# USE_SMP_DEPTH_SKIP: true
 
 # Fixed overhead (milliseconds) deducted from available time per move to account for engine housekeeping
 # MOVE_OVERHEAD_MS: 10

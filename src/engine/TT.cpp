@@ -210,6 +210,24 @@ void TT::put(const ZobristKey key, const Depth depth, const Move move, const Val
   if (victimEntry != nullptr) {
     TT_STAT_INC(statsSlots[threadIdx].numberOfCollisions);
     TT_STAT_INC(statsSlots[threadIdx].numberOfOverwrites);
+
+    // R6 instrumentation: track replacement depth quality
+    if constexpr (TT_INSTRUMENTATION) {
+      const int oldDepth = static_cast<int>(victimEntry->depth);
+      const int newDepth = static_cast<int>(depth);
+      const int delta    = newDepth - oldDepth;
+      instrSlots[threadIdx].replaceDepthDeltaSum += delta;
+      instrSlots[threadIdx].replaceVictimDepthSum += static_cast<uint64_t>(oldDepth);
+      if (delta < 0)       { instrSlots[threadIdx].replaceDepthDown++; }
+      else if (delta > 0)  { instrSlots[threadIdx].replaceDepthUp++; }
+      else                 { instrSlots[threadIdx].replaceDepthEqual++; }
+      // Track deep-entry evictions separately (victim.depth >= threshold)
+      if (oldDepth >= DEEP_ENTRY_THRESHOLD) {
+        instrSlots[threadIdx].replaceDeepTotal++;
+        if (delta < 0) { instrSlots[threadIdx].replaceDeepDown++; }
+      }
+    }
+
     // Write non-key fields first, then publish via release store on key.
     // XOR key with data hash to detect torn reads in probe().
     victimEntry->move  = static_cast<uint16_t>(move);
@@ -229,6 +247,7 @@ std::optional<TT::Entry> TT::probe(const ZobristKey& key, const int threadIdx) {
 #endif
 
   TT_STAT_INC(statsSlots[threadIdx].numberOfProbes);
+  if constexpr (TT_INSTRUMENTATION) { instrSlots[threadIdx].probes++; }
   TTCluster* const cluster = getCluster(key);
 
   // Scan all entries in the cluster for a key match.
@@ -249,6 +268,13 @@ std::optional<TT::Entry> TT::probe(const ZobristKey& key, const int threadIdx) {
       // Restore the original key in the copy (it was stored XOR'd)
       copy.key.store(key, std::memory_order_relaxed);
       TT_STAT_INC(statsSlots[threadIdx].numberOfHits);
+
+      // R6 instrumentation: track hit count and depth
+      if constexpr (TT_INSTRUMENTATION) {
+        instrSlots[threadIdx].hits++;
+        instrSlots[threadIdx].hitDepthSum += static_cast<uint64_t>(copy.depth);
+        if (copy.depth == 0) { instrSlots[threadIdx].hitsDepth0++; }
+      }
 
       // age-- marks the entry as recently used, making it less likely to be evicted
       // by the replacement policy in put(). Safe in single-thread mode only.
@@ -308,4 +334,58 @@ std::string TT::str() const {
     s.numberOfPuts, s.numberOfUpdates, s.numberOfCollisions, s.numberOfOverwrites, s.numberOfProbes,
     s.numberOfHits, s.numberOfProbes ? (s.numberOfHits * 100) / s.numberOfProbes : 0,
     s.numberOfMisses, s.numberOfProbes ? (s.numberOfMisses * 100) / s.numberOfProbes : 0);
+}
+
+std::string TT::instrumentationStr() const {
+  if constexpr (!TT_INSTRUMENTATION) {
+    return "TT Instrumentation (R6): disabled (set TT::TT_INSTRUMENTATION = true and rebuild)";
+  }
+  else {
+    const auto instr = aggregateInstrumentationStats();
+
+    // Hit rate breakdown
+    const double hitRate = instr.probes > 0 ? 100.0 * static_cast<double>(instr.hits) / static_cast<double>(instr.probes) : 0.0;
+    const uint64_t hitsMainSearch = instr.hits - instr.hitsDepth0;
+
+    // Hit depth averages (depth-0 entries contribute 0 to hitDepthSum, so hitDepthSum == main-search sum)
+    const double avgHitDepthAll  = instr.hits > 0 ? static_cast<double>(instr.hitDepthSum) / static_cast<double>(instr.hits) : 0.0;
+    const double avgHitDepthMain = hitsMainSearch > 0 ? static_cast<double>(instr.hitDepthSum) / static_cast<double>(hitsMainSearch) : 0.0;
+
+    // Replacement breakdown
+    const uint64_t totalReplacements = instr.replaceDepthDown + instr.replaceDepthUp + instr.replaceDepthEqual;
+    const double downPct  = totalReplacements > 0 ? 100.0 * static_cast<double>(instr.replaceDepthDown) / static_cast<double>(totalReplacements) : 0.0;
+    const double upPct    = totalReplacements > 0 ? 100.0 * static_cast<double>(instr.replaceDepthUp) / static_cast<double>(totalReplacements) : 0.0;
+    const double equalPct = totalReplacements > 0 ? 100.0 * static_cast<double>(instr.replaceDepthEqual) / static_cast<double>(totalReplacements) : 0.0;
+    const double avgDelta = totalReplacements > 0 ? static_cast<double>(instr.replaceDepthDeltaSum) / static_cast<double>(totalReplacements) : 0.0;
+    const double avgVictimDepth = totalReplacements > 0 ? static_cast<double>(instr.replaceVictimDepthSum) / static_cast<double>(totalReplacements) : 0.0;
+
+    // Deep entry eviction rate
+    const double deepDownPct = instr.replaceDeepTotal > 0 ? 100.0 * static_cast<double>(instr.replaceDeepDown) / static_cast<double>(instr.replaceDeepTotal) : 0.0;
+
+    return std::format(
+      projectLocale,
+      "TT Instrumentation (R6):\n"
+      "  Probes: {:L}, Hits: {:L} ({:.1f}%), Misses: {:L}\n"
+      "    QSearch hits (depth=0): {:>12L} ({:.1f}% of hits)\n"
+      "    Main search hits:       {:>12L} ({:.1f}% of hits)\n"
+      "  Avg hit depth (all):         {:.1f}\n"
+      "  Avg hit depth (main search): {:.1f}\n"
+      "  Replacements: {:L} total, avg victim depth: {:.1f}\n"
+      "    Depth down  (harmful):    {:>12L} ({:5.1f}%)\n"
+      "    Depth up    (beneficial): {:>12L} ({:5.1f}%)\n"
+      "    Depth equal:              {:>12L} ({:5.1f}%)\n"
+      "  Avg replacement depth delta: {:+.2f} (positive = upgrades dominate)\n"
+      "  Deep entries (depth>={:d}): {:L} replaced, {:L} by shallower ({:.1f}%)",
+      instr.probes, instr.hits, hitRate, instr.probes - instr.hits,
+      instr.hitsDepth0, instr.hits > 0 ? 100.0 * static_cast<double>(instr.hitsDepth0) / static_cast<double>(instr.hits) : 0.0,
+      hitsMainSearch, instr.hits > 0 ? 100.0 * static_cast<double>(hitsMainSearch) / static_cast<double>(instr.hits) : 0.0,
+      avgHitDepthAll,
+      avgHitDepthMain,
+      totalReplacements, avgVictimDepth,
+      instr.replaceDepthDown, downPct,
+      instr.replaceDepthUp, upPct,
+      instr.replaceDepthEqual, equalPct,
+      avgDelta,
+      DEEP_ENTRY_THRESHOLD, instr.replaceDeepTotal, instr.replaceDeepDown, deepDownPct);
+  }
 }

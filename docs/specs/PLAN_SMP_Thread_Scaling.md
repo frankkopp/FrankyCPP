@@ -1,8 +1,8 @@
 # PLAN: SMP Thread Scaling & Performance Optimization
 
 **Created:** 2026-04-10
-**Updated:** 2026-04-10
-**Status:** Phase 1 complete, ELO validation in progress
+**Updated:** 2026-04-11
+**Status:** Phase 1 + Phase 4a complete and ELO-validated — +114 ELO at 4T, +200 ELO at 8T vs v1.7
 **Priority:** Medium — SMP scaling now competitive (10.87× at 12T vs Stockfish's 11.67×); further gains possible
 
 ---
@@ -393,16 +393,56 @@ False sharing on TT/PawnTT statistics was overwhelmingly the dominant bottleneck
 - Are there other hidden shared mutable state hotspots beyond the fixed counters?
 
 ### R6. TT Hit Rate & Entry Quality Under SMP
+**Status:** ✅ **Complete.** TT replacement policy is SMP-healthy. No actionable degradation found.
 **Goal:** Understand if helper threads produce useful or harmful TT entries.
 **Method:**
-- Log TT hit rate, overwrite rate, and average entry depth at 1T vs 4T vs 8T
-- Track how often a helper thread's TT entry is used by the main thread (vs main using its own entries)
-- Compare depth distribution of TT entries at different thread counts
+- Added `if constexpr (TT_INSTRUMENTATION)` instrumentation to TT::put() and TT::probe()
+  (zero cost when disabled, reusable for future measurement after Phase 2 changes)
+- Tracked: hit rate split (qsearch/main search), hit depth, replacement depth quality,
+  deep-entry evictions (victim depth ≥ 4)
+- Ran bench at 32 MB hash, depth 12, 50 positions at 1T/4T/8T/12T/16T
 
-**Questions to answer:**
-- Does TT hit rate improve with more threads? (It should, if SMP is working correctly)
-- Are shallow helper entries evicting deep main-thread entries? (Would indicate replacement policy problem)
-- What fraction of TT overwrites replace a deeper entry with a shallower one?
+**Results (2026-04-10, bench depth 12, 32 MB hash):**
+
+| Metric                         | 1T    | 4T    | 8T    | 12T   | 16T   |
+|--------------------------------|-------|-------|-------|-------|-------|
+| Hit rate                       | 24.2% | 27.5% | 36.6% | 42.8% | 46.3% |
+| QSearch % of hits              | 66.3% | 66.3% | 71.5% | 73.7% | 74.3% |
+| Avg hit depth (main search)    | 2.8   | 2.9   | 2.9   | 2.9   | 2.9   |
+| Replacements                   | 7.5M  | 20.0M | 20.1M | 22.0M | 36.0M |
+| Avg victim depth               | 0.0   | 0.0   | 0.0   | 0.0   | 0.0   |
+| Depth down (harmful)           | 0.1%  | 0.6%  | 0.3%  | 0.5%  | 0.7%  |
+| Deep entries evicted (depth≥4) | 1     | 127   | 340   | 207   | 538   |
+| Deep evicted by shallower      | 1     | 61    | 157   | 79    | 228   |
+
+**Answers to R6 questions:**
+
+1. **Does TT hit rate improve with more threads?** ✅ Yes, dramatically: 24.2% → 46.3%
+   at 16T. Lazy SMP is working — helpers pre-populate entries that other threads benefit from.
+
+2. **Are shallow entries evicting deep entries?** ✅ No. Avg victim depth is 0.0 at all
+   thread counts. The depth-preferred replacement policy consistently evicts depth-0 (qsearch)
+   entries. Even at 16T with 36M replacements, only 538 deep entries (depth≥4) were touched
+   — 0.0015% of replacements.
+
+3. **What fraction of overwrites replace deeper with shallower?** ✅ Negligible. Depth-down
+   replacements rise from 0.1% (1T) to 0.7% (16T), staying below 1% across all thread counts.
+   The replacement score formula (`depth * 16 - age * 2 + hasMove`) effectively protects
+   valuable entries under SMP.
+
+**Additional observations:**
+- Main-search hit depth is rock-stable at 2.8–2.9 across all thread counts — no quality degradation.
+- QSearch hit % rises from 66% to 74% at higher thread counts, suggesting helpers do proportionally
+  more qsearch work. Thread divergence (Phase 4a) could improve the quality mix.
+- The 4-way associative cluster design provides excellent protection: even under 5× more replacement
+  pressure (36M at 16T vs 7.5M at 1T), deep entries are virtually untouched.
+
+**Impact on plan:**
+- **Phase 2a (Depth-Aware SMP Replacement):** Not urgent — current policy barely evicts deep entries.
+- **Phase 2b (Generation Counter):** Still worthwhile for eliminating ageEntries() scan and the
+  SMP age-- data race, but ELO impact may be smaller than originally estimated.
+- **Phase 4a (Thread Divergence):** Motivated by the rising qsearch hit % — helpers could be
+  steered toward producing more diverse, deeper entries.
 
 ### R7. ELO Scaling at Longer Time Controls
 **Status:** 🔶 Initial data available (5+0.05 vs SF2700, 100 games) — trend is positive but noisy.
@@ -456,28 +496,29 @@ False sharing on TT/PawnTT statistics was overwhelmingly the dominant bottleneck
 
 ### Research Priority
 
-| ID  | Investigation                              | Effort  | Blocking? | Priority        |
-|-----|--------------------------------------------|---------|-----------|-----------------|
-| R1  | Bench stability (3× repeat runs)           | Small   | Yes       | ✅ **Complete**  |
-| R2  | Code review: bench → search → threads      | Medium  | Yes       | ✅ **Complete**  |
-| R3  | Per-position analysis                      | Small   | Partially | ⏭️ **Skipped**   |
-| R5  | False sharing quantification               | Small   | Yes       | ✅ **Complete**  |
-| R4  | Memory bandwidth saturation (VTune)        | Medium  | No        | 🔽 Optional      |
-| R6  | TT hit rate & entry quality                | Medium  | Partially | ⬆️ High         |
-| R8  | Stockfish SMP source study                 | Medium  | No        | 🔶 Medium       |
-| R7  | ELO at longer time controls                | Large   | No        | 🔶 Medium       |
-| R9  | Search tree overlap measurement            | Large   | No        | 🔽 Low          |
+| ID | Investigation                         | Effort | Blocking? | Priority       |
+|----|---------------------------------------|--------|-----------|----------------|
+| R1 | Bench stability (3× repeat runs)      | Small  | Yes       | ✅ **Complete** |
+| R2 | Code review: bench → search → threads | Medium | Yes       | ✅ **Complete** |
+| R3 | Per-position analysis                 | Small  | Partially | ⏭️ **Skipped** |
+| R5 | False sharing quantification          | Small  | Yes       | ✅ **Complete** |
+| R4 | Memory bandwidth saturation (VTune)   | Medium | No        | 🔽 Optional    |
+| R6 | TT hit rate & entry quality           | Medium | Partially | ✅ **Complete** |
+| R8 | Stockfish SMP source study            | Medium | No        | 🔶 Medium      |
+| R7 | ELO at longer time controls           | Large  | No        | 🔶 Medium      |
+| R9 | Search tree overlap measurement       | Large  | No        | 🔽 Low         |
 
-**Gate:** ✅ All blocking research complete (R1, R2, R5). R3 skipped, R4 downgraded to optional.
-**Phase 2+ implementation can proceed.** R6 (TT hit rate) is recommended before Phase 2a/2b
-but not strictly blocking.
+**Gate:** ✅ All blocking and recommended research complete (R1, R2, R5, R6). R3 skipped, R4 optional.
+**Phase 2+ implementation can proceed.** R6 confirms TT replacement policy is SMP-healthy —
+Phase 2a is low priority; Phase 2b and Phase 4a are the best next candidates.
 
 ---
 
 ## 4. Improvement Plan (Gated on Research Phase)
 
-> ✅ **Research gate cleared.** R1, R2, R5 complete; R3 skipped; R4 downgraded to optional.
+> ✅ **Research gate cleared.** R1, R2, R5, R6 complete; R3 skipped; R4 optional.
 > Phase 2+ implementation can proceed. Primary bottleneck (false sharing) resolved in Phase 1a.
+> R6 confirms TT replacement policy is already SMP-healthy — Phase 2a deprioritized.
 
 ### Phase 1: Low-Hanging Fruit — Reduce Contention ✅ Applied — +235% NPS at 12T
 
@@ -513,6 +554,9 @@ Verify that the `numberOfEntries` counter (incremented on every new entry) isn't
 **Impact:** Prevents shallow helper entries from evicting deep main-thread entries
 **Risk:** Medium
 **Effort:** Medium
+**R6 finding:** ⚠️ Low priority — current policy already protects deep entries effectively.
+Depth-down replacements stay below 0.7% at 16T; deep entries (depth≥4) evicted by shallower
+total only 228 out of 36M replacements. Improvement would be marginal.
 
 Current replacement: `depth * 16 - age * 2 + hasMove`. This doesn't account for SMP context. A shallow helper thread entry shouldn't replace a deep entry from any thread.
 
@@ -576,19 +620,57 @@ Each of these adds ALU work per node (bitboard operations that live in registers
 
 ### Phase 4: Thread Divergence & Quality (Est. +10-30 ELO)
 
-#### 4a. Stronger Thread Differentiation
+#### 4a. Stronger Thread Differentiation ✅ DONE — Skip-Table Depth Diversification
 **Impact:** Reduce redundant work, improve TT entry diversity
 **Risk:** Medium
 **Effort:** Medium
 
-Currently helpers run the same `iterativeDeepening()` starting from `SMP_HELPER_START_DEPTH`. Stockfish varies the starting depth per thread (e.g., thread i starts at depth + (i % 3) - 1) to ensure threads explore different depths and produce diverse TT entries.
+**Implementation (2026-04-10):** Added skip-table depth diversification (`USE_SMP_DEPTH_SKIP`, default true).
+Each helper thread skips certain iteration depths based on its thread ID, using interleaved
+skip-size/skip-phase tables (20 entries). Threads with higher IDs skip more aggressively
+(size 2–4), so at any given moment threads are spread across different depth levels.
+Main thread always searches every depth. When disabled, reverts to the original simple
+starting depth offset (`1 + id % 3`).
 
-Add per-thread depth offset or search parameter variation:
-```cpp
-// In helper thread setup
-int depthOffset = (threadId % 3) - 1; // -1, 0, +1
-// Or vary aspiration window, null-move depth, LMR parameters per thread
-```
+**Bench results (8T, depth 12, 32 MB hash) — Before vs After:**
+
+| Metric                      | Before (8T) | After (8T) | Change                               |
+|-----------------------------|-------------|------------|--------------------------------------|
+| Total nodes                 | 184M        | 113M       | **−38%** ✅                           |
+| Total time                  | 9.33s       | 7.33s      | −21%                                 |
+| NPS                         | 19.7M       | 15.5M      | −21% (expected)                      |
+| QSearch % of hits           | 71.5%       | **60.6%**  | ✅ Down (was trending toward 74%)     |
+| Main search % of hits       | 28.5%       | **39.4%**  | ✅ +38% relative                      |
+| Avg hit depth (all)         | 0.8         | **1.2**    | ✅ Deeper hits                        |
+| Avg hit depth (main search) | 2.9         | **3.0**    | ✅ Slight gain                        |
+| Hit rate                    | 36.6%       | 29.9%      | ↓ Expected (fewer redundant re-hits) |
+| Replacements                | 20M         | 30.5M      | ↑ More diverse writes                |
+| Depth down (harmful)        | 0.3%        | 1.0%       | ↑ Slight (still very low)            |
+
+**Key observations:**
+- **38% fewer total nodes** for the same depth-12 search — better TT diversity → more cutoffs
+- **QSearch hit ratio dropped from 71.5% to 60.6%** — helpers are no longer grinding the same
+  shallow depths simultaneously; now *below* the 1T baseline (66.3%)
+- **Main-search hit share jumped from 28.5% to 39.4%** — TT contains more useful entries at
+  meaningful depths
+- **NPS decrease is expected and acceptable** — helpers skip some depths (searching deeper ones
+  instead), producing higher-quality TT content; fewer total nodes means less work overall
+- **Depth-down replacements rose from 0.3% to 1.0%** — slightly more cross-depth overwrites,
+  still negligible and outweighed by the massive node savings
+
+**Next:** Full NPS scaling test (1–16T) and ELO validation needed.
+
+**ELO Validation (2026-04-11):** v1.8 vs v1.7, STC 10+0.1, 500 rounds each:
+
+| Threads | Score | W/D/L   | ELO      |
+|---------|-------|---------|----------|
+| 4T      | 65.8% | 329-171 | **+114** |
+| 8T      | 76.0% | 380-120 | **+200** |
+
+ELO gain nearly doubles from 4T to 8T, confirming skip tables provide proportionally
+more benefit with higher thread counts (more helpers → more depth diversity).
+
+Test suites: +46 positions (+1.5%) — STS +28, ecm98 +17, eigenmann +6.
 
 #### 4b. Consider Thread-Local TT Buckets (Advanced)
 **Impact:** Reduce cross-thread cache invalidation
@@ -619,20 +701,20 @@ Detect P-core count (Windows: `GetLogicalProcessorInformationEx`) and default TH
 
 ## 5. Implementation Priority
 
-| Phase | Item                                     | Impact           | Effort | Priority            |
-|-------|------------------------------------------|------------------|--------|---------------------|
-| 1a    | Per-thread TT stats                      | Medium (NPS)     | Small  | ⬆️ **Do first**     |
-| 1b    | TT layout audit                          | Low-Medium       | Small  | ⬆️ **Do first**     |
-| 1c    | numberOfEntries thread safety            | Low              | Small  | ⬆️ **Do first**     |
-| 2b    | Generation counter (replaces ageEntries) | Medium           | Medium | ⬆️ High             |
-| 2a    | Depth-aware SMP replacement              | Medium (ELO)     | Medium | ⬆️ High             |
-| 4a    | Thread depth differentiation             | Medium (ELO)     | Medium | ⬆️ High             |
-| 3a    | Richer classical evaluation              | High (ELO + NPS) | Large  | 🔶 Medium (ongoing) |
-| 3b    | Memory footprint reduction               | Medium (NPS)     | Medium | 🔶 Medium           |
-| 3c    | Incremental attack maps                  | Medium (NPS)     | Medium | 🔶 Medium           |
-| 5a    | P-core thread pinning                    | Low              | Small  | 🔽 Low              |
-| 5b    | Auto-detect P-core count                 | Low              | Small  | 🔽 Low              |
-| 4b    | Thread-local TT partitioning             | Unknown          | Large  | 🔽 Research         |
+| Phase | Item                                     | Impact           | Effort | Priority                              |
+|-------|------------------------------------------|------------------|--------|---------------------------------------|
+| 1a    | Per-thread TT stats                      | Medium (NPS)     | Small  | ✅ **Done** (+235%)                    |
+| 1b    | TT layout audit                          | Low-Medium       | Small  | ⬆️ **Do next**                        |
+| 1c    | numberOfEntries thread safety            | Low              | Small  | ⬆️ **Do next**                        |
+| 2b    | Generation counter (replaces ageEntries) | Medium           | Medium | ⬆️ High                               |
+| 4a    | Thread depth differentiation             | Medium (ELO)     | Medium | ✅ **Done** (+114 ELO 4T, +200 ELO 8T) |
+| 2a    | Depth-aware SMP replacement              | Low (per R6)     | Medium | 🔽 Low (R6: not needed)               |
+| 3a    | Richer classical evaluation              | High (ELO + NPS) | Large  | 🔶 Medium (ongoing)                   |
+| 3b    | Memory footprint reduction               | Medium (NPS)     | Medium | 🔶 Medium                             |
+| 3c    | Incremental attack maps                  | Medium (NPS)     | Medium | 🔶 Medium                             |
+| 5a    | P-core thread pinning                    | Low              | Small  | 🔽 Low                                |
+| 5b    | Auto-detect P-core count                 | Low              | Small  | 🔽 Low                                |
+| 4b    | Thread-local TT partitioning             | Unknown          | Large  | 🔽 Research                           |
 
 ---
 

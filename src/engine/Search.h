@@ -335,6 +335,12 @@ namespace engine {
     /// Resizes the transposition table according to SearchConfig::TT_SIZE_MB.
     void resizeTT() const;
 
+    /// Returns R6 TT instrumentation report (see TT::instrumentationStr()).
+    [[nodiscard]] std::string ttInstrumentationStr() const { return tt->instrumentationStr(); }
+
+    /// Resets R6 TT instrumentation counters (see TT::resetInstrumentationStats()).
+    void resetTTInstrumentation() const { tt->resetInstrumentationStats(); }
+
     /// Returns the search statistics from the last search.
     /// @return Reference to SearchStats
     const SearchStats& getSearchStats() const { return mainThread().statistics; };

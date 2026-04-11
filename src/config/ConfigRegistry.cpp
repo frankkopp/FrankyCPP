@@ -546,6 +546,18 @@ void ConfigRegistry::initializeSearchDefinitions() {
   });
 
   definitions_.push_back({
+    .name = "USE_SMP_DEPTH_SKIP",
+    .uciName = "",  // Not exposed via UCI - internal tuning parameter
+    .description = "Skip-table depth diversification for helper threads (when false, uses simple starting depth offset)",
+    .valueType = Bool,
+    .domain = Search,
+    .defaultValue = configToString(defaultSearch.USE_SMP_DEPTH_SKIP),
+    .exposure = {.uci = false, .yaml = true, .display = true},
+    .getter = searchGetter([](const auto& s){ return s.USE_SMP_DEPTH_SKIP; }),
+    .setter = SEARCH_CONFIG_SETTER(USE_SMP_DEPTH_SKIP, parseBool)
+  });
+
+  definitions_.push_back({
     .name = "USE_QS_TT",
     .uciName = "Use Hash Quiescence",
     .description = "Use TT in quiescence search",
