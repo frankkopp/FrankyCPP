@@ -3,7 +3,7 @@
 **Document Version:** 2.4
 **Created:** 2026-04-11
 **Last updated:** 2026-04-12
-**Status:** 📋 IN PROGRESS (S1 ✅, S2 ✅, S11 ✅, S12 ✅, S20 ✅ via S1, S22 ✅)
+**Status:** 📋 IN PROGRESS (S1 ✅, S2 ✅, S11 ✅, S12 ✅, S13 ✅, S14 ✅, S20 ✅ via S1, S22 ✅)
 **Scope:** `src/engine/`, `src/chesscore/`, `src/tablebase/`, `src/types/`
 
 ---
@@ -76,8 +76,8 @@ Existing test files relevant to this plan:
 | S10 | Deduplicate TT-move validation pattern          | REDUNDANCY    | MEDIUM   | 🟢 15 min  | 🟢 Low | ✅ SearchTest + bench           | —      |
 | S11 | Bulk pawn attack computation (shift vs loop)    | PERFORMANCE   | CRITICAL | 🟡 1 hr    | 🟢 Low | ✅ Eval tests + bench           | ✅      |
 | S12 | King safety attack dedup + precompute kingzone  | PERF+REDUND   | MEDIUM   | 🟢 30 min  | 🟢 Low | ✅ KingSafety eval tests        | ✅      |
-| S13 | Remove unnecessary variable in qsearch drop     | READABILITY   | LOW      | 🟢 5 min   | 🟢 Low | ✅ Bench (mechanical)           | —      |
-| S14 | Move `do_null` before move loop                 | READABILITY   | LOW      | 🟢 5 min   | 🟢 Low | ✅ Bench (mechanical)           | —      |
+| S13 | Remove unnecessary variable in qsearch drop     | READABILITY   | LOW      | 🟢 5 min   | 🟢 Low | ✅ Bench (mechanical)           | ✅      |
+| S14 | Move `do_null` before move loop                 | READABILITY   | LOW      | 🟢 5 min   | 🟢 Low | ✅ Bench (mechanical)           | ✅      |
 | S15 | Draw-check pattern (dependent on S21)           | REDUNDANCY    | LOW      | 🟢 15 min  | 🟢 Low | ✅ SearchTest (indirectly)      | —      |
 | S16 | `formatDetailedStats()` comprehensive cleanup   | REDUNDANCY    | MEDIUM   | 🟡 1–2 hrs | 🟢 Low | ❌ No output format tests       | —      |
 | S17 | TT `aggregateStats()` pattern duplication       | REDUNDANCY    | LOW      | 🟢 30 min  | 🟢 Low | ✅ TT_Test (indirectly)         | —      |
@@ -300,30 +300,33 @@ regressions.
 
 ---
 
-### S13: Remove unnecessary variable in qsearch drop
+### S13: ✅ Remove unnecessary variable in qsearch drop
 
-**File:** `src/engine/Search.cpp` (lines 1301–1304)
+**Status:** ✅ COMPLETE
+**File:** `src/engine/Search.cpp`
 **Category:** READABILITY — **Severity:** LOW — **Confidence:** CERTAIN
 
-Replace `const auto value = qsearch(...); return value;` with `return qsearch(...);`
+Replaced `const auto value = qsearch(...); return value;` with `return qsearch(...);`
 
 **Lines saved:** 1 — **Risk:** None.
 
-**Test coverage:** ✅ Mechanical change. Bench is sufficient. No additional tests needed.
+**Test coverage:** ✅ Mechanical change. Bench is sufficient.
 
 ---
 
-### S14: Move `do_null` before move loop
+### S14: ✅ Move `do_null` before move loop
 
-**File:** `src/engine/Search.cpp` (line 1952)
+**Status:** ✅ COMPLETE
+**File:** `src/engine/Search.cpp`
 **Category:** READABILITY — **Severity:** LOW — **Confidence:** CERTAIN
 
-`matethreat` is constant after the NMP block. Move `do_null` computation before the loop.
+`matethreat` is constant after the NMP block. Moved `do_null` computation from inside the
+move loop (per-iteration) to the "prepare move loop" block (computed once).
 
 **Lines saved:** 1 — **Risk:** None.
 
 **Test coverage:** ✅ Mechanical change. Bench is sufficient. SearchTest mate tests cover
-null-move/matethreat interaction. No additional tests needed.
+null-move/matethreat interaction.
 
 ---
 
@@ -498,8 +501,8 @@ Quick wins (🟢 5–15 min) are grouped together for batch implementation.
 3. ~~**S12** — King safety dedup + precompute enemyKingZone~~ ✅ COMPLETE
 
 ### Phase 2 — Quick wins (batch these)
-4. **S13** — Remove intermediate variable
-5. **S14** — Move `do_null` before loop
+4. ~~**S13** — Remove intermediate variable~~ ✅ COMPLETE
+5. ~~**S14** — Move `do_null` before loop~~ ✅ COMPLETE
 6. **S23** — Unreachable default branch
 7. **S25** — Remove empty `reset()`
 8. **S5** — SEE loop
@@ -557,4 +560,4 @@ For each item:
 
 ---
 
-*Last updated: 2026-04-11*
+*Last updated: 2026-04-12*

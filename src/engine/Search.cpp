@@ -1299,8 +1299,7 @@ Value Search::search(Position& p, const Depth depth, const Depth ply, Value alph
   // Enter quiescence search when depth == 0 or max ply has been reached
   // pvNodes/nonPvNodes are tracked inside qsearch() — no need to count here.
   if (depth == 0 || ply >= MAX_DEPTH) {
-    const auto value = qsearch(p, ply, alpha, beta, nodeType);
-    return value;
+    return qsearch(p, ply, alpha, beta, nodeType);
   }
 
   // Track PV vs non-PV node statistics (after qsearch drop-through to avoid double-counting
@@ -1693,6 +1692,7 @@ Value Search::search(Position& p, const Depth depth, const Depth ply, Value alph
   Value value;
   Move move;
   int movesSearched = 0; // to detect mate situations
+  const auto do_null = matethreat ? No_Null_Move : Do_Null_Move;
 
   // ///////////////////////////////////////////////////////
   // MOVE LOOP
@@ -1949,7 +1949,6 @@ Value Search::search(Position& p, const Depth depth, const Depth ply, Value alph
     if (checkDrawRepAnd50(p, 2)) { value = drawScore(p); }
     else {
 
-      const auto do_null = matethreat ? No_Null_Move : Do_Null_Move;
 
       // ///////////////////////////////////////////////////////////////////
       // PVS
