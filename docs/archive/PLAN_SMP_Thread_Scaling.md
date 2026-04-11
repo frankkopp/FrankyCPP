@@ -2,8 +2,8 @@
 
 **Created:** 2026-04-10
 **Updated:** 2026-04-11
-**Status:** Phase 1 + 2b + 4a complete — +84 ELO at 4T, +217 ELO at 8T vs v1.7 (cumulative)
-**Priority:** Medium — SMP scaling now competitive (10.87× at 12T vs Stockfish's 11.67×); further gains possible
+**Status:** ✅ **ARCHIVED** — All actionable phases complete. Phase 1+2b+4a delivered +84 ELO at 4T, +217 ELO at 8T vs v1.7. Phase 5a tested and rejected (P-core pinning hurts NPS).
+**Priority:** Complete — SMP scaling now competitive (10.87× at 12T vs Stockfish's 11.67×). Remaining items (3a/3b/3c) are eval improvements tracked separately.
 
 ---
 
@@ -790,7 +790,7 @@ via UCI if they want more. **Not merged** — stashed with 5a.
 | 3b    | Memory footprint reduction               | Medium (NPS)     | Medium | 🔶 Medium                              |
 | 3c    | Incremental attack maps                  | Medium (NPS)     | Medium | 🔶 Medium                              |
 | 5a    | P-core thread pinning                    | **Negative**     | Small  | ❌ **Tested** (hurts NPS, not merged)   |
-| 5b    | Auto-detect P-core count                 | Low              | Small  | ⏭️ **Not pursued** (stashed with 5a)    |
+| 5b    | Auto-detect P-core count                 | Low              | Small  | ⏭️ **Not pursued** (stashed with 5a)   |
 | 4b    | Thread-local TT partitioning             | Unknown          | Large  | 🔽 Research                            |
 
 ---
