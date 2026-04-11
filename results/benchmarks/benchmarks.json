@@ -1019,6 +1019,36 @@
       "timestamp": "2026-03-30T22:00:56Z",
       "totalNodes": 38325721,
       "totalTimeMs": 15345
+    },
+    {
+      "arenaVersion": "v1.8",
+      "depth": 12,
+      "engineName": "FrankyCPP",
+      "enginePath": "",
+      "engineVersion": "v1.8",
+      "hashSizeMB": 256,
+      "nps": 2511179,
+      "positions": 50,
+      "tag": "TT Generation Counter",
+      "threads": 1,
+      "timestamp": "2026-04-11T09:13:00Z",
+      "totalNodes": 38314796,
+      "totalTimeMs": 15257
+    },
+    {
+      "arenaVersion": "v1.8",
+      "depth": 12,
+      "engineName": "External",
+      "enginePath": "Release/FrankyCPP_v1.8/FrankyCPP_v1.8.exe",
+      "engineVersion": "v1.8",
+      "hashSizeMB": 256,
+      "nps": 2408220,
+      "positions": 50,
+      "tag": "TT Generation Counter",
+      "threads": 1,
+      "timestamp": "2026-04-11T09:13:00Z",
+      "totalNodes": 38314796,
+      "totalTimeMs": 15910
     }
   ]
 }

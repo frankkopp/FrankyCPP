@@ -391,23 +391,29 @@ class Evaluator {
 Hash table storing search results for positions.
 
 **Entry Structure (16 bytes):**
-- Zobrist key (for verification)
+- Zobrist key (atomic, XOR-verified for thread safety)
 - Best move
 - Evaluation value
 - Depth
 - Value type (exact, lower bound, upper bound)
-- Age (for replacement)
+- Generation tag (3-bit, for replacement staleness)
 
 **Features:**
-- Power-of-two sizing for fast indexing
-- Prefetch support for CPU cache optimization
+- 4-way associative clusters, 64B aligned to cache line
+- Power-of-two sizing for fast indexing via hash masking
+- Single prefetch loads entire cluster (4 entries)
+- Generation counter: O(1) per search, entries stamped on write
+- Replacement: depth-preferred with generation-staleness tiebreak
+- probe() is fully read-only (no writes to entries — SMP-safe)
+- Per-thread statistics (no false sharing under SMP)
 - Configurable size via UCI option
 
 ```cpp
 class TT {
-  std::unique_ptr<TTEntry[]> entries;
-  uint64_t numEntries;
-  uint8_t currentAge;
+  std::unique_ptr<TTCluster[]> _data;
+  uint64_t maxNumberOfClusters;
+  uint64_t clusterMask;
+  uint8_t generation;  // 3-bit, wraps 0-7
   // ...
 };
 ```

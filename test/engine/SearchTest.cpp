@@ -1345,6 +1345,7 @@ TEST_F(SearchTest, handicap5DifferentFromBest) {
   CONFIG_OVERRIDE(s.THREADS = 1;);
 
   // Test positions with varied best moves
+  // ReSharper disable once CppVariableCanBeMadeConstexpr
   const std::vector<std::string> fens = {
     "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq -",
     "r3k2r/pp2qppp/2n1pn2/bN5b/3P4/P3BN1P/1P2BPP1/R2Q1RK1 w kq -",
@@ -1354,6 +1355,7 @@ TEST_F(SearchTest, handicap5DifferentFromBest) {
   };
 
   int differences = 0;
+  // ReSharper disable once CppTooWideScope
   constexpr int depth = 8;
 
   for (const auto& fen : fens) {

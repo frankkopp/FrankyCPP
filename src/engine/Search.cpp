@@ -290,12 +290,10 @@ void Search::run() {
   // when not pondering and search is time controlled start timer
   if (searchLimits.timeControl && !searchLimits.ponder) { startTimer(); }
 
-  // age tt entries (skip in SMP mode - age-- in probe() is disabled for thread safety)
+  // advance TT generation counter so entries from old searches become cheaper to replace
   if (SearchConfig.USE_TT) {
+    tt->newGeneration();
     LOG__INFO(Logger::get().SEARCH_LOG, "Transposition Table: Using TT: {}", tt->str());
-    if (numHelperThreads == 0) {
-      tt->ageEntries();
-    }
   }
   else { LOG__INFO(Logger::get().SEARCH_LOG, "Transposition Table: Not using TT."); }
 

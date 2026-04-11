@@ -21,11 +21,10 @@
 #include "chesscore/Position.h"
 #include "engine/BenchmarkPositions.h"
 #include "init.h"
-#include "version.h"
 
-#include <gtest/gtest.h>
 #include <filesystem>
 #include <fstream>
+#include <gtest/gtest.h>
 #include <iostream>
 #include <sstream>
 
@@ -82,6 +81,7 @@ TEST_F(BenchmarkTest, benchRunsSinglePosition) {
   config.depth = 1; // Very shallow for quick test
 
   // Run with just one position for quick test
+  // ReSharper disable once CppVariableCanBeMadeConstexpr
   const std::vector<std::string> fens = {"rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1"};
   const auto result                   = Benchmark::run(fens, config);
 
@@ -99,6 +99,7 @@ TEST_F(BenchmarkTest, benchRunsAtShallowDepth) {
   config.hashSizeMB = 16; // Small hash for test
 
   // Run with a few positions
+  // ReSharper disable once CppVariableCanBeMadeConstexpr
   const std::vector<std::string> fens = {
     "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1",
     "r3k2r/p1ppqpb1/bn2pnp1/3PN3/1p2P3/2N2Q1p/PPPBBPPP/R3K2R w KQkq - 0 10",
@@ -132,6 +133,7 @@ TEST_F(BenchmarkTest, benchSignatureMatchesTotalNodes) {
   config.hashSizeMB = 16;
   config.threads    = 1;
 
+  // ReSharper disable once CppVariableCanBeMadeConstexpr
   const std::vector<std::string> fens = {
     "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1",
     "r3k2r/p1ppqpb1/bn2pnp1/3PN3/1p2P3/2N2Q1p/PPPBBPPP/R3K2R w KQkq - 0 10",
@@ -150,6 +152,7 @@ TEST_F(BenchmarkTest, benchSignatureIsDeterministic) {
   config.hashSizeMB = 16;
   config.threads    = 1;
 
+  // ReSharper disable once CppVariableCanBeMadeConstexpr
   const std::vector<std::string> fens = {
     "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1",
     "r3k2r/p1ppqpb1/bn2pnp1/3PN3/1p2P3/2N2Q1p/PPPBBPPP/R3K2R w KQkq - 0 10",
@@ -164,6 +167,7 @@ TEST_F(BenchmarkTest, benchSignatureIsDeterministic) {
 
 /// Test that bench signature changes with different depth
 TEST_F(BenchmarkTest, benchSignatureChangesWithDepth) {
+  // ReSharper disable once CppVariableCanBeMadeConstexpr
   const std::vector<std::string> fens = {
     "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1",
     "r3k2r/p1ppqpb1/bn2pnp1/3PN3/1p2P3/2N2Q1p/PPPBBPPP/R3K2R w KQkq - 0 10"};

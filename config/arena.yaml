@@ -96,7 +96,7 @@ testSuiteRuns:
   # ==========================================================================
   - engine: "FrankyCPP v1.8"
     engineVersion: "v1.8"
-    tag: "v1.8 SMP improvements - SkipTables"
+    tag: "TT Generation Counter"
     enginePath: "Release/FrankyCPP_v1.8/FrankyCPP_v1.8.exe"
     timePerMove: 5000
     maxDepth: 99
@@ -378,7 +378,7 @@ matches:
 
   ## Blitz 10+0.1 — Fishtest STC equivalent (~80min for 500 games with Threads=4)
   - name: "v1.8_vs_v1.7_STC_10s"
-    tag: "v1.8 SMP improvements - SkipTables"
+    tag: "TT Generation Counter"
     engine1Path: "Release/FrankyCPP_v1.8/FrankyCPP_v1.8.exe"
     engine1Version: "v1.8"
     engine1Options: "OwnBook=false; Threads=4"
@@ -393,7 +393,7 @@ matches:
     outputPgn: "results/matches/v1.8_vs_v1.7_STC_10s.pgn"
 
   - name: "v1.8_vs_v1.7_STC_10s"
-    tag: "v1.8 SMP improvements - SkipTables"
+    tag: "TT Generation Counter"
     engine1Path: "Release/FrankyCPP_v1.8/FrankyCPP_v1.8.exe"
     engine1Version: "v1.8"
     engine1Options: "OwnBook=false; Threads=8"
@@ -751,21 +751,21 @@ matches:
 # =============================================================================
 
 benchmarks:
-  - name: "v1.7 Internal"
-    engineVersion: "v1.7"
+  - name: "v1.8 Internal"
+    engineVersion: "v1.8"
     depth: 12
-    hashSizeMB: 128
+    hashSizeMB: 256
     threads: 1
-    tag: "Tuning After Phase 9"  # Set to current feature name when testing
+    tag: "TT Generation Counter"  # Set to current feature name when testing
 
-  - name: "v1.7 External"
-    enginePath: "Release/FrankyCPP_v1.7/FrankyCPP_v1.7.exe"
+  - name: "v1.8 External"
+    enginePath: "Release/FrankyCPP_v1.8/FrankyCPP_v1.8.exe"
     commandLineArgs: "--nobook"
-    engineVersion: "v1.7"
+    engineVersion: "v1.8"
     depth: 12
-    hashSizeMB: 128
+    hashSizeMB: 256
     threads: 1
-    tag: "Tuning After Phase 9"  # Set to current feature name when testing
+    tag: "TT Generation Counter"  # Set to current feature name when testing
 
 #  - name: "v1.7 External"
 #    enginePath: "Release/FrankyCPP_v1.7/FrankyCPP_v1.7.exe"

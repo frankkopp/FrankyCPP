@@ -39,12 +39,12 @@ public:
 };
 
 #if 0
-BENCHMARK_F(TimingBench, TTAge1)(benchmark::State& state) {
+BENCHMARK_F(TimingBench, TTNewGen)(benchmark::State& state) {
   double counter = 0;
   TT tt{1'000};
   for (const auto _ : state) {
     (void)_; // silence unused variable warning
-    tt.ageEntries();
+    tt.newGeneration();
     counter++;
   }
   state.counters["Runs"] = counter;

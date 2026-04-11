@@ -2,7 +2,7 @@
 
 **Created:** 2026-04-10
 **Updated:** 2026-04-11
-**Status:** Phase 1 + Phase 4a complete and ELO-validated — +114 ELO at 4T, +200 ELO at 8T vs v1.7
+**Status:** Phase 1 + 2b + 4a complete — +84 ELO at 4T, +217 ELO at 8T vs v1.7 (cumulative)
 **Priority:** Medium — SMP scaling now competitive (10.87× at 12T vs Stockfish's 11.67×); further gains possible
 
 ---
@@ -389,7 +389,7 @@ counters eliminated false sharing and delivered a 3-4× NPS improvement at high 
 False sharing on TT/PawnTT statistics was overwhelmingly the dominant bottleneck.
 
 **Remaining questions:**
-- Is `numberOfEntries` (used for `hashFull`) still a contention point? (Phase 1c)
+- ~~Is `numberOfEntries` (used for `hashFull`) still a contention point? (Phase 1c)~~ ✅ No — already per-thread via Phase 1a. Verified in Phase 1c audit (2026-04-11).
 - Are there other hidden shared mutable state hotspots beyond the fixed counters?
 
 ### R6. TT Hit Rate & Entry Quality Under SMP
@@ -439,8 +439,8 @@ False sharing on TT/PawnTT statistics was overwhelmingly the dominant bottleneck
 
 **Impact on plan:**
 - **Phase 2a (Depth-Aware SMP Replacement):** Not urgent — current policy barely evicts deep entries.
-- **Phase 2b (Generation Counter):** Still worthwhile for eliminating ageEntries() scan and the
-  SMP age-- data race, but ELO impact may be smaller than originally estimated.
+- **Phase 2b (Generation Counter):** ✅ Done. Confirmed ELO-neutral as expected — primarily an
+  engineering cleanup (eliminates ageEntries() scan and SMP age-- data race).
 - **Phase 4a (Thread Divergence):** Motivated by the rising qsearch hit % — helpers could be
   steered toward producing more diverse, deeper entries.
 
@@ -517,10 +517,12 @@ Phase 2a is low priority; Phase 2b and Phase 4a are the best next candidates.
 ## 4. Improvement Plan (Gated on Research Phase)
 
 > ✅ **Research gate cleared.** R1, R2, R5, R6 complete; R3 skipped; R4 optional.
-> Phase 2+ implementation can proceed. Primary bottleneck (false sharing) resolved in Phase 1a.
+> Phase 1 complete (1a–1c). Phase 2b complete. Phase 4a complete. All ELO-validated.
+> Primary bottleneck (false sharing) resolved in Phase 1a; 1b/1c verified as already covered.
 > R6 confirms TT replacement policy is already SMP-healthy — Phase 2a deprioritized.
+> Phase 2b (generation counter) is an engineering cleanup — ELO-neutral, removes legacy code and data race.
 
-### Phase 1: Low-Hanging Fruit — Reduce Contention ✅ Applied — +235% NPS at 12T
+### Phase 1: Low-Hanging Fruit — Reduce Contention ✅ Complete — +235% NPS at 12T
 
 #### 1a. Move TT/PawnTT Statistics to Per-Thread Counters ✅ DONE
 **Impact:** ~~Eliminates false sharing on hot-path statistics~~ **Confirmed: eliminated the ~8.5M NPS ceiling**
@@ -531,20 +533,36 @@ Moved `numberOfPuts`, `numberOfProbes`, `numberOfHits`, `numberOfMisses`, `numbe
 
 **Result:** 12T scaling improved from 3.24× to 10.87× (+235%). This single change was responsible for the vast majority of the improvement.
 
-#### 1b. Review TT Entry Layout for Cache Efficiency
-**Impact:** Reduce cache-line bouncing
+#### 1b. Review TT Entry Layout for Cache Efficiency ✅ DONE (verified — no issues)
+**Impact:** ~~Reduce cache-line bouncing~~ **Already optimal — no false sharing found**
 **Risk:** Low
 **Effort:** Small
 
-Current TT::Entry is 16 bytes (4 entries per 64-byte cache line). This is already optimal.
-Verify that the `numberOfEntries` counter (incremented on every new entry) isn't causing false sharing with the cluster data pointer. Consider padding or separating counters from data pointers.
+**Verification (2026-04-11):** Audited TT object memory layout post-Phase 1a:
+- TT::Entry is 16 bytes (4 entries per 64-byte cache line) — optimal. ✅
+- TT object's first cache line contains only read-only-during-search fields:
+  `noOfThreads` (4B), `numSmpThreads` (4B), `sizeInByte` (8B), `maxNumberOfClusters` (8B),
+  `clusterMask` (8B), `_data` pointer (8B) = 40 bytes. None are written during search.
+- `statsSlots` (including `numberOfEntries`) starts at the next `alignas(64)` boundary —
+  each thread's `Stats` is on its own cache line. No false sharing with `_data`/`clusterMask`.
+- PawnTT has the same per-thread `statsSlots` pattern — also verified clean.
+- **Conclusion:** Phase 1a's per-thread stats design already ensures complete isolation.
+  No additional padding or separation needed.
 
-#### 1c. Ensure TT `numberOfEntries` Is Per-Thread or Atomic
-**Impact:** Eliminates a data race and potential false sharing
+#### 1c. Ensure TT `numberOfEntries` Is Per-Thread or Atomic ✅ DONE (already per-thread via Phase 1a)
+**Impact:** ~~Eliminates a data race and potential false sharing~~ **Already resolved by Phase 1a**
 **Risk:** Low
 **Effort:** Small
 
-`numberOfEntries` is incremented in `put()` from multiple threads. Either make it per-thread (aggregate at end) or `std::atomic` (if accuracy needed for `hashFull`).
+**Verification (2026-04-11):** `numberOfEntries` is inside `Stats` which lives in
+`statsSlots[threadIdx]` — already per-thread since Phase 1a. Each thread writes exclusively
+to its own slot. `hashFull()` aggregates via `aggregateStats()` on the cold path only.
+
+**Minor SMP approximation (acceptable):** Under SMP, two threads can race on the same empty
+cluster slot — both see `key == 0`, both increment their per-thread `numberOfEntries`, but
+only one entry persists. This causes a slight overcount in `hashFull()`, bounded to the
+fill-up phase. This is standard Lazy SMP behavior (same as Stockfish) and acceptable for
+a diagnostic metric.
 
 ---
 
@@ -558,23 +576,51 @@ Verify that the `numberOfEntries` counter (incremented on every new entry) isn't
 Depth-down replacements stay below 0.7% at 16T; deep entries (depth≥4) evicted by shallower
 total only 228 out of 36M replacements. Improvement would be marginal.
 
-Current replacement: `depth * 16 - age * 2 + hasMove`. This doesn't account for SMP context. A shallow helper thread entry shouldn't replace a deep entry from any thread.
+Current replacement: `depth * 16 - staleness * 2 + hasMove`. This doesn't account for SMP context. A shallow helper thread entry shouldn't replace a deep entry from any thread.
 
 Consider:
 - Minimum depth threshold for replacement (e.g., never replace an entry with depth >= current search depth - 2)
 - Stockfish-like approach: "don't replace unless depth >= entry.depth - 4"
 
-#### 2b. Generation Counter Instead of Age Increment
-**Impact:** Cleaner age tracking without per-probe writes
+#### 2b. Generation Counter Instead of Age Increment ✅ DONE — Engineering cleanup, ELO-neutral
+**Impact:** Cleaner age tracking without per-probe writes; eliminates legacy code and data race
 **Risk:** Low
 **Effort:** Medium
 
-Currently `ageEntries()` iterates the entire TT at search start (expensive). Instead, use a global generation counter (0-7, 3 bits). New entries are tagged with the current generation. Replacement priority: older generation = more replaceable. No per-probe age decrement needed.
+**Implementation (2026-04-11):** Replaced the old age increment/decrement system with a
+TT-level generation counter (3 bits, 0-7). New entries are stamped with the current generation
+in `put()`. Replacement score uses staleness = `(generation - entry.gen) & 7`: stale entries
+from old searches are cheaper to replace than fresh ones. `newGeneration()` is called once
+at the start of each search — O(1) replaces the expensive full-table `ageEntries()` scan.
 
-This eliminates:
-- The expensive `ageEntries()` scan
-- The age-- in probe() (already disabled under SMP due to data race)
-- One source of shared mutable state
+**What was removed:**
+- `ageEntries()` — expensive parallel scan of entire TT at search start
+- `age--` in `probe()` — was already disabled under SMP due to data race on packed bitfield byte
+- Conditional SMP skip logic (`if (numSmpThreads <= 1)` in probe) — probe is now fully read-only
+- `<cstring>`, `<algorithm>`, `<execution>` includes no longer needed
+
+**What changed:**
+- Entry field renamed: `age` → `gen` (3-bit generation tag, stamped from `TT::generation`)
+- Replacement score formula: `depth * 16 - staleness * 2 + hasMove` (was `depth * 16 - age * 2 + hasMove`)
+- `TT::clear()` resets `generation = 0` to match zeroed entries
+- `probe()` now returns `const TTCluster*` — no writes to entries at all
+- Search calls `tt->newGeneration()` unconditionally (works identically in single-thread and SMP)
+
+**ELO Validation (2026-04-11):** v1.8 (Phase 1+2b+4a) vs v1.7, STC 10+0.1, 500 rounds:
+
+| Threads | Score     | W/D/L       | ELO vs v1.7 | vs Phase 4a baseline |
+|---------|-----------|-------------|-------------|----------------------|
+| 4T      | 61.8%     | 309–191     | **+84**     | −30 (within noise)   |
+| 8T      | 77.7%     | 388.5–111.5 | **+217**    | +17 (within noise)   |
+
+**Assessment:** The generation counter change is **ELO-neutral** — the 4T/8T deltas vs the
+Phase 4a baseline (−30/+17) are within the ~±30 ELO confidence interval for 500 games.
+This was expected: the change is primarily an engineering cleanup that eliminates legacy code
+(the old `ageEntries()` scan predated SMP support) and removes a data race. The old `age--`
+in probe was already disabled under SMP, so the behavioral difference is minimal.
+
+Test suites (v1.8 vs v1.7): +31 positions (+1.0%) — STS +23, ecm98 +11, eigenmann +3, kaufman +1.
+Slight regression in crafty (−6) and wac (−1), within noise.
 
 ---
 
@@ -701,20 +747,20 @@ Detect P-core count (Windows: `GetLogicalProcessorInformationEx`) and default TH
 
 ## 5. Implementation Priority
 
-| Phase | Item                                     | Impact           | Effort | Priority                              |
-|-------|------------------------------------------|------------------|--------|---------------------------------------|
-| 1a    | Per-thread TT stats                      | Medium (NPS)     | Small  | ✅ **Done** (+235%)                    |
-| 1b    | TT layout audit                          | Low-Medium       | Small  | ⬆️ **Do next**                        |
-| 1c    | numberOfEntries thread safety            | Low              | Small  | ⬆️ **Do next**                        |
-| 2b    | Generation counter (replaces ageEntries) | Medium           | Medium | ⬆️ High                               |
-| 4a    | Thread depth differentiation             | Medium (ELO)     | Medium | ✅ **Done** (+114 ELO 4T, +200 ELO 8T) |
-| 2a    | Depth-aware SMP replacement              | Low (per R6)     | Medium | 🔽 Low (R6: not needed)               |
-| 3a    | Richer classical evaluation              | High (ELO + NPS) | Large  | 🔶 Medium (ongoing)                   |
-| 3b    | Memory footprint reduction               | Medium (NPS)     | Medium | 🔶 Medium                             |
-| 3c    | Incremental attack maps                  | Medium (NPS)     | Medium | 🔶 Medium                             |
-| 5a    | P-core thread pinning                    | Low              | Small  | 🔽 Low                                |
-| 5b    | Auto-detect P-core count                 | Low              | Small  | 🔽 Low                                |
-| 4b    | Thread-local TT partitioning             | Unknown          | Large  | 🔽 Research                           |
+| Phase | Item                                     | Impact           | Effort | Priority                               |
+|-------|------------------------------------------|------------------|--------|----------------------------------------|
+| 1a    | Per-thread TT stats                      | Medium (NPS)     | Small  | ✅ **Done** (+235%)                     |
+| 1b    | TT layout audit                          | Low-Medium       | Small  | ✅ **Done** (verified clean)            |
+| 1c    | numberOfEntries thread safety            | Low              | Small  | ✅ **Done** (per-thread via 1a)         |
+| 2b    | Generation counter (replaces ageEntries) | Low (cleanup)    | Medium | ✅ **Done** (ELO-neutral, removes race) |
+| 4a    | Thread depth differentiation             | Medium (ELO)     | Medium | ✅ **Done** (+114 ELO 4T, +200 ELO 8T)  |
+| 2a    | Depth-aware SMP replacement              | Low (per R6)     | Medium | 🔽 Low (R6: not needed)                |
+| 3a    | Richer classical evaluation              | High (ELO + NPS) | Large  | 🔶 Medium (ongoing)                    |
+| 3b    | Memory footprint reduction               | Medium (NPS)     | Medium | 🔶 Medium                              |
+| 3c    | Incremental attack maps                  | Medium (NPS)     | Medium | 🔶 Medium                              |
+| 5a    | P-core thread pinning                    | Low              | Small  | 🔽 Low                                 |
+| 5b    | Auto-detect P-core count                 | Low              | Small  | 🔽 Low                                 |
+| 4b    | Thread-local TT partitioning             | Unknown          | Large  | 🔽 Research                            |
 
 ---
 
@@ -745,8 +791,10 @@ TT::probe is the #1 memory-bound hotspot:
 - Atomic key with XOR verification ✅
 - 16-byte entries (4 per cache line) ✅
 - Copy-on-read pattern for thread safety ✅
+- Generation counter for entry aging (3 bits, O(1) per search) ✅
+- probe() is fully read-only (no writes to entries) ✅
 
-The TT *structure* is solid. The issues are: (1) shared mutable statistics on the hot path, (2) replacement policy not SMP-aware, (3) the fundamental memory-bound nature of classical eval.
+The TT *structure* is solid. The remaining opportunities are: (1) replacement policy SMP-awareness (low priority per R6), (2) the fundamental memory-bound nature of classical eval.
 
 ---
 

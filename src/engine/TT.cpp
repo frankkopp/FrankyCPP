@@ -20,8 +20,6 @@
 #include <bit>
 #include <chrono>
 #include <climits>
-#include <cstring>
-#include <iostream>
 #include <mutex>
 #include <new>
 #include <thread>
@@ -29,9 +27,6 @@
 #include "TT.h"
 #include "common/Logging.h"
 #include "config/ConfigMode.h"
-
-#include <algorithm>
-#include <execution>
 
 using namespace engine;
 using namespace chess;
@@ -41,7 +36,7 @@ std::ostream& operator<<(std::ostream& os, const TT::Entry& entry) {
   os << "key: " << entry.key.load(std::memory_order_relaxed)
      << " depth: " << static_cast<int>(entry.depth)
      << " move: " << entry.move << " value: " << entry.value
-     << " type: " << TT::str(entry.type) << " age: " << static_cast<int>(entry.age);
+     << " type: " << TT::str(entry.type) << " gen: " << static_cast<int>(entry.gen);
   return os;
 }
 
@@ -112,6 +107,10 @@ void TT::clear() {
   // reset statistics
   statsSlots = {};
 
+  // reset generation counter — all entries are zeroed (gen=0), so generation
+  // must also be 0 to avoid treating fresh entries as stale after clear().
+  generation = 0;
+
   const auto finish = high_resolution_clock::now();
   const auto time   = std::chrono::duration_cast<milliseconds>(finish - startTime).count();
   (void) time;
@@ -156,7 +155,7 @@ void TT::put(const ZobristKey key, const Depth depth, const Move move, const Val
         entry.depth = depth;
         entry.value = value;
         entry.type  = type;
-        entry.age   = 1;
+        entry.gen   = generation;
       }
       // preserve existing eval if no valid value is given
       if (eval != VALUE_NONE) {
@@ -175,12 +174,14 @@ void TT::put(const ZobristKey key, const Depth depth, const Move move, const Val
     }
 
     // Track replacement victim: entry with lowest replacement score.
-    // Score formula: depth * 16 - age * 2 + hasMove
-    // Higher depth = more valuable, higher age = less valuable, having move = slightly more valuable.
+    // Score formula: depth * 16 - staleness * 2 + hasMove
+    // where staleness = (generation - entry.gen) & 7 (0 = current gen, 7 = oldest).
+    // Higher depth = more valuable, higher staleness = less valuable, having move = slightly more valuable.
     // Branchless: (move != 0) evaluates to 0 or 1.
     if (storedKey != 0) {
+      const int staleness = (generation - entry.gen) & 7;
       const int score = static_cast<int>(entry.depth) * 16
-                        - static_cast<int>(entry.age) * 2
+                        - staleness * 2
                         + static_cast<int>(entry.move != 0);
       if (score < victimScore) {
         victimScore = score;
@@ -199,7 +200,7 @@ void TT::put(const ZobristKey key, const Depth depth, const Move move, const Val
     emptyEntry->depth = depth;
     emptyEntry->value = value;
     emptyEntry->type  = type;
-    emptyEntry->age   = 1;
+    emptyEntry->gen   = generation;
     emptyEntry->eval  = eval;
     emptyEntry->key.store(key ^ emptyEntry->dataHash(), std::memory_order_release);
     return;
@@ -213,8 +214,9 @@ void TT::put(const ZobristKey key, const Depth depth, const Move move, const Val
 
     // R6 instrumentation: track replacement depth quality
     if constexpr (TT_INSTRUMENTATION) {
-      const int oldDepth = static_cast<int>(victimEntry->depth);
-      const int newDepth = static_cast<int>(depth);
+      // ReSharper disable once CppDFAUnreachableCode
+      const int oldDepth = victimEntry->depth;
+      const int newDepth = depth;
       const int delta    = newDepth - oldDepth;
       instrSlots[threadIdx].replaceDepthDeltaSum += delta;
       instrSlots[threadIdx].replaceVictimDepthSum += static_cast<uint64_t>(oldDepth);
@@ -234,7 +236,7 @@ void TT::put(const ZobristKey key, const Depth depth, const Move move, const Val
     victimEntry->depth = depth;
     victimEntry->value = value;
     victimEntry->type  = type;
-    victimEntry->age   = 1;
+    victimEntry->gen   = generation;
     victimEntry->eval  = eval;
     victimEntry->key.store(key ^ victimEntry->dataHash(), std::memory_order_release);
   }
@@ -247,8 +249,11 @@ std::optional<TT::Entry> TT::probe(const ZobristKey& key, const int threadIdx) {
 #endif
 
   TT_STAT_INC(statsSlots[threadIdx].numberOfProbes);
-  if constexpr (TT_INSTRUMENTATION) { instrSlots[threadIdx].probes++; }
-  TTCluster* const cluster = getCluster(key);
+  if constexpr (TT_INSTRUMENTATION) {
+    // ReSharper disable once CppDFAUnreachableCode
+    instrSlots[threadIdx].probes++;
+  }
+  const TTCluster* const cluster = getCluster(key);
 
   // Scan all entries in the cluster for a key match.
   // XOR verification: storedKey ^ dataHash must equal the original key.
@@ -271,21 +276,10 @@ std::optional<TT::Entry> TT::probe(const ZobristKey& key, const int threadIdx) {
 
       // R6 instrumentation: track hit count and depth
       if constexpr (TT_INSTRUMENTATION) {
+        // ReSharper disable once CppDFAUnreachableCode
         instrSlots[threadIdx].hits++;
         instrSlots[threadIdx].hitDepthSum += static_cast<uint64_t>(copy.depth);
         if (copy.depth == 0) { instrSlots[threadIdx].hitsDepth0++; }
-      }
-
-      // age-- marks the entry as recently used, making it less likely to be evicted
-      // by the replacement policy in put(). Safe in single-thread mode only.
-      // Skipped under SMP (numSmpThreads > 1): age is a bitfield packed in the same
-      // byte as depth/type; a concurrent put() writing that byte is a data race.
-      if (numSmpThreads <= 1) {
-        if (entry.age > 0) {
-          entry.age--;
-          // Re-store key XOR'd with updated data hash after modifying age
-          entry.key.store(key ^ entry.dataHash(), std::memory_order_release);
-        }
       }
 
       return copy;
@@ -293,34 +287,6 @@ std::optional<TT::Entry> TT::probe(const ZobristKey& key, const int threadIdx) {
   }
   TT_STAT_INC(statsSlots[threadIdx].numberOfMisses);
   return std::nullopt;
-}
-
-void TT::ageEntries() {
-  LOG__TRACE(Logger::get().TT_LOG, "Aging TT (std::execution::par_unseq)...");
-  const auto timePoint = high_resolution_clock::now();
-
-  std::for_each(
-    std::execution::par_unseq,
-    _data.get(),
-    _data.get() + maxNumberOfClusters,
-    [](TTCluster& cluster) {
-      for (auto& e : cluster.entries) {
-        const ZobristKey storedKey = e.key.load(std::memory_order_relaxed);
-        if (storedKey == 0) continue;
-        // Recover original key before modifying data
-        const ZobristKey originalKey = storedKey ^ e.dataHash();
-        if (e.age < 7) e.age++;
-        // Re-store key XOR'd with updated data hash
-        e.key.store(originalKey ^ e.dataHash(), std::memory_order_relaxed);
-      }
-    });
-
-  const auto finish = high_resolution_clock::now();
-  const auto time   = std::chrono::duration_cast<milliseconds>(finish - timePoint).count();
-  (void) time;
-  const std::size_t totalEntries = maxNumberOfClusters * CLUSTER_SIZE;
-  LOG__DEBUG(Logger::get().TT_LOG, "TT aged {:L} entries ({:L} clusters) in {:L} ms (policy=par_unseq)",
-             totalEntries, maxNumberOfClusters, time);
 }
 
 std::string TT::str() const {
@@ -336,11 +302,13 @@ std::string TT::str() const {
     s.numberOfMisses, s.numberOfProbes ? (s.numberOfMisses * 100) / s.numberOfProbes : 0);
 }
 
+// ReSharper disable once CppDFAConstantFunctionResult
 std::string TT::instrumentationStr() const {
   if constexpr (!TT_INSTRUMENTATION) {
     return "TT Instrumentation (R6): disabled (set TT::TT_INSTRUMENTATION = true and rebuild)";
   }
   else {
+    // ReSharper disable once CppDFAUnreachableCode
     const auto instr = aggregateInstrumentationStats();
 
     // Hit rate breakdown

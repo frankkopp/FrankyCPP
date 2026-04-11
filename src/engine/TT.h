@@ -34,7 +34,7 @@
 //   - Number of clusters is always a power of two for efficient hash masking
 //   - Bucket design eliminates false sharing across CPU cores under SMP
 //   - 4-way associative: probe scans 4 entries per cluster for matches
-//   - Replacement policy: depth-preferred with age tiebreak
+//   - Replacement policy: depth-preferred with generation-staleness tiebreak
 //   - Struct with bitfields is 9% faster than manual bit manipulation
 //   - Thread-safe key field (std::atomic<ZobristKey>) for Lazy SMP
 //     On x86 acquire/release compiles to plain mov - zero overhead vs non-atomic
@@ -46,7 +46,7 @@
 //   - eval:       16-bit static evaluation
 //   - value:      16-bit search value
 //   - depth:      7-bit search depth (0-127)
-//   - age:        3-bit generation counter (0-7)
+//   - gen:        3-bit generation tag (0-7), stamped from TT::generation on write
 //   - type:       2-bit value type (NONE, EXACT, ALPHA, BETA)
 //   - mateThreat: 1-bit flag
 //
@@ -66,14 +66,20 @@
 //         as tests from Stockfish have shown.
 //
 //   put()  : writes non-key fields first, then key XOR'd with dataHash (release)
+//            Entries are stamped with the current TT generation counter.
 //   probe(): loads key (acquire), copies entry, verifies XOR, returns if valid
 //            The copy may still contain torn data, but XOR verification ensures
 //            it's "self-consistent" - all fields from the same write operation.
-//   age-- in probe(): safe in single-thread mode (default). Skipped under SMP
-//   (numSmpThreads > 1) because it is a read-modify-write on a packed bitfield
-//   byte shared with depth/type - a data race. Behavioral impact is minimal:
-//   same-depth replacement tiebreak slightly more aggressive, deep entries
-//   marginally more vulnerable to eviction. No impact on single-thread behavior.
+//            probe() is fully read-only — no writes to entries (SMP-safe).
+//
+//   Generation counter (replaces the old age increment/decrement system):
+//     A TT-level generation counter (3 bits, 0-7) is incremented once per search.
+//     New entries are stamped with the current generation in put().
+//     Replacement score uses staleness = (generation - entry.gen) & 7:
+//     stale entries are cheaper to replace than fresh ones.
+//     This works identically in single-thread and SMP modes — no per-entry
+//     writes at search start (eliminates the expensive ageEntries() scan) and
+//     no writes in probe() (eliminates the age-- data race under SMP).
 //
 // Usage:
 //   TT tt(64);  // 64 MB table
@@ -84,7 +90,6 @@
 
 #include <array>
 #include <atomic>
-#include <cstring>
 #include <iosfwd>
 #include <mutex>
 #include <optional>
@@ -120,7 +125,7 @@
  * The bucket design provides:
  * - Cache-line alignment eliminates false sharing under SMP
  * - 4-way associativity reduces collision evictions
- * - Depth-preferred + age tiebreak replacement policy
+ * - Depth-preferred + generation-staleness tiebreak replacement policy
  * - Single prefetch loads the entire bucket (4 entries)
  */
 // Forward-declare test classes at global scope so FRIEND_TEST inside namespace engine works
@@ -144,7 +149,7 @@ namespace engine {
     //  Value eval    = VALUE_NONE;// 16 bit signed
     //  Value value   = VALUE_NONE;// 16 bit signed
     //  Depth depth : 7;           // 0-127
-    //  uint8_t age : 3;           // 0-7
+    //  uint8_t gen : 3;           // 0-7 (generation tag, stamped from TT::generation)
     //  ValueType type : 2;        // 4 values
     //  bool mateThreat : 1;       // 1-bit bool
     struct Entry {
@@ -164,7 +169,7 @@ namespace engine {
       Value eval    = VALUE_NONE;     // 16-bit signed
       Value value   = VALUE_NONE;     // 16-bit signed
       uint8_t depth : 7 {};           // 0-127
-      uint8_t age : 3 {};             // 0-7
+      uint8_t gen : 3 {};             // 0-7 (generation tag from TT::generation)
       ValueType type : 2 {};          // 4 values
       bool mateThreat : 1 {};         // 1-bit bool
 
@@ -284,9 +289,17 @@ namespace engine {
     unsigned int noOfThreads = 1;
 
     // Number of active SMP search threads. 1 = single-thread mode (default).
-    // When > 1: probe() skips age-- to avoid a data race on the packed bitfield byte.
+    // Used by aggregateStats() to know how many per-thread slots to sum.
     // Set by Search before each search via setSmpThreads().
     int numSmpThreads = 1;
+
+    // Generation counter for entry aging (3 bits, wraps 0-7).
+    // Incremented once per search via newGeneration(). Entries are stamped with the
+    // current generation in put(). Replacement score computes staleness as
+    // (generation - entry.gen) & 7: stale entries from old searches are cheaper to replace.
+    // This replaces the old ageEntries() full-table scan + age-- in probe() approach.
+    // Thread-safe: written once before search starts, read-only during search.
+    uint8_t generation = 0;
 
     // TT_USE_MUTEX: Optional mutex for debugging TT race conditions.
     // Set to 1 to enable synchronized access (significantly slower).
@@ -354,6 +367,7 @@ namespace engine {
     [[nodiscard]] InstrumentationStats aggregateInstrumentationStats() const {
       InstrumentationStats total{};
       if constexpr (!TT_INSTRUMENTATION) return total;
+      // ReSharper disable once CppDFAUnreachableCode
       const int count = numSmpThreads > 0 ? numSmpThreads : 1;
       for (int i = 0; i < count; ++i) {
         total.replaceDepthDown      += instrSlots[i].replaceDepthDown;
@@ -430,8 +444,7 @@ namespace engine {
     }
 
     /// Probes the TT for an entry matching the key.
-    /// Updates hit/miss statistics. Decreases age of found entry (single-thread mode only;
-    /// skipped under SMP to avoid a data race on the packed bitfield byte).
+    /// Updates hit/miss statistics. Read-only with respect to TT entries (no writes).
     /// Returns a copy of the entry to ensure thread-safety (caller can safely read
     /// the returned data even if another thread overwrites the original entry).
     /// @param key        Position key (usually Zobrist key)
@@ -439,9 +452,12 @@ namespace engine {
     /// @return           Copy of matching entry, or nullopt if not found
     std::optional<Entry> probe(const ZobristKey& key, int threadIdx = 0);
 
-    /// Ages all entries by incrementing their age counter.
-    /// Called at the start of each new search to help with replacement.
-    void ageEntries();
+    /// Advances the generation counter (0-7, wraps).
+    /// Called once at the start of each new search. Entries written by put()
+    /// are stamped with the current generation; the replacement policy computes
+    /// staleness as (generation - entry.gen) & 7, making old entries cheaper to
+    /// replace. O(1) — replaces the expensive full-table ageEntries() scan.
+    void newGeneration() { generation = generation + 1 & 7; }
 
     /// Returns how full the transposition table is in permill (0-1000).
     /// Used for UCI "hashfull" info output.
@@ -479,6 +495,7 @@ namespace engine {
 
     /// Resets R6 instrumentation counters to zero.
     /// Call before a measurement session (e.g., before a bench run).
+    // ReSharper disable once CppMemberFunctionMayBeConst
     void resetInstrumentationStats() { instrSlots = {}; }
 
     /// Returns a formatted R6 instrumentation report.
@@ -552,9 +569,9 @@ namespace engine {
     void setThreads(const int threads) { noOfThreads = threads > 0 ? static_cast<unsigned int>(threads) : 1U; }
 
     /// Sets the number of active SMP search threads.
-    /// When > 1, probe() skips age-- to avoid a data race on the packed bitfield byte.
+    /// Used by aggregateStats() to determine how many per-thread slots to sum.
     /// Call before each search when thread count changes.
-    /// @param threads  Total search threads (1 = single-thread mode, full original behavior)
+    /// @param threads  Total search threads (1 = single-thread mode)
     void setSmpThreads(const int threads) { numSmpThreads = threads > 0 ? threads : 1; }
 
     /// Returns the current SMP thread count setting.
