@@ -727,21 +727,52 @@ Partition TT entries such that threads preferentially write to their own "region
 
 ---
 
-### Phase 5: Hybrid CPU Awareness (Low priority)
+### Phase 5: Hybrid CPU Awareness ❌ Tested — Not Beneficial
 
-#### 5a. Thread Affinity / Core Pinning
-**Impact:** Predictable performance on hybrid CPUs
+#### 5a. Thread Affinity / Core Pinning ❌ TESTED — Hurts Performance
+**Impact:** ~~Predictable performance on hybrid CPUs~~ **Negative — reduces NPS at all thread counts**
 **Risk:** Low
 **Effort:** Small (platform-specific)
 
-On Windows, use `SetThreadAffinityMask` to pin search threads to P-cores only. This ensures all threads run at maximum performance and prevents E-core TT pollution.
+**Implementation (2026-04-11):** Built `CoreTopology` library (`src/common/CoreTopology.h/.cpp`) that
+detects hybrid CPU topology via `GetLogicalProcessorInformationEx` (Windows) with `EfficiencyClass`.
+Integrated `SetThreadAffinityMask` to pin main + helper search threads to P-core logical processors.
+Exposed as `USE_PCORE_AFFINITY` UCI option (default false).
 
-#### 5b. Auto-Detect Optimal Thread Count
-**Impact:** Better out-of-box experience
+**Bench Results (i9-13900KF, depth 12, 32 MB hash):**
+
+| Threads | Pin ON NPS  | Pin OFF NPS | Pin ON Scaling | Pin OFF Scaling | Difference |
+|---------|-------------|-------------|----------------|-----------------|------------|
+| 1       | 2,452,210   | 2,489,846   | 1.00×          | 1.00×           | −1.5%      |
+| 4       | 8,281,875   | 8,969,639   | 3.38×          | 3.60×           | −7.7%      |
+| 8       | 15,256,501  | 16,706,823  | 6.22×          | 6.71×           | −8.7%      |
+| 12      | 18,034,593  | 19,363,663  | 7.35×          | 7.78×           | −7.0%      |
+| 16      | 19,291,566  | 21,266,851  | 7.87×          | 8.54×           | −9.3%      |
+
+**Why it hurts:** On i9-13900KF with 8 P-cores / 16 HT logical processors:
+- The P-core affinity mask includes HT siblings (16 logical processors).
+- With ≥9 threads, multiple search threads share the same physical P-core via HT, competing
+  for L1/L2 cache and execution resources. Without pinning, the OS can spread threads to
+  E-cores which, while slower individually, provide dedicated cache and execution units.
+- Even at ≤8 threads, `SetThreadAffinityMask` constrains the OS scheduler's flexibility for
+  turbo boost optimization and thermal management, resulting in slightly lower clocks.
+- The OS thread scheduler is already good at placing threads on available cores.
+
+**Conclusion:** P-core pinning with a simple mask (all P-core logical processors) is a net negative.
+A more sophisticated approach (pin one thread per *physical* P-core, avoiding HT siblings) would
+require significantly more complexity and is not worth pursuing. Code was implemented and tested
+but **not merged** — stashed for reference.
+
+#### 5b. Auto-Detect Optimal Thread Count — Not Pursued
+**Impact:** Low — default THREADS=4 is a safe conservative choice
 **Risk:** Low
 **Effort:** Small
 
-Detect P-core count (Windows: `GetLogicalProcessorInformationEx`) and default THREADS to P-core count rather than total logical processors.
+The `CoreTopology` library was built and tested (detects P-core vs E-core counts, provides
+`recommendedThreads()` for THREADS=0 auto-detect). However, auto-detecting P-core count on
+hybrid CPUs and using all P-core logical processors (16 on i9-13900KF) as default is excessive.
+A fixed default of 4 threads works well across all hardware. Users can explicitly set THREADS
+via UCI if they want more. **Not merged** — stashed with 5a.
 
 ---
 
@@ -758,8 +789,8 @@ Detect P-core count (Windows: `GetLogicalProcessorInformationEx`) and default TH
 | 3a    | Richer classical evaluation              | High (ELO + NPS) | Large  | 🔶 Medium (ongoing)                    |
 | 3b    | Memory footprint reduction               | Medium (NPS)     | Medium | 🔶 Medium                              |
 | 3c    | Incremental attack maps                  | Medium (NPS)     | Medium | 🔶 Medium                              |
-| 5a    | P-core thread pinning                    | Low              | Small  | 🔽 Low                                 |
-| 5b    | Auto-detect P-core count                 | Low              | Small  | 🔽 Low                                 |
+| 5a    | P-core thread pinning                    | **Negative**     | Small  | ❌ **Tested** (hurts NPS, not merged)   |
+| 5b    | Auto-detect P-core count                 | Low              | Small  | ⏭️ **Not pursued** (stashed with 5a)    |
 | 4b    | Thread-local TT partitioning             | Unknown          | Large  | 🔽 Research                            |
 
 ---
