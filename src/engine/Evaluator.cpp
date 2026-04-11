@@ -118,11 +118,11 @@ EvalTrace Evaluator::evaluateTrace(const Position& p) {
     attackedBy[BLACK] = Bitboards::nonSliderAttacks[KING][p.getKingSquare(BLACK)];
     attackedByPT[KING][WHITE] = attackedBy[WHITE];
     attackedByPT[KING][BLACK] = attackedBy[BLACK];
-    Bitboard wp = p.getPieceBb(WHITE, PAWN);
-    while (wp) { attackedByPT[PAWN][WHITE] |= Bitboards::pawnAttacks[WHITE][wp.popLSB()]; }
+    const Bitboard wp = p.getPieceBb(WHITE, PAWN);
+    attackedByPT[PAWN][WHITE] = wp.shifted(NORTH_EAST) | wp.shifted(NORTH_WEST);
     attackedBy[WHITE] |= attackedByPT[PAWN][WHITE];
-    Bitboard bp = p.getPieceBb(BLACK, PAWN);
-    while (bp) { attackedByPT[PAWN][BLACK] |= Bitboards::pawnAttacks[BLACK][bp.popLSB()]; }
+    const Bitboard bp = p.getPieceBb(BLACK, PAWN);
+    attackedByPT[PAWN][BLACK] = bp.shifted(SOUTH_EAST) | bp.shifted(SOUTH_WEST);
     attackedBy[BLACK] |= attackedByPT[PAWN][BLACK];
   }
 
@@ -271,11 +271,11 @@ Value Evaluator::evaluate(const Position& p) {
     attackedByPT[KING][BLACK] = attackedBy[BLACK];
 
     // Pawn attacks
-    Bitboard wp = p.getPieceBb(WHITE, PAWN);
-    while (wp) { attackedByPT[PAWN][WHITE] |= Bitboards::pawnAttacks[WHITE][wp.popLSB()]; }
+    const Bitboard wp = p.getPieceBb(WHITE, PAWN);
+    attackedByPT[PAWN][WHITE] = wp.shifted(NORTH_EAST) | wp.shifted(NORTH_WEST);
     attackedBy[WHITE] |= attackedByPT[PAWN][WHITE];
-    Bitboard bp = p.getPieceBb(BLACK, PAWN);
-    while (bp) { attackedByPT[PAWN][BLACK] |= Bitboards::pawnAttacks[BLACK][bp.popLSB()]; }
+    const Bitboard bp = p.getPieceBb(BLACK, PAWN);
+    attackedByPT[PAWN][BLACK] = bp.shifted(SOUTH_EAST) | bp.shifted(SOUTH_WEST);
     attackedBy[BLACK] |= attackedByPT[PAWN][BLACK];
   }
 
