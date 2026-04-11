@@ -1,9 +1,9 @@
 # FrankyCPP — Code Simplification & Cleanup Plan
 
-**Document Version:** 2.2
+**Document Version:** 2.3
 **Created:** 2026-04-11
 **Last updated:** 2026-04-11
-**Status:** 📋 IN PROGRESS (S1 ✅, S2 ✅, S11 ✅, S20 ✅ via S1)
+**Status:** 📋 IN PROGRESS (S1 ✅, S2 ✅, S11 ✅, S20 ✅ via S1, S22 ✅)
 **Scope:** `src/engine/`, `src/chesscore/`, `src/tablebase/`, `src/types/`
 
 ---
@@ -85,7 +85,7 @@ Existing test files relevant to this plan:
 | S19 | History decay: allow negative values            | CHESS_PATTERN | HIGH     | 🟢 15 min  | 🟡 Med | ⚠️ Needs Elo test              | —      |
 | S20 | `passedPawns[]` fallback duplication            | REDUNDANCY    | MEDIUM   | 🟢 15 min  | 🟢 Low | ✅ Eval tests + bench           | ✅ S1   |
 | S21 | Beta-cut stats block duplication                | REDUNDANCY    | MEDIUM   | 🟢 30 min  | 🟢 Low | ✅ Bench (stats only)           | —      |
-| S22 | `EVAL_PREFETCH` inconsistency search vs qsearch | PERFORMANCE   | HIGH     | 🟢 5 min   | 🟢 Low | ✅ Bench (no behavioral change) | —      |
+| S22 | `EVAL_PREFETCH` inconsistency search vs qsearch | PERFORMANCE   | HIGH     | 🟢 5 min   | 🟢 Low | ✅ Bench (no behavioral change) | ✅      |
 | S23 | `pieceEval` switch unreachable default          | DEAD_CODE     | LOW      | 🟢 5 min   | 🟢 Low | ✅ Eval tests + bench           | —      |
 | S24 | `relRank` computation duplication               | REDUNDANCY    | LOW      | 🟢 30 min  | 🟢 Low | ✅ Eval tests + bench           | —      |
 | S25 | `Evaluator::reset()` is empty                   | DEAD_CODE     | LOW      | 🟢 5 min   | 🟢 Low | ✅ Trivial removal              | —      |
@@ -418,19 +418,25 @@ Automatically resolved when S1 merges `evaluate()`/`evaluateTrace()` into `evalu
 
 ---
 
-### S22: `EVAL_PREFETCH` inconsistency
+### S22: ✅ `EVAL_PREFETCH` inconsistency
 
+**Status:** ✅ COMPLETE
 **File:** `src/engine/Search.cpp` (line 1940 vs line 2290)
 **Category:** PERFORMANCE — **Severity:** HIGH — **Confidence:** HIGH
 
 **Problem:** `EVAL_PREFETCH` commented out in `search()` but active in `qsearch()`.
 
-**Solution:** Enable in both (recommended) or document why disabled.
+**Solution:** Enabled `EVAL_PREFETCH` in `search()` to match `qsearch()`. The prefetch hides
+pawn TT latency for the child node's `evaluate()` call at line 1490 (static eval used for
+pruning decisions: NMP, futility, razoring). Despite some wasted prefetches (TT cuts, cached
+eval, check positions), benchmarking showed a net positive effect.
 
-**Risk:** Low — prefetch is a hint with no behavioral effect.
+**Benchmark result** (`--bench --threads 1`, 50 positions):
+- Before: ~2,482 kNPS (15.43s)
+- After:  ~2,528 kNPS (15.15s)
+- **Delta: +1.8% NPS improvement**, bench signature unchanged.
 
-**Test coverage:** ✅ No behavioral change — bench is sufficient. Performance can be measured
-via `--bench` timing comparison. No additional tests needed.
+**Risk:** None — prefetch is a CPU hint with no behavioral effect.
 
 ---
 
@@ -483,7 +489,7 @@ Quick wins (🟢 5–15 min) are grouped together for batch implementation.
 
 ### Phase 1 — Performance wins
 1. ~~**S11** — Bulk pawn attacks~~ ✅ COMPLETE
-2. **S22** — Enable EVAL_PREFETCH in search
+2. ~~**S22** — Enable EVAL_PREFETCH in search~~ ✅ COMPLETE (+1.8% NPS)
 3. **S12** — King safety dedup + precompute enemyKingZone
 
 ### Phase 2 — Quick wins (batch these)
@@ -521,9 +527,15 @@ Quick wins (🟢 5–15 min) are grouped together for batch implementation.
 For each item:
 - [ ] Pre-implementation: check test coverage column — write tests first if ⚠️
 - [ ] Bench signature unchanged (`--bench --threads 1`) — except S19
+- [ ] NPS within reference range (see below) — run multiple times, noise is ~40–50 kNPS
 - [ ] All unit tests pass (excluding speed/timing tests)
 - [ ] No new compiler warnings
 - [ ] Code review: readability improved, not degraded
+
+**NPS Reference** (`--bench --threads 1`, 50 positions, Windows/MSVC Release):
+- Expected range: **2,500–2,540 kNPS** (measured 2026-04-11 after S22)
+- Noise: ±40–50 kNPS between runs — always measure several times in a row
+- A sustained drop below 2,450 kNPS indicates a performance regression
 
 ---
 

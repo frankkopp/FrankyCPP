@@ -1937,7 +1937,7 @@ Value Search::search(Position& p, const Depth depth, const Depth ply, Value alph
     // if available on platform tells the cpu to
     // prefetch the tt data into cpu caches
     TT_PREFETCH;
-    // EVAL_PREFETCH;
+    EVAL_PREFETCH;
 
     // we only count legal moves
     thread().nodesVisited++;
