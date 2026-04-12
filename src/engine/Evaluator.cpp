@@ -402,8 +402,7 @@ inline void Evaluator::pawnEval(const Position& p, Score& s) {
     }
 
     // accumulate signed by color
-    tmpScore.midgame += static_cast<Value>(midvalue * color.sign());
-    tmpScore.endgame += static_cast<Value>(endvalue * color.sign());
+    addSigned(tmpScore, midvalue, endvalue, color.sign());
     //    LOG__DEBUG(Logger::get().EVAL_LOG, "Raw pawn eval for {} results midvalue = {} and endvalue = {}", color ? "BLACK" : "WHITE", midvalue, endvalue);
   } // color loop
 
@@ -448,8 +447,7 @@ inline void Evaluator::pieceEval(const Position& p, Score& s, const Color us, co
 
       // bonus for a pair
       if (EvalConfig.USE_BISHOP_PAIR_BONUS && pieceBb.popcount() > 1) {
-        s.midgame += static_cast<Value>(static_cast<int>(EvalConfig.BISHOP_PAIR_MID_BONUS) * us.sign());
-        s.endgame += static_cast<Value>(static_cast<int>(EvalConfig.BISHOP_PAIR_END_BONUS) * us.sign());
+        addSigned(s, EvalConfig.BISHOP_PAIR_MID_BONUS, EvalConfig.BISHOP_PAIR_END_BONUS, us.sign());
       }
 
       // loop through all bishops of this color
@@ -501,8 +499,7 @@ inline void Evaluator::knightEval(const Position& p, Score& s, const Color us, C
     }
     // No LEQ2 threshold — Texel tuning zeroed it (Phase 9). Only LEQ1 has signal.
 
-    s.midgame += static_cast<Value>(mid * us.sign());
-    s.endgame += static_cast<Value>(end * us.sign());
+    addSigned(s, mid, end, us.sign());
   }
 
   // Knight outpost: bonus for knight on a square (ranks 4-6 relative) that
@@ -525,12 +522,10 @@ inline void Evaluator::knightEval(const Position& p, Score& s, const Color us, C
         // A pawn of our color supports sq if it's diagonally behind sq
         const Bitboard pawnSupport = Bitboards::pawnAttacks[them][sq]; // squares where our pawn would be to attack sq
         if (myPawns & pawnSupport) {
-          s.midgame += static_cast<Value>(EvalConfig.KNIGHT_OUTPOST_SUPPORTED_MID * us.sign());
-          s.endgame += static_cast<Value>(EvalConfig.KNIGHT_OUTPOST_SUPPORTED_END * us.sign());
+          addSigned(s, EvalConfig.KNIGHT_OUTPOST_SUPPORTED_MID, EvalConfig.KNIGHT_OUTPOST_SUPPORTED_END, us.sign());
         }
         else {
-          s.midgame += static_cast<Value>(EvalConfig.KNIGHT_OUTPOST_UNSUPPORTED_MID * us.sign());
-          s.endgame += static_cast<Value>(EvalConfig.KNIGHT_OUTPOST_UNSUPPORTED_END * us.sign());
+          addSigned(s, EvalConfig.KNIGHT_OUTPOST_UNSUPPORTED_MID, EvalConfig.KNIGHT_OUTPOST_UNSUPPORTED_END, us.sign());
         }
       }
     }
@@ -562,8 +557,7 @@ inline void Evaluator::bishopEval(const Position& p, Score& s, const Color us, C
       end += EvalConfig.BISHOP_LOW_MOBILITY_LEQ3_END;
     }
 
-    s.midgame += static_cast<Value>(mid * us.sign());
-    s.endgame += static_cast<Value>(end * us.sign());
+    addSigned(s, mid, end, us.sign());
   }
 
   // Bad bishop per-pawn penalty: REMOVED — Texel tuning zeroed both MID and END
@@ -663,10 +657,7 @@ inline void Evaluator::rookEval(const Position& p, Score& s, const Color us, con
     kingAttackWeight[them] += EvalConfig.KING_ATTACK_WEIGHT_ROOK;
   }
 
-  if (mid || end) {
-    s.midgame += static_cast<Value>(mid * us.sign());
-    s.endgame += static_cast<Value>(end * us.sign());
-  }
+  addSigned(s, mid, end, us.sign());
 }
 
 inline void Evaluator::queenEval(const Position& p, Score& s, const Color us, const Color them, const Square sq) {
@@ -702,10 +693,7 @@ inline void Evaluator::queenEval(const Position& p, Score& s, const Color us, co
     kingAttackWeight[them] += EvalConfig.KING_ATTACK_WEIGHT_QUEEN;
   }
 
-  if (mid || end) {
-    s.midgame += static_cast<Value>(mid * us.sign());
-    s.endgame += static_cast<Value>(end * us.sign());
-  }
+  addSigned(s, mid, end, us.sign());
 }
 
 inline void Evaluator::kingEval(const Position& p, Score& s, const Color us) const {
@@ -846,8 +834,7 @@ inline void Evaluator::kingEval(const Position& p, Score& s, const Color us) con
     }
   }
 
-  s.midgame += static_cast<Value>(mid * us.sign());
-  s.endgame += static_cast<Value>(end * us.sign());
+  addSigned(s, mid, end, us.sign());
 }
 
 inline void Evaluator::threatEval(const Position& p, Score& s, const Color us) const {
@@ -898,10 +885,7 @@ inline void Evaluator::threatEval(const Position& p, Score& s, const Color us) c
     end += hangingCount * EvalConfig.THREAT_HANGING_END;
   }
 
-  if (mid || end) {
-    s.midgame += static_cast<Value>(mid * us.sign());
-    s.endgame += static_cast<Value>(end * us.sign());
-  }
+  addSigned(s, mid, end, us.sign());
 }
 
 inline void Evaluator::coordinationEval(const Position& p, Score& s, const Color us) const {
@@ -947,8 +931,5 @@ inline void Evaluator::coordinationEval(const Position& p, Score& s, const Color
     end += connections * EvalConfig.MINOR_CONNECTIVITY_END_BONUS;
   }
 
-  if (mid || end) {
-    s.midgame += static_cast<Value>(mid * us.sign());
-    s.endgame += static_cast<Value>(end * us.sign());
-  }
+  addSigned(s, mid, end, us.sign());
 }

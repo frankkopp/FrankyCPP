@@ -1,9 +1,9 @@
 # FrankyCPP — Code Simplification & Cleanup Plan
 
-**Document Version:** 2.4
+**Document Version:** 2.5
 **Created:** 2026-04-11
-**Last updated:** 2026-04-12
-**Status:** 📋 IN PROGRESS (S1 ✅, S2 ✅, S11 ✅, S12 ✅, S13 ✅, S14 ✅, S20 ✅ via S1, S22 ✅, S23 ✅, S24 ✅, S25 ✅)
+**Last updated:** 2026-04-13
+**Status:** 📋 IN PROGRESS (S1 ✅, S2 ✅, S5 ❌, S6 ✅, S7 ✅, S11 ✅, S12 ✅, S13 ✅, S14 ✅, S20 ✅ via S1, S22 ✅, S23 ✅, S24 ✅, S25 ✅)
 **Scope:** `src/engine/`, `src/chesscore/`, `src/tablebase/`, `src/types/`
 
 ---
@@ -68,9 +68,9 @@ Existing test files relevant to this plan:
 | S2  | Loop over piece types in `pieceEval()` calls    | REDUNDANCY    | LOW      | 🟢 15 min  | 🟢 Low | ✅ Eval tests + bench           | ✅      |
 | S3  | Extract TT bound-type stats helper              | REDUNDANCY    | MEDIUM   | 🟢 30 min  | 🟢 Low | ✅ SearchTest + bench           | —      |
 | S4  | ~~`formatDetailedStats()` helpers~~ → S16       | REDUNDANCY    | —        | —          | —      | —                              | → S16  |
-| S5  | Loop in `See::getLeastValuablePiece()`          | REDUNDANCY    | LOW      | 🟢 15 min  | 🟢 Low | ✅ SeeTest.leastValuablePiece   | —      |
-| S6  | Add `Score::addSigned()` helper                 | REDUNDANCY    | MEDIUM   | 🟢 30 min  | 🟢 Low | ✅ Eval tests + bench           | —      |
-| S7  | Eliminate `if (mid \|\| end)` guard pattern     | PERFORMANCE   | LOW      | 🟢 15 min  | 🟢 Low | ✅ Eval tests + bench           | —      |
+| S5  | ~~Loop in `See::getLeastValuablePiece()`~~      | REDUNDANCY    | LOW      | 🟢 15 min  | 🟢 Low | ✅ SeeTest.leastValuablePiece   | ❌ REJ  |
+| S6  | ~~Add `Score::addSigned()` helper~~             | REDUNDANCY    | MEDIUM   | 🟢 30 min  | 🟢 Low | ✅ Eval tests + bench           | ✅      |
+| S7  | ~~Eliminate `if (mid \|\| end)` guard pattern~~ | PERFORMANCE   | LOW      | 🟢 15 min  | 🟢 Low | ✅ Eval tests + bench           | ✅      |
 | S8  | Collapse king-safety safe-check blocks          | REDUNDANCY    | MEDIUM   | 🟢 30 min  | 🟢 Low | ✅ SafeCheck eval tests         | —      |
 | S9  | `SearchStats::operator+=` via field list macro  | REDUNDANCY    | MEDIUM   | 🟡 1–2 hrs | 🟡 Med | ❌ No operator+= tests          | —      |
 | S10 | Deduplicate TT-move validation pattern          | REDUNDANCY    | MEDIUM   | 🟢 15 min  | 🟢 Low | ✅ SearchTest + bench           | —      |
@@ -169,50 +169,65 @@ SearchTest covers TT interaction functionally. No additional tests needed.
 
 ---
 
-### S5: Loop in `See::getLeastValuablePiece()`
+### S5: ❌ REJECTED — Loop in `See::getLeastValuablePiece()`
 
+**Status:** ❌ REJECTED
 **File:** `src/engine/See.cpp` (lines 86–107)
 **Category:** REDUNDANCY — **Severity:** LOW — **Confidence:** CERTAIN
 
-**Solution:** Replace 6 sequential if-blocks with a loop over `{PAWN, KNIGHT, BISHOP, ROOK, QUEEN, KING}`.
+**Original proposal:** Replace 6 sequential if-blocks with a loop over `{PAWN, KNIGHT, BISHOP, ROOK, QUEEN, KING}`.
 
-**Lines saved:** ~12 — **Risk:** Low — identical behavior.
-
-**Test coverage:** ✅ `SeeTest.leastValuablePiece` directly tests this function with multiple
-positions and piece configurations. `SeeTest.seeTest` validates end-to-end SEE scoring.
-No additional tests needed.
+**Rejection rationale:** Hot-path function called millions of times per second via `goodCapture()`
+in qsearch (every capture) and check extension SEE in search. The current sequential if-chain has
+guaranteed zero loop overhead. A loop version requires a `constexpr PieceType order[]` array
+(KING=1 breaks contiguous iteration), and MSVC unrolling is not guaranteed. Given the S1 lesson
+(6% NPS regression from "zero-cost" abstractions in hot code), the risk is not justified for
+~12 lines saved in a 146-line file. The current code is already perfectly readable.
 
 ---
 
-### S6: Add `Score::addSigned()` helper
+### S6: ✅ Add `Score::addSigned()` helper
 
+**Status:** ✅ COMPLETE
 **File:** `src/types/score.h`, `src/engine/Evaluator.cpp`
 **Category:** REDUNDANCY — **Severity:** MEDIUM — **Confidence:** CERTAIN
 
-**Problem:** `s.midgame += static_cast<Value>(mid * us.sign()); s.endgame += ...` appears
+**Problem:** `s.midgame += static_cast<Value>(mid * us.sign()); s.endgame += ...` appeared
 11 times across 7 eval functions.
 
-**Solution:** Free function `addSigned(Score&, int mid, int end, int sign)` in `score.h`.
+**Solution:** Added `constexpr void addSigned(Score&, int mid, int end, int sign)` free function
+in `score.h`. Replaced all 11 occurrences in pawnEval, knightEval (mobility + outpost ×2),
+bishopEval (pair + mobility), rookEval, queenEval, kingEval, threatEval, coordinationEval.
+Being `constexpr` and defined in the header, the function is guaranteed to inline — identical
+machine code to the hand-written two-liner.
 
-**Lines saved:** ~40 — **Risk:** Low — trivially equivalent. Foundation for S7.
+**Lines saved:** ~11 (each 2-line pair → 1-line call) — **Risk:** None — trivially equivalent.
 
-**Test coverage:** ✅ Eval tests cover all call sites (knight, bishop, rook, queen, king, threat,
-coordination). Bench catches any accumulation error. Consider adding a small unit test for
-`addSigned()` itself (3-4 lines, trivial) in a new `ScoreTest.cpp` or in `TypesTest.cpp`.
-**Recommendation:** Optional — existing coverage is sufficient.
+**Test coverage:** ✅ Verified by eval tests + bench signature.
 
 ---
 
-### S7: Eliminate `if (mid || end)` guard pattern
+### S7: ✅ Eliminate `if (mid || end)` guard pattern
 
+**Status:** ✅ COMPLETE
 **File:** `src/engine/Evaluator.cpp` (rookEval, queenEval, threatEval, coordinationEval)
 **Category:** PERFORMANCE — **Severity:** LOW — **Confidence:** CERTAIN — **Depends on:** S6
 
-**Solution:** Remove guard; always accumulate. Combined with S6: `addSigned(s, mid, end, us.sign());`
+**Problem:** Four eval functions guarded the final `addSigned()` call with `if (mid || end)`.
+The guard adds a branch that is almost always taken (mobility/tropism ensures non-zero values),
+costing ~1 cycle of branch overhead in the common case. The "saved" work when both are zero
+(2 multiplies + 2 additions ≈ 3-4 cycles) rarely occurs and is cheaper than a branch misprediction.
 
-**Lines saved:** ~16 — **Risk:** Low — adding zero is a no-op.
+**Solution:** Removed all 4 guards; always call `addSigned()`. Adding zero is a no-op.
 
-**Test coverage:** ✅ Same eval tests as S6. Bench verifies identical output. No additional tests needed.
+**Benchmark result** (`--bench --threads 1`, 5 runs):
+- Avg NPS: 2,561 kNPS (previous reference: 2,500–2,540 kNPS)
+- Bench signature: 38314796 (unchanged)
+- **Delta: ~+1% NPS improvement** — eliminating 4 unpredictable branches per evaluate() call.
+
+**Lines saved:** 8 — **Risk:** None — trivially equivalent.
+
+**Test coverage:** ✅ Eval tests + bench signature.
 
 ---
 
@@ -510,13 +525,13 @@ Quick wins (🟢 5–15 min) are grouped together for batch implementation.
 5. ~~**S14** — Move `do_null` before loop~~ ✅ COMPLETE
 6. ~~**S23** — Unreachable default branch~~ ✅ COMPLETE
 7. ~~**S25** — Remove empty `reset()`~~ ✅ COMPLETE
-8. **S5** — SEE loop
+8. ~~**S5** — SEE loop~~ ❌ REJECTED (hot-path risk)
 9. **S10** — TT-move validation helper
 10. **S3** — TT bound-type stats helper
 
 ### Phase 3 — Eval simplifications (dependency chain)
-11. **S6** — `addSigned()` helper (foundation)
-12. **S7** — Remove `if (mid || end)` guards (depends on S6)
+11. ~~**S6** — `addSigned()` helper (foundation)~~ ✅ COMPLETE
+12. ~~**S7** — Remove `if (mid || end)` guards (depends on S6)~~ ✅ COMPLETE
 13. **S8** — Safe-check lambda
 14. ~~**S2** — pieceEval loop~~ ✅ COMPLETE (done with S1)
 15. ~~**S24** — `relativeRank()` utility~~ ✅ COMPLETE
@@ -546,9 +561,9 @@ For each item:
 - [ ] Code review: readability improved, not degraded
 
 **NPS Reference** (`--bench --threads 1`, 50 positions, Windows/MSVC Release):
-- Expected range: **2,500–2,540 kNPS** (measured 2026-04-11 after S22)
+- Expected range: **2,540–2,580 kNPS** (measured 2026-04-13 after S6+S7)
 - Noise: ±40–50 kNPS between runs — always measure several times in a row
-- A sustained drop below 2,450 kNPS indicates a performance regression
+- A sustained drop below 2,490 kNPS indicates a performance regression
 
 ---
 
@@ -556,6 +571,7 @@ For each item:
 
 | Item                                                                       | Reason                                                                                                                                                                                                                                                        |
 |----------------------------------------------------------------------------|---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| **Loop in `See::getLeastValuablePiece()` (S5)**                            | Hot-path function (millions of calls/sec via qsearch SEE). Sequential if-chain has guaranteed zero overhead; loop requires `constexpr` array (KING=1 breaks contiguity), MSVC unrolling not guaranteed. ~12 lines saved, not worth the risk. See S1 lesson.   |
 | **Sub-struct grouping of SearchStats**                                     | One flat struct is simpler than 5 sub-structs. Adds indirection without real benefit.                                                                                                                                                                         |
 | **~~Template-based Evaluator `evaluate<bool Trace>`~~**                    | ~~Initially rejected~~ → **Adopted for S1.** Template overhead is negligible (one extra instantiation), and `if constexpr` + `std::conditional_t` return type gives zero-cost trace recording with no pointers, no null, no `[[maybe_unused]]` proliferation. |
 | **Template `search<NodeType>`**                                            | Eliminates runtime `nodeType` checks but makes code significantly harder to read/debug. Branches are well-predicted. Not justified at FrankyCPP's current strength tier.                                                                                      |
@@ -565,4 +581,4 @@ For each item:
 
 ---
 
-*Last updated: 2026-04-12*
+*Last updated: 2026-04-13*

@@ -97,6 +97,13 @@ namespace chess {
     return lhs;
   }
 
+  /// Accumulate midgame/endgame values with a color sign multiplier.
+  /// Common pattern in evaluation: `s.midgame += mid * sign; s.endgame += end * sign;`
+  constexpr void addSigned(Score& s, const int mid, const int end, const int sign) {
+    s.midgame += static_cast<Value>(mid * sign);
+    s.endgame += static_cast<Value>(end * sign);
+  }
+
 } // namespace chess
 
 #endif // FRANKYCPP_SCORE_H
