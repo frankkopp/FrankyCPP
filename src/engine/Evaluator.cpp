@@ -365,7 +365,7 @@ inline void Evaluator::pawnEval(const Position& p, Score& s) {
       while (passedCopy) {
         const Square psq = passedCopy.popLSB();
         // relative rank: for White rank is 0-based (RANK_1=0), for Black mirror it
-        const int relRank = color == WHITE ? static_cast<int>(psq.rank()) : 7 - static_cast<int>(psq.rank());
+        const int relRank = relativeRank(color, psq);
         // flat bonus per passed pawn
         midvalue += EvalConfig.PASSED_PAWN_MID_WEIGHT;
         endvalue += EvalConfig.PASSED_PAWN_END_WEIGHT;
@@ -393,7 +393,7 @@ inline void Evaluator::pawnEval(const Position& p, Score& s) {
       Bitboard advancedNonPassed = myPawns & ~passed;
       while (advancedNonPassed) {
         const Square asq  = advancedNonPassed.popLSB();
-        const int relRank = color == WHITE ? static_cast<int>(asq.rank()) : 7 - static_cast<int>(asq.rank());
+        const int relRank = relativeRank(color, asq);
         if (relRank >= 4 && relRank <= 7) {
           midvalue += EvalConfig.PAWN_ADVANCE_MID_BONUS[relRank - 4];
           endvalue += EvalConfig.PAWN_ADVANCE_END_BONUS[relRank - 4];
@@ -474,7 +474,12 @@ inline void Evaluator::pieceEval(const Position& p, Score& s, const Color us, co
       }
       break;
     default:
-      break;
+      // pieceEval is only called for KNIGHT..QUEEN — other types are unreachable
+#if defined(_MSC_VER)
+      __assume(false);
+#else
+      __builtin_unreachable();
+#endif
   }
 }
 
@@ -504,7 +509,7 @@ inline void Evaluator::knightEval(const Position& p, Score& s, const Color us, C
   // cannot be attacked by enemy pawns. Extra bonus if supported by own pawn.
   if (EvalConfig.USE_KNIGHT_OUTPOST) {
     const Color them  = ~us;
-    const int relRank = us == WHITE ? static_cast<int>(sq.rank()) : 7 - static_cast<int>(sq.rank());
+    const int relRank = relativeRank(us, sq);
     if (relRank >= 3 && relRank <= 5) { // ranks 4-6 (0-based: 3-5)
       // Check if any enemy pawn can attack this square.
       // Enemy pawn attacks this square if an enemy pawn is on an adjacent file
@@ -612,7 +617,7 @@ inline void Evaluator::rookEval(const Position& p, Score& s, const Color us, con
 
   // Rook on 7th rank bonus (relative: rank 7 for White, rank 2 for Black)
   if (EvalConfig.USE_ROOK_7TH_RANK_BONUS) {
-    const int relRank = us == WHITE ? static_cast<int>(sq.rank()) : 7 - static_cast<int>(sq.rank());
+    const int relRank = relativeRank(us, sq);
     if (relRank == 6) { // RANK_7 = 6 (0-based)
       mid += EvalConfig.ROOK_7TH_RANK_MID_BONUS;
       end += EvalConfig.ROOK_7TH_RANK_END_BONUS;
@@ -743,7 +748,7 @@ inline void Evaluator::kingEval(const Position& p, Score& s, const Color us) con
     while (stormPawns) {
       const Square psq = stormPawns.popLSB();
       // Relative rank from our perspective: how close is this pawn to our back rank
-      const int relRank = us == WHITE ? static_cast<int>(psq.rank()) : 7 - static_cast<int>(psq.rank());
+      const int relRank = relativeRank(us, psq);
       // relRank uses "our" perspective: rank 4+ means the pawn is deep in our territory
       // For White: enemy pawns on rank 4 (our rank 4) = rel 3 from Black's view, but from White's
       // perspective it's "enemy approaching". We reverse: the threat rank from our side is (7 - relRank).

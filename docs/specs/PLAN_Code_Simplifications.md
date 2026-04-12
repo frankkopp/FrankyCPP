@@ -3,7 +3,7 @@
 **Document Version:** 2.4
 **Created:** 2026-04-11
 **Last updated:** 2026-04-12
-**Status:** 📋 IN PROGRESS (S1 ✅, S2 ✅, S11 ✅, S12 ✅, S13 ✅, S14 ✅, S20 ✅ via S1, S22 ✅)
+**Status:** 📋 IN PROGRESS (S1 ✅, S2 ✅, S11 ✅, S12 ✅, S13 ✅, S14 ✅, S20 ✅ via S1, S22 ✅, S23 ✅, S24 ✅, S25 ✅)
 **Scope:** `src/engine/`, `src/chesscore/`, `src/tablebase/`, `src/types/`
 
 ---
@@ -86,9 +86,9 @@ Existing test files relevant to this plan:
 | S20 | `passedPawns[]` fallback duplication            | REDUNDANCY    | MEDIUM   | 🟢 15 min  | 🟢 Low | ✅ Eval tests + bench           | ✅ S1   |
 | S21 | Beta-cut stats block duplication                | REDUNDANCY    | MEDIUM   | 🟢 30 min  | 🟢 Low | ✅ Bench (stats only)           | —      |
 | S22 | `EVAL_PREFETCH` inconsistency search vs qsearch | PERFORMANCE   | HIGH     | 🟢 5 min   | 🟢 Low | ✅ Bench (no behavioral change) | ✅      |
-| S23 | `pieceEval` switch unreachable default          | DEAD_CODE     | LOW      | 🟢 5 min   | 🟢 Low | ✅ Eval tests + bench           | —      |
-| S24 | `relRank` computation duplication               | REDUNDANCY    | LOW      | 🟢 30 min  | 🟢 Low | ✅ Eval tests + bench           | —      |
-| S25 | `Evaluator::reset()` is empty                   | DEAD_CODE     | LOW      | 🟢 5 min   | 🟢 Low | ✅ Trivial removal              | —      |
+| S23 | `pieceEval` switch unreachable default          | DEAD_CODE     | LOW      | 🟢 5 min   | 🟢 Low | ✅ Eval tests + bench           | ✅      |
+| S24 | `relRank` computation duplication               | REDUNDANCY    | LOW      | 🟢 30 min  | 🟢 Low | ✅ Eval tests + bench           | ✅      |
+| S25 | `Evaluator::reset()` is empty                   | DEAD_CODE     | LOW      | 🟢 5 min   | 🟢 Low | ✅ Trivial removal              | ✅      |
 
 **Legend:** ✅ Existing tests sufficient — ⚠️ Tests needed before/during implementation — ❌ No tests (acceptable if low risk)
 
@@ -448,8 +448,9 @@ eval, check positions), benchmarking showed a net positive effect.
 
 ---
 
-### S23: `pieceEval` switch unreachable default
+### S23: ✅ `pieceEval` switch unreachable default
 
+**Status:** ✅ COMPLETE
 **File:** `src/engine/Evaluator.cpp`
 **Category:** DEAD_CODE — **Severity:** LOW — **Confidence:** CERTAIN
 
@@ -462,14 +463,17 @@ No additional tests needed.
 
 ---
 
-### S24: `relRank` computation duplication
+### S24: ✅ `relRank` computation duplication
 
-**File:** `src/engine/Evaluator.cpp` (4+ call sites)
+**Status:** ✅ COMPLETE
+**File:** `src/engine/Evaluator.cpp` (5 call sites), `src/types/square.h`
 **Category:** REDUNDANCY — **Severity:** LOW — **Confidence:** CERTAIN
 
-**Solution:** Add `constexpr int relativeRank(Color, Square)` utility to `square.h`.
+**Solution:** Added `constexpr int relativeRank(Color, Square)` free function in `square.h`.
+Replaced all 5 occurrences of the `color == WHITE ? static_cast<int>(sq.rank()) : 7 - static_cast<int>(sq.rank())`
+pattern in `pawnEval` (2×), `knightEval`, `rookEval`, and `kingEval`.
 
-**Lines saved:** ~4 — **Risk:** None.
+**Lines saved:** ~5 — **Risk:** None — trivially equivalent, verified by bench signature.
 
 **Test coverage:** ✅ Eval tests cover all call sites. Consider adding 2-3 trivial assertions
 for the new function in `SquareIteratorTest.cpp` or `TypesTest.cpp` (WHITE+e4=3, BLACK+e4=4).
@@ -477,8 +481,9 @@ for the new function in `SquareIteratorTest.cpp` or `TypesTest.cpp` (WHITE+e4=3,
 
 ---
 
-### S25: `Evaluator::reset()` is empty
+### S25: ✅ `Evaluator::reset()` is empty
 
+**Status:** ✅ COMPLETE
 **File:** `src/engine/Evaluator.h`
 **Category:** DEAD_CODE — **Severity:** LOW — **Confidence:** CERTAIN
 
@@ -503,8 +508,8 @@ Quick wins (🟢 5–15 min) are grouped together for batch implementation.
 ### Phase 2 — Quick wins (batch these)
 4. ~~**S13** — Remove intermediate variable~~ ✅ COMPLETE
 5. ~~**S14** — Move `do_null` before loop~~ ✅ COMPLETE
-6. **S23** — Unreachable default branch
-7. **S25** — Remove empty `reset()`
+6. ~~**S23** — Unreachable default branch~~ ✅ COMPLETE
+7. ~~**S25** — Remove empty `reset()`~~ ✅ COMPLETE
 8. **S5** — SEE loop
 9. **S10** — TT-move validation helper
 10. **S3** — TT bound-type stats helper
@@ -514,7 +519,7 @@ Quick wins (🟢 5–15 min) are grouped together for batch implementation.
 12. **S7** — Remove `if (mid || end)` guards (depends on S6)
 13. **S8** — Safe-check lambda
 14. ~~**S2** — pieceEval loop~~ ✅ COMPLETE (done with S1)
-15. **S24** — `relativeRank()` utility
+15. ~~**S24** — `relativeRank()` utility~~ ✅ COMPLETE
 
 ### Phase 4 — Large refactors
 16. ~~**S1** — Evaluator dedup~~ ✅ COMPLETE (also resolved S20)

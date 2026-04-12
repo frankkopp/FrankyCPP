@@ -89,18 +89,18 @@ namespace engine {
   /// Evaluation breakdown for debug/trace purposes.
   /// Each component stores midgame and endgame scores from white's perspective.
   struct EvalTrace {
-    Score material{};       ///< Material balance
-    Score positional{};     ///< Piece-square table values
-    Score pawn{};           ///< Pawn structure (isolated, doubled, passed, etc.)
-    Score pieces{};         ///< Piece mobility and placement (N, B, R, Q)
-    Score threats{};        ///< Threat evaluation (pawn/minor attacks, hanging)
-    Score coordination{};   ///< Connected rooks, minor connectivity
-    Score kingSafety{};     ///< King safety (pawn shield, attackers, etc.)
-    Score tempo{};          ///< Tempo bonus for side to move
-    double phase = 0.0;     ///< Game phase factor (1.0 = midgame, 0.0 = endgame)
-    Value totalWhite{};     ///< Final value from white's perspective
-    Value total{};          ///< Final value from side-to-move perspective
-    bool lazyExit = false;  ///< True if lazy eval shortcut was taken
+    Score material{};                  ///< Material balance
+    Score positional{};                ///< Piece-square table values
+    Score pawn{};                      ///< Pawn structure (isolated, doubled, passed, etc.)
+    Score pieces{};                    ///< Piece mobility and placement (N, B, R, Q)
+    Score threats{};                   ///< Threat evaluation (pawn/minor attacks, hanging)
+    Score coordination{};              ///< Connected rooks, minor connectivity
+    Score kingSafety{};                ///< King safety (pawn shield, attackers, etc.)
+    Score tempo{};                     ///< Tempo bonus for side to move
+    double phase = 0.0;                ///< Game phase factor (1.0 = midgame, 0.0 = endgame)
+    Value totalWhite{};                ///< Final value from white's perspective
+    Value total{};                     ///< Final value from side-to-move perspective
+    bool lazyExit             = false; ///< True if lazy eval shortcut was taken
     bool insufficientMaterial = false; ///< True if draw by insufficient material
 
     /// Returns a formatted multi-line string of the eval breakdown.
@@ -122,8 +122,8 @@ namespace engine {
 
     /// King safety attack accumulators (indexed by king color under attack).
     /// Reset in evaluate(), incremented in piece evals, consumed in kingEval().
-    std::array<int,2> kingAttackCount{};   ///< Number of distinct pieces attacking king zone
-    std::array<int,2>  kingAttackWeight{};  ///< Weighted sum (N=2, B=2, R=3, Q=4)
+    std::array<int, 2> kingAttackCount{};  ///< Number of distinct pieces attacking king zone
+    std::array<int, 2> kingAttackWeight{}; ///< Weighted sum (N=2, B=2, R=3, Q=4)
 
     /// Per-color attack map: union of all squares attacked by a side's pieces.
     /// Reset in evaluate() (king + pawn attacks), accumulated in piece evals
@@ -152,7 +152,10 @@ namespace engine {
     /// The PawnTT is owned by Search and shared across all Evaluator instances.
     /// @param pawnTT      Pointer to shared PawnTT (may be nullptr to disable caching)
     /// @param threadIndex Thread index for per-thread PawnTT statistics (default 0)
-    void setPawnTT(PawnTT* pawnTT, const int threadIndex = 0) { pawnCache = pawnTT; threadIdx = threadIndex; }
+    void setPawnTT(PawnTT* pawnTT, const int threadIndex = 0) {
+      pawnCache = pawnTT;
+      threadIdx = threadIndex;
+    }
 
     /// Evaluates the position and returns a score from the side-to-move perspective.
     /// Combines material, positional, pawn structure, mobility, and king safety.
@@ -247,7 +250,7 @@ namespace engine {
     /// @param us  Color whose coordination to evaluate (bonus for us)
     void coordinationEval(const Position& p, Score& s, Color us) const;
 
-private:
+  private:
     /// Shared evaluation core used by both evaluate() and evaluateTrace().
     /// Trace=true records per-component score deltas and returns EvalTrace.
     /// Trace=false generates identical code to the original evaluate() — zero overhead.
@@ -256,7 +259,7 @@ private:
     template<bool Trace>
     std::conditional_t<Trace, EvalTrace, Value> evaluateCore(const Position& p);
 
-public:
+  public:
 #ifdef EVAL_ENABLE_PREFETCH
     /// Prefetches pawn cache entry for the given key into CPU cache.
     /// No-op if pawnCache is nullptr.
@@ -266,15 +269,6 @@ public:
       }
     }
 #endif
-
-    /// Resets the evaluator state for a new game.
-    /// Note: PawnTT is managed by Search, not Evaluator.
-    /// score and tmpScore don't need clearing - they are reset at the start
-    /// of evaluate() and pawnEval() respectively before each use.
-    // ReSharper disable once CppMemberFunctionMayBeStatic
-    void reset() {
-      // Nothing to reset - scratch variables are reset per-call
-    }
   };
 
 } // namespace engine

@@ -264,6 +264,13 @@ namespace chess {
     return Square{static_cast<int>(*this) + 8 * c.sign()};
   }
 
+  /// Returns the rank of the square relative to the given color (0-based).
+  /// WHITE: rank as-is (RANK_1=0 .. RANK_8=7). BLACK: mirrored (RANK_1=7 .. RANK_8=0).
+  constexpr int relativeRank(const Color c, const Square sq) {
+    const int r = sq.rank();
+    return c == WHITE ? r : 7 - r;
+  }
+
   inline std::string Square::str() const {
     if (!isValid()) return "none";
     return Squares::squareNames[*this].data();
