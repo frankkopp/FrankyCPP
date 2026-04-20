@@ -461,7 +461,7 @@ void Search::run() {
     const int64_t floorMs           = SearchConfig.MOVE_OVERHEAD_MS;
     // EMA: 30% new sample, 70% previous estimate
     const auto rawEmaMs        = 0.3 * sampleMs + 0.7 * static_cast<double>(measuredPostStopOverheadMs);
-    measuredPostStopOverheadMs = std::clamp(static_cast<int64_t>(std::llround(rawEmaMs)), floorMs, maxOverheadMs);
+    measuredPostStopOverheadMs = std::clamp(std::llround(rawEmaMs), floorMs, maxOverheadMs);
     LOG__INFO(Logger::get().SEARCH_LOG,
               "Post-stop overhead: sample {:.3f} ms, EMA {} ms (floor {} ms, cap {} ms)",
               sampleMs, measuredPostStopOverheadMs, floorMs, maxOverheadMs);
