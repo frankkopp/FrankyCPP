@@ -3,11 +3,8 @@
     "allow": [
       "Bash(gh --version)",
       "Bash(gh auth *)",
-      "PowerShell(& \"C:\\\\Program Files\\\\GitHub CLI\\\\gh.exe\" --version)",
-      "PowerShell(& \"C:\\\\Program Files\\\\GitHub CLI\\\\gh.exe\" auth status)",
       "PowerShell(gh --version)",
-      "PowerShell(gh auth status)",
-      "PowerShell(git add .claude/)"
+      "PowerShell(gh auth status)"
     ]
   }
 }
