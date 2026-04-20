@@ -227,7 +227,8 @@ Represents the complete state of a chess position.
 
 **Key Operations:**
 - `doMove(Move)` / `undoMove()` - make/unmake with full state restoration
-- `isLegalMove(Move)` - legality check
+- `isLegalMove(Move)` - validates a pseudo-legal move: checks the king is not left in check after 
+  the move, or that the king does not cross an attacked square during castling
 - `isAttacked(Square, Color)` - attack detection
 - `getZobristKey()` - hash key for TT lookup
 

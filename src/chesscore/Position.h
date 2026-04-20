@@ -288,7 +288,7 @@ namespace chess {
     /// an attacked square during castling, or if there was castling while in check.
     /// If the position does not have a last move (history empty), this will only
     /// check if the king of the opponent is attacked (could be captured).
-    /// Note: wasLegalMove does not check if the move was actually valid on the
+    /// @note wasLegalMove does not check if the move was actually valid on the
     /// position but only if a pseudoMove that was assumed valid was legal.
     /// @return True if last move was legal
     bool wasLegalMove() const;
@@ -296,7 +296,12 @@ namespace chess {
     /// Tests if a move is legal in the current position.
     /// Basically tests if the king is left in check after the move
     /// or if the king crosses an attacked square during castling.
-    /// @param move  Move to validate
+    /// @note This assumes the move was produced by MoveGenerator's pseudo-legal move
+    ///       generation for this position. It does NOT validate that the move is
+    ///       structurally possible (e.g., that the correct piece exists on the from-square,
+    ///       that the target square is reachable, etc.). Passing an arbitrary or
+    ///       impossible move may cause undefined behavior or a crash.
+    /// @param move  Move to validate (must be a pseudo-legal move for this position)
     /// @return      True if move is legal
     bool isLegalMove(Move move) const;
 

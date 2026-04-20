@@ -3,7 +3,7 @@
 **Document Version:** 2.5
 **Created:** 2026-04-11
 **Last updated:** 2026-04-13
-**Status:** 📋 IN PROGRESS (S1 ✅, S2 ✅, S5 ❌, S6 ✅, S7 ✅, S11 ✅, S12 ✅, S13 ✅, S14 ✅, S20 ✅ via S1, S22 ✅, S23 ✅, S24 ✅, S25 ✅)
+**Status:** 📋 IN PROGRESS (S1 ✅, S2 ✅, S5 ❌, S6 ✅, S7 ✅, S8 ❌, S9 ❌, S10 ❌, S11 ✅, S12 ✅, S13 ✅, S14 ✅, S20 ✅ via S1, S22 ✅, S23 ✅, S24 ✅, S25 ✅)
 **Scope:** `src/engine/`, `src/chesscore/`, `src/tablebase/`, `src/types/`
 
 ---
@@ -62,33 +62,33 @@ Existing test files relevant to this plan:
 
 ## Summary Table
 
-| #   | Item                                            | Category      | Severity | Effort     | Risk   | Test Coverage                  | Status |
-|-----|-------------------------------------------------|---------------|----------|------------|--------|--------------------------------|--------|
-| S1  | Deduplicate `evaluate()` / `evaluateTrace()`    | REDUNDANCY    | HIGH     | 🟡 2–3 hrs | 🟢 Low | ✅ Eval tests + bench           | ✅      |
-| S2  | Loop over piece types in `pieceEval()` calls    | REDUNDANCY    | LOW      | 🟢 15 min  | 🟢 Low | ✅ Eval tests + bench           | ✅      |
-| S3  | Extract TT bound-type stats helper              | REDUNDANCY    | MEDIUM   | 🟢 30 min  | 🟢 Low | ✅ SearchTest + bench           | —      |
-| S4  | ~~`formatDetailedStats()` helpers~~ → S16       | REDUNDANCY    | —        | —          | —      | —                              | → S16  |
-| S5  | ~~Loop in `See::getLeastValuablePiece()`~~      | REDUNDANCY    | LOW      | 🟢 15 min  | 🟢 Low | ✅ SeeTest.leastValuablePiece   | ❌ REJ  |
-| S6  | ~~Add `Score::addSigned()` helper~~             | REDUNDANCY    | MEDIUM   | 🟢 30 min  | 🟢 Low | ✅ Eval tests + bench           | ✅      |
-| S7  | ~~Eliminate `if (mid \|\| end)` guard pattern~~ | PERFORMANCE   | LOW      | 🟢 15 min  | 🟢 Low | ✅ Eval tests + bench           | ✅      |
-| S8  | Collapse king-safety safe-check blocks          | REDUNDANCY    | MEDIUM   | 🟢 30 min  | 🟢 Low | ✅ SafeCheck eval tests         | —      |
-| S9  | `SearchStats::operator+=` via field list macro  | REDUNDANCY    | MEDIUM   | 🟡 1–2 hrs | 🟡 Med | ❌ No operator+= tests          | —      |
-| S10 | Deduplicate TT-move validation pattern          | REDUNDANCY    | MEDIUM   | 🟢 15 min  | 🟢 Low | ✅ SearchTest + bench           | —      |
-| S11 | Bulk pawn attack computation (shift vs loop)    | PERFORMANCE   | CRITICAL | 🟡 1 hr    | 🟢 Low | ✅ Eval tests + bench           | ✅      |
-| S12 | King safety attack dedup + precompute kingzone  | PERF+REDUND   | MEDIUM   | 🟢 30 min  | 🟢 Low | ✅ KingSafety eval tests        | ✅      |
-| S13 | Remove unnecessary variable in qsearch drop     | READABILITY   | LOW      | 🟢 5 min   | 🟢 Low | ✅ Bench (mechanical)           | ✅      |
-| S14 | Move `do_null` before move loop                 | READABILITY   | LOW      | 🟢 5 min   | 🟢 Low | ✅ Bench (mechanical)           | ✅      |
-| S15 | Draw-check pattern (dependent on S21)           | REDUNDANCY    | LOW      | 🟢 15 min  | 🟢 Low | ✅ SearchTest (indirectly)      | —      |
-| S16 | `formatDetailedStats()` comprehensive cleanup   | REDUNDANCY    | MEDIUM   | 🟡 1–2 hrs | 🟢 Low | ❌ No output format tests       | —      |
-| S17 | TT `aggregateStats()` pattern duplication       | REDUNDANCY    | LOW      | 🟢 30 min  | 🟢 Low | ✅ TT_Test (indirectly)         | —      |
-| S18 | TT getter batch aggregation waste               | PERFORMANCE   | MEDIUM   | 🟢 30 min  | 🟢 Low | ✅ TT_Test (indirectly)         | —      |
-| S19 | History decay: allow negative values            | CHESS_PATTERN | HIGH     | 🟢 15 min  | 🟡 Med | ⚠️ Needs Elo test              | —      |
-| S20 | `passedPawns[]` fallback duplication            | REDUNDANCY    | MEDIUM   | 🟢 15 min  | 🟢 Low | ✅ Eval tests + bench           | ✅ S1   |
-| S21 | Beta-cut stats block duplication                | REDUNDANCY    | MEDIUM   | 🟢 30 min  | 🟢 Low | ✅ Bench (stats only)           | —      |
-| S22 | `EVAL_PREFETCH` inconsistency search vs qsearch | PERFORMANCE   | HIGH     | 🟢 5 min   | 🟢 Low | ✅ Bench (no behavioral change) | ✅      |
-| S23 | `pieceEval` switch unreachable default          | DEAD_CODE     | LOW      | 🟢 5 min   | 🟢 Low | ✅ Eval tests + bench           | ✅      |
-| S24 | `relRank` computation duplication               | REDUNDANCY    | LOW      | 🟢 30 min  | 🟢 Low | ✅ Eval tests + bench           | ✅      |
-| S25 | `Evaluator::reset()` is empty                   | DEAD_CODE     | LOW      | 🟢 5 min   | 🟢 Low | ✅ Trivial removal              | ✅      |
+| #   | Item                                               | Category      | Severity | Effort     | Risk   | Test Coverage                  | Status |
+|-----|----------------------------------------------------|---------------|----------|------------|--------|--------------------------------|--------|
+| S1  | Deduplicate `evaluate()` / `evaluateTrace()`       | REDUNDANCY    | HIGH     | 🟡 2–3 hrs | 🟢 Low | ✅ Eval tests + bench           | ✅      |
+| S2  | Loop over piece types in `pieceEval()` calls       | REDUNDANCY    | LOW      | 🟢 15 min  | 🟢 Low | ✅ Eval tests + bench           | ✅      |
+| S3  | Extract TT bound-type stats helper                 | REDUNDANCY    | MEDIUM   | 🟢 30 min  | 🟢 Low | ✅ SearchTest + bench           | —      |
+| S4  | ~~`formatDetailedStats()` helpers~~ → S16          | REDUNDANCY    | —        | —          | —      | —                              | → S16  |
+| S5  | ~~Loop in `See::getLeastValuablePiece()`~~         | REDUNDANCY    | LOW      | 🟢 15 min  | 🟢 Low | ✅ SeeTest.leastValuablePiece   | ❌ REJ  |
+| S6  | ~~Add `Score::addSigned()` helper~~                | REDUNDANCY    | MEDIUM   | 🟢 30 min  | 🟢 Low | ✅ Eval tests + bench           | ✅      |
+| S7  | ~~Eliminate `if (mid \|\| end)` guard pattern~~    | PERFORMANCE   | LOW      | 🟢 15 min  | 🟢 Low | ✅ Eval tests + bench           | ✅      |
+| S8  | ~~Collapse king-safety safe-check blocks~~         | REDUNDANCY    | MEDIUM   | 🟢 30 min  | 🟢 Low | ✅ SafeCheck eval tests         | ❌ REJ  |
+| S9  | ~~`SearchStats::operator+=` via field list macro~~ | REDUNDANCY    | MEDIUM   | 🟡 1–2 hrs | 🟡 Med | ❌ No operator+= tests          | ❌ REJ  |
+| S10 | ~~Deduplicate TT-move validation pattern~~         | REDUNDANCY    | MEDIUM   | 🟢 15 min  | 🟢 Low | ✅ SearchTest + bench           | ❌ REJ  |
+| S11 | Bulk pawn attack computation (shift vs loop)       | PERFORMANCE   | CRITICAL | 🟡 1 hr    | 🟢 Low | ✅ Eval tests + bench           | ✅      |
+| S12 | King safety attack dedup + precompute kingzone     | PERF+REDUND   | MEDIUM   | 🟢 30 min  | 🟢 Low | ✅ KingSafety eval tests        | ✅      |
+| S13 | Remove unnecessary variable in qsearch drop        | READABILITY   | LOW      | 🟢 5 min   | 🟢 Low | ✅ Bench (mechanical)           | ✅      |
+| S14 | Move `do_null` before move loop                    | READABILITY   | LOW      | 🟢 5 min   | 🟢 Low | ✅ Bench (mechanical)           | ✅      |
+| S15 | Draw-check pattern (dependent on S21)              | REDUNDANCY    | LOW      | 🟢 15 min  | 🟢 Low | ✅ SearchTest (indirectly)      | —      |
+| S16 | `formatDetailedStats()` comprehensive cleanup      | REDUNDANCY    | MEDIUM   | 🟡 1–2 hrs | 🟢 Low | ❌ No output format tests       | —      |
+| S17 | TT `aggregateStats()` pattern duplication          | REDUNDANCY    | LOW      | 🟢 30 min  | 🟢 Low | ✅ TT_Test (indirectly)         | —      |
+| S18 | TT getter batch aggregation waste                  | PERFORMANCE   | MEDIUM   | 🟢 30 min  | 🟢 Low | ✅ TT_Test (indirectly)         | —      |
+| S19 | History decay: allow negative values               | CHESS_PATTERN | HIGH     | 🟢 15 min  | 🟡 Med | ⚠️ Needs Elo test              | —      |
+| S20 | `passedPawns[]` fallback duplication               | REDUNDANCY    | MEDIUM   | 🟢 15 min  | 🟢 Low | ✅ Eval tests + bench           | ✅ S1   |
+| S21 | Beta-cut stats block duplication                   | REDUNDANCY    | MEDIUM   | 🟢 30 min  | 🟢 Low | ✅ Bench (stats only)           | —      |
+| S22 | `EVAL_PREFETCH` inconsistency search vs qsearch    | PERFORMANCE   | HIGH     | 🟢 5 min   | 🟢 Low | ✅ Bench (no behavioral change) | ✅      |
+| S23 | `pieceEval` switch unreachable default             | DEAD_CODE     | LOW      | 🟢 5 min   | 🟢 Low | ✅ Eval tests + bench           | ✅      |
+| S24 | `relRank` computation duplication                  | REDUNDANCY    | LOW      | 🟢 30 min  | 🟢 Low | ✅ Eval tests + bench           | ✅      |
+| S25 | `Evaluator::reset()` is empty                      | DEAD_CODE     | LOW      | 🟢 5 min   | 🟢 Low | ✅ Trivial removal              | ✅      |
 
 **Legend:** ✅ Existing tests sufficient — ⚠️ Tests needed before/during implementation — ❌ No tests (acceptable if low risk)
 
@@ -231,51 +231,54 @@ costing ~1 cycle of branch overhead in the common case. The "saved" work when bo
 
 ---
 
-### S8: Collapse king-safety safe-check blocks
+### S8: ❌ REJECTED — Collapse king-safety safe-check blocks
 
+**Status:** ❌ REJECTED
 **File:** `src/engine/Evaluator.cpp` (kingEval, 3 near-identical blocks)
 **Category:** REDUNDANCY — **Severity:** MEDIUM — **Confidence:** CERTAIN
 
-**Solution:** Lambda `countSafeChecks(PieceType, weight)` with ternary for knight vs slider attacks.
+**Original proposal:** Lambda `countSafeChecks(PieceType, weight)` with ternary for knight vs slider attacks.
 
-**Lines saved:** ~15 — **Risk:** Low — identical logic.
-
-**Test coverage:** ✅ `SafeCheck_ExposedKingWorseThanSheltered` and `SafeCheck_ToggleChangesEval`
-directly test this functionality. Bench catches regressions. No additional tests needed.
+**Rejection rationale:** After bishop safe-check removal (Texel Phase 9), only 3 blocks remain
+(knight, rook, queen) — saving only ~2 lines. The lambda adds a capture (`[&]`) and a ternary
+(knight vs slider attack lookup) in hot eval code (`kingEval` called 2×/evaluate). The blocks
+are not truly identical: knight uses `nonSliderAttacks[]` lookup while rook/queen use
+`Attacks::attacks()`. Collapsing them merges two conceptually different mechanisms for marginal
+savings. Not worth the abstraction risk in hot code.
 
 ---
 
-### S9: `SearchStats::operator+=` via X-macro
+### S9: ❌ REJECTED — `SearchStats::operator+=` via X-macro
 
+**Status:** ❌ REJECTED
 **File:** `src/engine/SearchStats.h` (85-line operator)
 **Category:** REDUNDANCY — **Severity:** MEDIUM — **Confidence:** CERTAIN
 
-**Problem:** 50+ field-by-field additions. Adding a new stat field requires updating operator+=
-manually. Forgetting causes silent data loss in SMP aggregation.
+**Original proposal:** X-macro defining all cumulative fields, used for both declarations and `operator+=`.
 
-**Solution:** X-macro defining all cumulative fields, used for both declarations and `operator+=`.
-
-**Lines saved:** ~50 — **Risk:** Medium — X-macros reduce readability.
-
-**Test coverage:** ❌ No direct tests for `operator+=`. SMP tests (`SearchSmpTest.cpp`) exercise
-aggregation indirectly but don't verify field-by-field correctness.
-**Recommendation:** Write a unit test that creates two SearchStats with known values, adds them,
-and verifies every cumulative field. This test catches both the current code and the X-macro
-version. Write test first, then refactor.
+**Rejection rationale:** X-macros destroy readability — every field loses its `///` Doxygen comment,
+type information is hidden in macro parameters, and category comments (`// === Pruning ===`) vanish.
+Special cases (array `betaCutsByIndex[10]`, `int64_t lmrHistoryDepthSaved`, snapshot-vs-cumulative
+field separation) require workarounds that negate the simplification. The actual risk (forgetting
+a field in `operator+=` when adding a new stat) occurs ~2-3 times per year and costs 1 line of
+copy-paste. A `sizeof` `static_assert` or a comment reminder is a simpler mitigation. The cure
+is worse than the disease.
 
 ---
 
-### S10: Deduplicate TT-move validation pattern
+### S10: ❌ REJECTED — Deduplicate TT-move validation pattern
 
-**File:** `src/engine/Search.cpp` (3 identical patterns)
+**Status:** ❌ REJECTED
+**File:** `src/engine/Search.cpp` (3 patterns, only 2 identical)
 **Category:** REDUNDANCY — **Severity:** MEDIUM — **Confidence:** CERTAIN
 
-**Solution:** `[[nodiscard]] inline Move validateTtMove(const Position&, uint16_t rawMove)`
+**Original proposal:** `[[nodiscard]] inline Move validateTtMove(const Position&, uint16_t rawMove)`
 
-**Lines saved:** ~8 — **Risk:** Low — identical validation logic.
-
-**Test coverage:** ✅ SearchTest covers TT move usage in search/qsearch. TT_Test covers
-put/probe mechanics. Bench verifies functional equivalence. No additional tests needed.
+**Rejection rationale:** TT probing occurs at the top of every `search()` and `qsearch()` node —
+this is hot path by definition (millions of calls/sec). Only 2 of 3 instances are identical (the
+PV-extraction instance uses `validateMove()` instead of `isPseudoLegal()`), saving just ~3 lines.
+Adding a function call wrapper in the hottest code path risks the same i-cache/call overhead
+issues seen in S1. Not worth it.
 
 ---
 
@@ -526,13 +529,13 @@ Quick wins (🟢 5–15 min) are grouped together for batch implementation.
 6. ~~**S23** — Unreachable default branch~~ ✅ COMPLETE
 7. ~~**S25** — Remove empty `reset()`~~ ✅ COMPLETE
 8. ~~**S5** — SEE loop~~ ❌ REJECTED (hot-path risk)
-9. **S10** — TT-move validation helper
+9. ~~**S10** — TT-move validation helper~~ ❌ REJECTED (hot-path, ~3 lines saved)
 10. **S3** — TT bound-type stats helper
 
 ### Phase 3 — Eval simplifications (dependency chain)
 11. ~~**S6** — `addSigned()` helper (foundation)~~ ✅ COMPLETE
 12. ~~**S7** — Remove `if (mid || end)` guards (depends on S6)~~ ✅ COMPLETE
-13. **S8** — Safe-check lambda
+13. ~~**S8** — Safe-check lambda~~ ❌ REJECTED (hot-path, ~2 lines saved)
 14. ~~**S2** — pieceEval loop~~ ✅ COMPLETE (done with S1)
 15. ~~**S24** — `relativeRank()` utility~~ ✅ COMPLETE
 
@@ -543,7 +546,7 @@ Quick wins (🟢 5–15 min) are grouped together for batch implementation.
 19. **S15** — Draw-check pattern (only if S21 motivates)
 
 ### Phase 5 — Optional / risky
-20. **S9** — SearchStats X-macro (⚠️ write operator+= test first; discuss before implementing)
+20. ~~**S9** — SearchStats X-macro~~ ❌ REJECTED (readability loss, X-macros kill Doxygen/categories)
 21. **S17** — TT aggregate dedup
 22. **S18** — TT batch aggregation
 23. **S19** — History negative values (⚠️ requires Elo testing — do separately)
@@ -572,6 +575,9 @@ For each item:
 | Item                                                                       | Reason                                                                                                                                                                                                                                                        |
 |----------------------------------------------------------------------------|---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
 | **Loop in `See::getLeastValuablePiece()` (S5)**                            | Hot-path function (millions of calls/sec via qsearch SEE). Sequential if-chain has guaranteed zero overhead; loop requires `constexpr` array (KING=1 breaks contiguity), MSVC unrolling not guaranteed. ~12 lines saved, not worth the risk. See S1 lesson.   |
+| **Collapse king-safety safe-check blocks (S8)**                            | Only 3 blocks remain after bishop removal; saves ~2 lines. Lambda with `[&]` capture + ternary (knight vs slider) in hot eval code. Blocks aren't truly identical (different attack mechanisms). Not worth the abstraction.                                   |
+| **`SearchStats::operator+=` via X-macro (S9)**                             | X-macros destroy readability: Doxygen comments, type info, and category structure all lost. Special cases (array, int64_t, snapshot fields) need workarounds. Forgetting a field is rare (~2-3×/year). Comment reminder or `sizeof` assert is simpler.        |
+| **Deduplicate TT-move validation pattern (S10)**                           | TT probing runs at top of every search/qsearch node — hot path by definition. Only 2 of 3 instances match (3rd uses different validation). Saves ~3 lines. Function wrapper risks i-cache/call overhead in hottest code.                                      |
 | **Sub-struct grouping of SearchStats**                                     | One flat struct is simpler than 5 sub-structs. Adds indirection without real benefit.                                                                                                                                                                         |
 | **~~Template-based Evaluator `evaluate<bool Trace>`~~**                    | ~~Initially rejected~~ → **Adopted for S1.** Template overhead is negligible (one extra instantiation), and `if constexpr` + `std::conditional_t` return type gives zero-cost trace recording with no pointers, no null, no `[[maybe_unused]]` proliferation. |
 | **Template `search<NodeType>`**                                            | Eliminates runtime `nodeType` checks but makes code significantly harder to read/debug. Branches are well-predicted. Not justified at FrankyCPP's current strength tier.                                                                                      |
