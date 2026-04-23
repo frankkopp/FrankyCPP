@@ -179,8 +179,6 @@ namespace engine {
 
     uint64_t evalFromTT = 0; // static eval reused from TT (saved evaluate() call)
 
-    uint64_t iidSearches   = 0; // internal iterative deepening searches performed
-    uint64_t iidMoves      = 0; // moves found via IID
     uint64_t iirReductions = 0; // internal iterative reductions applied
 
     // === Re-search Statistics ===
@@ -233,9 +231,6 @@ namespace engine {
 
     /// Singular extension searches performed (verification searches).
     uint64_t singularSearches = 0;
-
-    /// Singular extension candidates filtered by ttBound (not BETA/EXACT).
-    uint64_t singularFilteredByBound = 0;
 
     /// Singular extensions applied (TT move proven singular).
     uint64_t singularExtension = 0;
@@ -347,8 +342,6 @@ namespace engine {
          << " tbSearchHits: " << stats.tbSearchHits
          << " tbSearchMisses: " << stats.tbSearchMisses
          << " tbSearchCutoffs: " << stats.tbSearchCutoffs
-         << " IID Searches: " << stats.iidSearches
-         << " IID Moves: " << stats.iidMoves
          << " IIR Reductions: " << stats.iirReductions;
       return os;
     }
@@ -407,8 +400,6 @@ namespace engine {
       TtMoveUsed += other.TtMoveUsed;
       ttMoveBestMove += other.ttMoveBestMove;
       NoTtMove += other.NoTtMove;
-      iidSearches += other.iidSearches;
-      iidMoves += other.iidMoves;
       iirReductions += other.iirReductions;
 
       // Re-search stats
@@ -433,7 +424,6 @@ namespace engine {
       checkExtension += other.checkExtension;
       threatExtension += other.threatExtension;
       singularSearches += other.singularSearches;
-      singularFilteredByBound += other.singularFilteredByBound;
       singularExtension += other.singularExtension;
       nullMoveVerifications += other.nullMoveVerifications;
 

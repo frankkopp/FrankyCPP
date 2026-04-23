@@ -101,10 +101,12 @@ namespace {
       std::ofstream ofs(tempFile);
       ofs << stdinInput;
     }
+    // ReSharper disable once CppVariableCanBeMadeConstexpr
     const std::string fullCmd = "cmd /c \"type \"" + tempFile + "\" | " + cmd + "\" 2>&1";
     FILE* pipe                = _popen(fullCmd.c_str(), "r");
 #else
     // On Unix, use echo with pipe
+    // ReSharper disable once CppVariableCanBeMadeConstexpr
     const std::string fullCmd = "echo '" + stdinInput + "' | " + cmd + " 2>&1";
     FILE* pipe                = popen(fullCmd.c_str(), "r");
 #endif
@@ -147,12 +149,14 @@ protected:
   /// Run the engine with given arguments
   std::pair<int, std::string> runEngine(const std::string& args) const {
     // Build command - quotes around path handle spaces in path
+    // ReSharper disable once CppVariableCanBeMadeConstexpr
     const std::string cmd = "\"" + enginePath + "\" " + args;
     return executeCommand(cmd);
   }
 
   /// Run the engine with stdin input (for UCI communication)
   std::pair<int, std::string> runEngineWithInput(const std::string& stdinInput) const {
+    // ReSharper disable once CppVariableCanBeMadeConstexpr
     const std::string cmd = "\"" + enginePath + "\"";
     return executeCommandWithInput(cmd, stdinInput);
   }

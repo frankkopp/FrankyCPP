@@ -201,6 +201,7 @@ TEST_F(TimingTests, trimWhiteSpace) {
 
   //// TESTS START
 
+  // ReSharper disable once CppVariableCanBeMadeConstexpr
   const std::string line = " \t This is a text. This is a text. This is a text. This is a text.\t  \r\n";
   const std::string_view lineView{line};
 
@@ -285,8 +286,10 @@ TEST_F(TimingTests, illegalCharacter) {
 
   //// TESTS START
 
+  // ReSharper disable once CppVariableCanBeMadeConstexpr
   const std::string fen = "r3k2r/1ppn3p/2q1q1n1/8/2q1Pp2/6R1/p1p2PPP/1R4K1";
   static const std::regex illegalInFenPosition(R"([^1-8pPnNbBrRqQkK/]+)");
+  // ReSharper disable once CppVariableCanBeMadeConstexpr
   static const std::string allowedChars{"12345678pPnNbBrRqQkK/"};
 
   NEWLINE;
@@ -341,6 +344,7 @@ TEST_F(TimingTests, split) {
 
   //// TESTS START
 
+  // ReSharper disable once CppVariableCanBeMadeConstexpr
   const std::string line = "1. e4 e6 2. d4 d5 3. Nd2 Nc6 4. Ngf3 Nf6 5. e5 Nd7 6. g3 Be7 7. Bh3 b6 8. O-O "
                            "Bb7 9. c3 h5 10. Qe2 Nf8 11. b4 a5 12. b5 Na7 13. a4 c3 14. Ba3 cxb5 15. Bxe7 "
                            "Qxe7 16. axb5 g5 17. Bg2 Ng6 18. Rab1 h4 19. Qe3 g4 20. Ne1 Rc8 21. c4 Qf8 22. "

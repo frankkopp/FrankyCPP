@@ -557,11 +557,12 @@ namespace chess {
     // backwards scan
     Part part                     = PROM;
     int index                     = static_cast<int>(sanMove.size()) - 1;
+    // ReSharper disable once CppVariableCanBeMadeConstexpr
     const std::string nonrelevant = "x=!?+#.p ";
 
     while (index >= 0) {
 
-      // skip non relevant characters
+      // skip non-relevant characters
       if (nonrelevant.find(sanMove[index]) != std::string::npos) {
         index--;
         continue;
@@ -786,7 +787,6 @@ namespace chess {
       }
       // sort the list according to sort values encoded in the move
       if (!onDemandMoves.empty()) {
-        // TODO: consider using non stable sort here
         moveSort(onDemandMoves, moveValueGreaterComparator());
       }
     } // while onDemandMoves.empty()

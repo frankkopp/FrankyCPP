@@ -323,7 +323,7 @@ install(CODE "
     # Build fresh Release executable
     message(STATUS \"Rebuilding for fresh release...\")
     execute_process(
-        COMMAND \"${CMAKE_COMMAND}\" --build \"${CMAKE_BINARY_DIR}\" --config Release --clean-first
+        COMMAND \"${CMAKE_COMMAND}\" --build \"${CMAKE_BINARY_DIR}\" --config Release
         RESULT_VARIABLE _build_result
         OUTPUT_VARIABLE _build_output
         ERROR_VARIABLE _build_error

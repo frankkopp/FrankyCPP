@@ -96,6 +96,11 @@ namespace engine {
     /// Search statistics for debugging and analysis
     SearchStats statistics{};
 
+    /// MoveGenerator for PV extraction (reused to avoid allocation per call).
+    /// Must be per-thread because extractPvWithTT() calls validateMove() which
+    /// writes to internal buffers — shared access causes data race crashes.
+    MoveGenerator pvMoveGenerator{};
+
     /// Thread-local root moves for this search.
     /// Each thread generates and maintains its own root move list.
     /// After each iteration, rootMoves[0] contains the best move with its score.
@@ -166,8 +171,8 @@ namespace engine {
       // Clear thread-local root moves (will be populated during root search)
       rootMoves.clear();
 
-      // Set shared PawnTT on this thread's evaluator
-      evaluator.setPawnTT(pawnTT);
+      // Set shared PawnTT on this thread's evaluator (with thread index for per-thread stats)
+      evaluator.setPawnTT(pawnTT, id);
 
       // Regenerate LMR table based on current config
       regenerateLmrTable(lmrUseLog, lmrLogDiv);

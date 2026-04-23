@@ -128,6 +128,31 @@
 #define ESSENTIAL_STAT_SET(counter, val) ((counter) = (val))
 
 //=============================================================================
+// TT/PawnTT hot-path statistics macros  (R5 — SMP false sharing investigation)
+//
+// TT::probe() and TT::put() increment shared mutable counters (numberOfProbes,
+// numberOfPuts, numberOfHits, etc.) on every call from every thread. These
+// counters share cache lines with critical read-only fields (_data pointer,
+// clusterMask, hashKeyMask), causing false sharing under SMP.
+//
+// Set TT_STATS_ENABLED to 0 and rebuild to compile out ALL TT/PawnTT
+// diagnostic counters. Then re-run bench_thread_scaling to measure the
+// NPS impact of false sharing.
+//
+// When disabled:
+//   - TT::str() / PawnTT::str() will report all zeros
+//   - hashFull() returns 0 (numberOfEntries not tracked)
+//   - No functional impact on search correctness
+//=============================================================================
+#define TT_STATS_ENABLED 1
+
+#if TT_STATS_ENABLED
+#define TT_STAT_INC(counter) (++(counter))
+#else
+#define TT_STAT_INC(counter) ((void) 0)
+#endif
+
+//=============================================================================
 // CONFIG SETTER macros for ConfigRegistry setter lambdas
 //
 // SEARCH_CONFIG_SETTER(member, parser) / EVAL_CONFIG_SETTER(member, parser)

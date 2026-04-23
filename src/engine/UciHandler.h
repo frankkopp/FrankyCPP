@@ -31,12 +31,17 @@
 #include "types/staticmovelist.h"
 
 // Forward-declare test classes at global scope so FRIEND_TEST inside namespace engine works
+FRIEND_TEST_FWD_DECL(UCITest, uciNewGameResetsState);
 FRIEND_TEST_FWD_DECL(UCITest, positionTest);
+FRIEND_TEST_FWD_DECL(UCITest, positionFenErrorTest);
 FRIEND_TEST_FWD_DECL(UCITest, goCommand);
 FRIEND_TEST_FWD_DECL(UCITest, goInfinite);
 FRIEND_TEST_FWD_DECL(UCITest, goPonder);
 FRIEND_TEST_FWD_DECL(UCITest, goMate);
 FRIEND_TEST_FWD_DECL(UCITest, goError);
+FRIEND_TEST_FWD_DECL(UCITest, debugOnOff);
+FRIEND_TEST_FWD_DECL(UCITest, debugDefault);
+FRIEND_TEST_FWD_DECL(UCITest, debugBadArg);
 
 namespace engine {
   using namespace chess;
@@ -58,6 +63,10 @@ namespace engine {
     std::istream* pInputStream;
     std::ostream* pOutputStream;
 
+    /// UCI debug mode toggle. When true, the engine sends additional
+    /// diagnostic info strings (eval breakdown, iteration stats, etc.).
+    bool debugMode = false;
+
   public:
     UciHandler();
 
@@ -73,8 +82,8 @@ namespace engine {
 
     // send information to the UCI user interface through pipe streams
     void send(const std::string& toSend) const;
-    void sendIterationEndInfo(int depth, int seldepth, Value value, uint64_t nodes, uint64_t nps, milliseconds time, const MoveList& pv) const;
-    void sendAspirationResearchInfo(int depth, int seldepth, Value value, const std::string& boundString, uint64_t nodes, uint64_t nps, milliseconds time, const MoveList& pv) const;
+    void sendIterationEndInfo(int depth, int seldepth, Value value, uint64_t nodes, uint64_t nps, milliseconds time, const MoveList& pv, int multipvIndex = 1) const;
+    void sendAspirationResearchInfo(int depth, int seldepth, Value value, const std::string& boundString, uint64_t nodes, uint64_t nps, milliseconds time, const MoveList& pv, int multipvIndex = 1) const;
     void sendCurrentRootMove(Move currmove, std::size_t movenumber) const;
     void sendSearchUpdate(int depth, int seldepth, uint64_t nodes, uint64_t nps, milliseconds time, int hashfull) const;
     void sendCurrentLine(const VariationStack& moveList) const;
@@ -86,15 +95,20 @@ namespace engine {
       return pSearch;
     }
 
+    /// Returns true if UCI debug mode is enabled (debug on).
+    [[nodiscard]] bool isDebugMode() const { return debugMode; }
+
   private:
     bool handleCommand(const std::string& cmd);
     void uciCommand() const;
     void isReadyCommand() const;
     void setOptionCommand(std::istringstream& inStream);
-    void uciNewGameCommand() const;
+    void uciNewGameCommand();
+    FRIEND_TEST_NS(UCITest, uciNewGameResetsState);
 
     void positionCommand(std::istringstream& inStream);
     FRIEND_TEST_NS(UCITest, positionTest);
+    FRIEND_TEST_NS(UCITest, positionFenErrorTest);
 
     void goCommand(std::istringstream& inStream) const;
     bool readSearchLimits(std::istringstream& inStream, SearchLimits& searchLimits) const;
@@ -108,7 +122,10 @@ namespace engine {
     void perftCommand(std::istringstream& inStream) const;
     void benchCommand(std::istringstream& inStream) const;
     void registerCommand() const;
-    void debugCommand() const;
+    void debugCommand(std::istringstream& inStream);
+    FRIEND_TEST_NS(UCITest, debugOnOff);
+    FRIEND_TEST_NS(UCITest, debugDefault);
+    FRIEND_TEST_NS(UCITest, debugBadArg);
     void helpCommand() const;
     void getOptionsCommand() const;
     void getExtendedOptionsCommand() const;

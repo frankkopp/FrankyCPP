@@ -116,6 +116,7 @@ TEST_F(PgnParserTest, pgnGameHasCustomFen) {
 
 TEST_F(PgnParserTest, cleanUpMoveSectionBasic) {
   // This is the exact test case from the existing OpeningBookTest::pgnCleanUpTest
+  // ReSharper disable once CppVariableCanBeMadeConstexpr
   const std::string testString{"e4(d4) d5!!2.c4$50(Nf3?)e5 Nf3{Comment !}Nc6 Nc3 Nf6 Bc4 {another comment} Bc5 O-O O-O a1=Q  @@@æææ {unexpected characters are skipped}  <> {These symbols are reserved}  1/2-1/2  ; comment     "};
   std::string test = common::removeTrailingComments(testString, ";");
   PgnParser::cleanUpMoveSection(test);
@@ -279,6 +280,7 @@ TEST_F(PgnParserTest, headerEscapedQuotes) {
 
 TEST_F(PgnParserTest, multipleTagPairsPerLine) {
   // Test that multiple [Key "Value"] pairs on a single line are all parsed
+  // ReSharper disable once CppVariableCanBeMadeConstexpr
   const std::string content =
     "[Event \"Test\"][Site \"Here\"][Date \"2026.01.01\"]\n"
     "[White \"Alice\"][Black \"Bob\"][Result \"1-0\"]\n"
@@ -366,6 +368,7 @@ TEST_F(PgnParserTest, parseAllMatchesStreamingCount) {
 
 TEST_F(PgnParserTest, parseFromLines) {
   // Manually construct lines that represent a minimal PGN game
+  // ReSharper disable once CppVariableCanBeMadeConstexpr
   const std::string content =
     "[Event \"Test\"]\n"
     "[Result \"1-0\"]\n"
@@ -396,6 +399,7 @@ TEST_F(PgnParserTest, parseFromLines) {
 }
 
 TEST_F(PgnParserTest, parseFromLinesMultipleGames) {
+  // ReSharper disable once CppVariableCanBeMadeConstexpr
   const std::string content =
     "[Event \"Game 1\"]\n"
     "[Result \"1-0\"]\n"
@@ -435,6 +439,7 @@ TEST_F(PgnParserTest, parseFromLinesMultipleGames) {
 
 TEST_F(PgnParserTest, emptyFile) {
   // Create a minimal empty-ish content
+  // ReSharper disable once CppVariableCanBeMadeConstexpr
   const std::string content = "\n\n\n";
   std::vector<std::string_view> lines;
   size_t start = 0;
@@ -451,6 +456,7 @@ TEST_F(PgnParserTest, emptyFile) {
 }
 
 TEST_F(PgnParserTest, gameWithNoMoves) {
+  // ReSharper disable once CppVariableCanBeMadeConstexpr
   const std::string content =
     "[Event \"Adjourned\"]\n"
     "[Result \"*\"]\n"
@@ -473,6 +479,7 @@ TEST_F(PgnParserTest, gameWithNoMoves) {
 }
 
 TEST_F(PgnParserTest, gameWithOnlyResult) {
+  // ReSharper disable once CppVariableCanBeMadeConstexpr
   const std::string content =
     "[Event \"Forfeit\"]\n"
     "[Result \"1-0\"]\n"
@@ -496,6 +503,7 @@ TEST_F(PgnParserTest, gameWithOnlyResult) {
 
 TEST_F(PgnParserTest, percentEscapedLines) {
   // %-escaped lines should be completely ignored per PGN spec
+  // ReSharper disable once CppVariableCanBeMadeConstexpr
   const std::string content =
     "[Event \"Test\"]\n"
     "[Result \"1-0\"]\n"
@@ -521,6 +529,7 @@ TEST_F(PgnParserTest, percentEscapedLines) {
 
 TEST_F(PgnParserTest, semicolonLineComments) {
   // ;-comments should be stripped from end of lines
+  // ReSharper disable once CppVariableCanBeMadeConstexpr
   const std::string content =
     "[Event \"Test\"]\n"
     "[Result \"1-0\"]\n"

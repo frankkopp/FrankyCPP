@@ -243,6 +243,7 @@ namespace common {
     static void setLoggerLevelByName(std::string_view name, spdlog::level::level_enum level);
 
     /// Default log pattern: timestamp, thread, logger name, level, message.
+    // ReSharper disable once CppVariableCanBeMadeConstexpr
     const std::string defaultPattern = "[%H:%M:%S:%f] [t:%-10!t] [%-17n] [%-8l]: %v";
 
     /// Log file path for general logging (resolved next to the executable).

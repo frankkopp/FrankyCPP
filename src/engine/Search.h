@@ -109,6 +109,7 @@
 #include <optional>
 #include <semaphore>
 #include <thread>
+#include <vector>
 
 // Forward-declare test classes at global scope so FRIEND_TEST inside namespace engine works
 FRIEND_TEST_FWD_DECL(SearchTest, setupTime);
@@ -120,6 +121,9 @@ FRIEND_TEST_FWD_DECL(SearchTest, extraTimeClockCap);
 FRIEND_TEST_FWD_DECL(SearchTest, startTimer);
 FRIEND_TEST_FWD_DECL(SearchTest, startTimerWithOverhead);
 FRIEND_TEST_FWD_DECL(SearchSmpTest, selectBestThread);
+FRIEND_TEST_FWD_DECL(SearchTest, drawScoreZeroContempt);
+FRIEND_TEST_FWD_DECL(SearchTest, drawScorePositiveContempt);
+FRIEND_TEST_FWD_DECL(SearchTest, drawScoreNegativeContempt);
 
 namespace engine {
   using namespace chess;
@@ -157,9 +161,6 @@ namespace engine {
     std::unique_ptr<PawnTT> pawnTT;                  // Shared pawn cache for all threads
     std::unique_ptr<tablebase::Tablebase> syzygy_tb; // Syzygy tablebase instance
 
-    // MoveGenerator for PV extraction (reused to avoid allocation per call)
-    // Mutable because validateMove() modifies internal lists but not observable state
-    mutable MoveGenerator pvMoveGenerator{};
 
     /// TB root probe result (when TB_ROOT_IMMEDIATE=false, used to guide search).
     /// Groups all tablebase root-probe states into a single struct with reset().
@@ -184,6 +185,11 @@ namespace engine {
     // current position and search limits for the search
     Position position{};
     SearchLimits searchLimits{};
+
+    // Side to move at the root of the search — used for contempt bias.
+    // Contempt is positive from root player's perspective: when the side to move
+    // at a draw node matches rootColor, drawScore() returns +contempt; otherwise −contempt.
+    Color rootColor{WHITE};
 
     // manage running search
     std::atomic_bool stopSearchFlag = false;
@@ -291,8 +297,10 @@ namespace engine {
     // ///////////////////////////////////////////
     // PUBLIC
 
-    /// Stops any running search and resets state for a new game.
-    /// Clears caches and history heuristics.
+    /// Stops any running search and resets all state for a new game.
+    /// Clears: TT, PawnTT, all SearchThreadData (history, statistics, PV, plyStack),
+    /// best-move stability tracker, TB root info, book move flag, last search result,
+    /// result-ready flag, and dynamic post-stop overhead estimate.
     void newGame();
 
     /// Signals readiness to the UCI interface after initialization.
@@ -326,6 +334,12 @@ namespace engine {
 
     /// Resizes the transposition table according to SearchConfig::TT_SIZE_MB.
     void resizeTT() const;
+
+    /// Returns R6 TT instrumentation report (see TT::instrumentationStr()).
+    [[nodiscard]] std::string ttInstrumentationStr() const { return tt->instrumentationStr(); }
+
+    /// Resets R6 TT instrumentation counters (see TT::resetInstrumentationStats()).
+    void resetTTInstrumentation() const { tt->resetInstrumentationStats(); }
 
     /// Returns the search statistics from the last search.
     /// @return Reference to SearchStats
@@ -413,6 +427,14 @@ namespace engine {
     /// @param result  Search result to update with TB move/value
     void applyTBRootOverride(SearchResult& result) const;
 
+    /// Applies handicap move selection after search completes.
+    /// If HANDICAP > 0, picks a suboptimal move from the main thread's root move pool
+    /// using score-weighted probabilistic selection seeded by Zobrist key.
+    /// Disables pondering (ponderMove = MOVE_NONE) when active.
+    /// No-op when HANDICAP == 0 or for book/TB moves.
+    /// @param result  Search result to override with handicap move
+    void applyHandicap(SearchResult& result) const;
+
     /// Extracts and validates the ponder move after search completes.
     /// Tries the best thread's PV first; falls back to TT probing.
     /// Validates legality and filters out moves leading to drawn/mated positions.
@@ -473,12 +495,13 @@ namespace engine {
     Value aspirationSearch(Position& p, Depth depth, Value bestValue);
 
     /// Searches root moves (ply 0) with special handling for root node.
-    /// @param p      Position to search
-    /// @param depth  Remaining depth
-    /// @param alpha  Alpha bound
-    /// @param beta   Beta bound
-    /// @return       Best value found
-    Value rootSearch(Position& p, Depth depth, Value alpha, Value beta);
+    /// @param p           Position to search
+    /// @param depth       Remaining depth
+    /// @param alpha       Alpha bound
+    /// @param beta        Beta bound
+    /// @param startIndex  First index in rootMoves to search (0..N-1, for MultiPV)
+    /// @return            Best value found
+    Value rootSearch(Position& p, Depth depth, Value alpha, Value beta, int startIndex = 0);
 
     /// Recursive alpha-beta search for non-root plies (ply > 0).
     /// Handles all major pruning techniques.
@@ -611,6 +634,18 @@ namespace engine {
     /// @return                     True if position is drawn
     static bool checkDrawRepAnd50(const Position& p, int numberOfRepetitions);
 
+    /// Returns the contempt-biased draw score for the current position.
+    /// When CONTEMPT is 0, returns VALUE_DRAW (== 0). Otherwise returns
+    /// +CONTEMPT when the side to move at the draw node is the root player
+    /// (engine avoids draws), or −CONTEMPT when it's the opponent's turn
+    /// (engine steers opponent toward draws).
+    /// @param p  Position at the draw node (side to move is inspected)
+    /// @return   Contempt-biased draw value
+    [[nodiscard]] Value drawScore(const Position& p) const;
+    FRIEND_TEST_NS(SearchTest, drawScoreZeroContempt);
+    FRIEND_TEST_NS(SearchTest, drawScorePositiveContempt);
+    FRIEND_TEST_NS(SearchTest, drawScoreNegativeContempt);
+
     /// Sends "readyok" to UCI handler.
     void sendReadyOk() const;
 
@@ -618,12 +653,34 @@ namespace engine {
     /// @param msg  Message to send
     void sendString(const std::string& msg) const;
 
+    /// Returns true if the UCI handler has debug mode enabled.
+    /// Used to guard additional diagnostic info string output.
+    [[nodiscard]] bool isDebugMode() const { return uciHandler && uciHandler->isDebugMode(); }
+
+    /// Sends debug eval breakdown for the current root position via info string.
+    /// Only called when debug mode is on and main thread completes an iteration.
+    void sendDebugEvalInfo() const;
+
     /// Sends search result to UCI handler if available.
     /// @param result  Search result to send
     void sendResult(const SearchResult& result) const;
 
     /// Sends iteration-end info (depth, score, PV, etc.) to UCI.
     void sendIterationEndInfoToUci();
+
+    /// Holds collected PV data for deferred, sorted MultiPV reporting.
+    /// Collected during the MultiPV loop, sorted by score, then reported in batch.
+    struct MultiPvResult {
+      MoveList pvLine;  ///< PV line extracted via extractPvWithTT
+      Value score;      ///< Score from rootSearch for this PV
+      int seldepth;     ///< Selective depth at time of search
+    };
+
+    /// Sends all collected MultiPV results to UCI in a single batch.
+    /// Results must already be sorted by score (descending).
+    /// @param results        Collected PV results (sorted by score descending)
+    /// @param iterationDepth Current iteration depth
+    void sendMultiPvResultsToUci(const std::vector<MultiPvResult>& results, Depth iterationDepth);
 
     /// Sends periodic search update (nodes, nps, time, hashfull) to UCI.
     void sendSearchUpdateToUci();

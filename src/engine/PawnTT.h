@@ -165,23 +165,47 @@ namespace engine {
     // Set by Search before each search via setSmpThreads().
     int numSmpThreads = 1;
 
-    // size and fill info
+    // size and fill info — read-only after resize(), shares cache line with _data pointer.
     uint64_t sizeInByte            = 0;
     std::size_t maxNumberOfEntries = 0;
     std::size_t hashKeyMask        = 0;
-    std::size_t numberOfEntries    = 0;
-
-    mutable uint64_t numberOfQueries = 0;
-    mutable uint64_t numberOfHits    = 0; // entries with identical key found
-    mutable uint64_t numberOfMisses  = 0; // no entry with key found
-
-    mutable uint64_t numberOfPuts       = 0;
-    mutable uint64_t numberOfCollisions = 0;
-    mutable uint64_t numberOfOverwrites = 0;
-    mutable uint64_t numberOfUpdates    = 0;
 
     // this array hold the actual entries for the transposition table
     std::unique_ptr<Entry[]> _data = std::make_unique<Entry[]>(maxNumberOfEntries);
+
+    // Statistics counters — per-thread slots, each on its own cache line.
+    // probe()/put() index into statsSlots[threadIdx] so each thread writes
+    // exclusively to its own cache line, eliminating SMP contention.
+
+    struct alignas(CacheLineSize) Stats {
+      std::size_t numberOfEntries     = 0;
+      uint64_t numberOfQueries        = 0;
+      uint64_t numberOfHits           = 0; // entries with identical key found
+      uint64_t numberOfMisses         = 0; // no entry with key found
+      uint64_t numberOfPuts           = 0;
+      uint64_t numberOfCollisions     = 0;
+      uint64_t numberOfOverwrites     = 0;
+      uint64_t numberOfUpdates        = 0;
+    };
+
+    mutable std::array<Stats, MAX_SEARCH_THREADS> statsSlots{};
+
+    /// Aggregates statistics across all active thread slots.
+    [[nodiscard]] Stats aggregateStats() const {
+      Stats total{};
+      const int count = numSmpThreads > 0 ? numSmpThreads : 1;
+      for (int i = 0; i < count; ++i) {
+        total.numberOfEntries    += statsSlots[i].numberOfEntries;
+        total.numberOfQueries    += statsSlots[i].numberOfQueries;
+        total.numberOfHits       += statsSlots[i].numberOfHits;
+        total.numberOfMisses     += statsSlots[i].numberOfMisses;
+        total.numberOfPuts       += statsSlots[i].numberOfPuts;
+        total.numberOfCollisions += statsSlots[i].numberOfCollisions;
+        total.numberOfOverwrites += statsSlots[i].numberOfOverwrites;
+        total.numberOfUpdates    += statsSlots[i].numberOfUpdates;
+      }
+      return total;
+    }
 
   public:
     /// Creates a PawnTT with default size (2 MB).
@@ -225,16 +249,18 @@ namespace engine {
     /// @param score        Pawn structure score (midgame + endgame)
     /// @param passedWhite  Bitboard of white passed pawns
     /// @param passedBlack  Bitboard of black passed pawns
-    void put(Entry* entryPtr, ZobristKey key, Score score, Bitboard passedWhite, Bitboard passedBlack);
+    /// @param threadIdx    Thread index for per-thread statistics (default 0)
+    void put(Entry* entryPtr, ZobristKey key, Score score, Bitboard passedWhite, Bitboard passedBlack, int threadIdx = 0);
 
     /// Probes the PawnTT for an entry matching the key.
     /// Returns a COPY of the entry for thread safety (copy-on-read pattern).
     /// This prevents races where another thread overwrites the entry between
     /// key check and value read.
     /// Updates hit/miss statistics.
-    /// @param key  Pawn Zobrist key (must be non-zero; key==0 always returns nullopt)
-    /// @return     Copy of matching entry, or nullopt if not found or key==0
-    [[nodiscard]] std::optional<Entry> probe(ZobristKey key) const;
+    /// @param key        Pawn Zobrist key (must be non-zero; key==0 always returns nullopt)
+    /// @param threadIdx  Thread index for per-thread statistics (default 0)
+    /// @return           Copy of matching entry, or nullopt if not found or key==0
+    [[nodiscard]] std::optional<Entry> probe(ZobristKey key, int threadIdx = 0) const;
 
     /// Returns a pointer to the entry for the given pawn key.
     /// WARNING: For put() only! Do NOT read values through this pointer.
@@ -280,22 +306,22 @@ namespace engine {
     std::size_t getMaxNumberOfEntries() const { return maxNumberOfEntries; }
 
     /// Returns the current number of entries stored.
-    std::size_t getNumberOfEntries() const { return numberOfEntries; }
+    std::size_t getNumberOfEntries() const { return aggregateStats().numberOfEntries; }
 
     /// Returns the number of cache hits.
-    uint64_t getNumberOfHits() const { return numberOfHits; }
+    uint64_t getNumberOfHits() const { return aggregateStats().numberOfHits; }
 
     /// Returns the number of cache misses.
-    uint64_t getNumberOfMisses() const { return numberOfMisses; }
+    uint64_t getNumberOfMisses() const { return aggregateStats().numberOfMisses; }
 
     /// Returns the number of entry updates (same key, new value).
-    uint64_t getNumberOfUpdates() const { return numberOfUpdates; }
+    uint64_t getNumberOfUpdates() const { return aggregateStats().numberOfUpdates; }
 
     /// Returns the total number of put() calls.
-    uint64_t getNumberOfPuts() const { return numberOfPuts; }
+    uint64_t getNumberOfPuts() const { return aggregateStats().numberOfPuts; }
 
     /// Returns the number of hash collisions (different key, same slot).
-    uint64_t getNumberOfCollisions() const { return numberOfCollisions; }
+    uint64_t getNumberOfCollisions() const { return aggregateStats().numberOfCollisions; }
   };
 
 } // namespace engine

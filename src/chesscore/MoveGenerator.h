@@ -90,6 +90,7 @@ FRIEND_TEST_FWD_DECL(MoveGenTest, normalMoves);
 FRIEND_TEST_FWD_DECL(MoveGenTest, castlingMoves);
 FRIEND_TEST_FWD_DECL(MoveGenTest, storeKiller);
 FRIEND_TEST_FWD_DECL(MoveGenTest, sortValueTest);
+FRIEND_TEST_FWD_DECL(MoveGenTest, sortValueWithHistoryTest);
 
 namespace chess {
 
@@ -404,6 +405,7 @@ namespace chess {
     FRIEND_TEST_NS(MoveGenTest, castlingMoves);
     FRIEND_TEST_NS(MoveGenTest, storeKiller);
     FRIEND_TEST_NS(MoveGenTest, sortValueTest);
+    FRIEND_TEST_NS(MoveGenTest, sortValueWithHistoryTest);
   };
 
 } // namespace chess

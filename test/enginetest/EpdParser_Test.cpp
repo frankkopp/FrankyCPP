@@ -46,6 +46,7 @@ protected:
 // ============================================================================
 
 TEST_F(EpdParser_Test, parseOneLine_ValidBestMove) {
+  // ReSharper disable once CppVariableCanBeMadeConstexpr
   const std::string line = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1 bm e4 d4 ; id \"Opening\" ;";
 
   const auto result = EpdParser::parseOneLine(line);
@@ -58,6 +59,7 @@ TEST_F(EpdParser_Test, parseOneLine_ValidBestMove) {
 }
 
 TEST_F(EpdParser_Test, parseOneLine_ValidAvoidMove) {
+  // ReSharper disable once CppVariableCanBeMadeConstexpr
   const std::string line = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1 am a3 h3 ; id \"Avoid flank\" ;";
 
   const auto result = EpdParser::parseOneLine(line);
@@ -69,6 +71,7 @@ TEST_F(EpdParser_Test, parseOneLine_ValidAvoidMove) {
 }
 
 TEST_F(EpdParser_Test, parseOneLine_ValidDirectMate) {
+  // ReSharper disable once CppVariableCanBeMadeConstexpr
   const std::string line = "8/8/8/8/8/8/6K1/6Qr b - - 0 1 dm 1 ; id \"Mate in 1\" ;";
 
   const auto result = EpdParser::parseOneLine(line);
@@ -80,6 +83,7 @@ TEST_F(EpdParser_Test, parseOneLine_ValidDirectMate) {
 }
 
 TEST_F(EpdParser_Test, parseOneLine_NoId) {
+  // ReSharper disable once CppVariableCanBeMadeConstexpr
   const std::string line = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1 bm e4 ;";
 
   const auto result = EpdParser::parseOneLine(line);
@@ -90,6 +94,7 @@ TEST_F(EpdParser_Test, parseOneLine_NoId) {
 
 TEST_F(EpdParser_Test, parseOneLine_MovesWithAnnotations) {
   // Annotations like ! and ? should be stripped
+  // ReSharper disable once CppVariableCanBeMadeConstexpr
   const std::string line = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1 bm e4! d4?? ; id \"Test\" ;";
 
   const auto result = EpdParser::parseOneLine(line);
@@ -109,24 +114,28 @@ TEST_F(EpdParser_Test, parseOneLine_EmptyLine) {
 }
 
 TEST_F(EpdParser_Test, parseOneLine_CommentOnly) {
+  // ReSharper disable once CppVariableCanBeMadeConstexpr
   const std::string line = "# This is a comment";
   const auto result      = EpdParser::parseOneLine(line);
   EXPECT_FALSE(result.has_value());
 }
 
 TEST_F(EpdParser_Test, parseOneLine_WhitespaceOnly) {
+  // ReSharper disable once CppVariableCanBeMadeConstexpr
   const std::string line = "   \t  \n  ";
   const auto result      = EpdParser::parseOneLine(line);
   EXPECT_FALSE(result.has_value());
 }
 
 TEST_F(EpdParser_Test, parseOneLine_InvalidFen) {
+  // ReSharper disable once CppVariableCanBeMadeConstexpr
   const std::string line = "invalid_fen bm e4 ; id \"Bad FEN\" ;";
   const auto result      = EpdParser::parseOneLine(line);
   EXPECT_FALSE(result.has_value());
 }
 
 TEST_F(EpdParser_Test, parseOneLine_InvalidTestType) {
+  // ReSharper disable once CppVariableCanBeMadeConstexpr
   const std::string line = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1 xx e4 ; id \"Bad type\" ;";
   const auto result      = EpdParser::parseOneLine(line);
   EXPECT_FALSE(result.has_value());
@@ -134,24 +143,28 @@ TEST_F(EpdParser_Test, parseOneLine_InvalidTestType) {
 
 TEST_F(EpdParser_Test, parseOneLine_InvalidMove) {
   // Qa8 is not legal from starting position
+  // ReSharper disable once CppVariableCanBeMadeConstexpr
   const std::string line = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1 bm Qa8 ; id \"Illegal\" ;";
   const auto result      = EpdParser::parseOneLine(line);
   EXPECT_FALSE(result.has_value());
 }
 
 TEST_F(EpdParser_Test, parseOneLine_InvalidMateDepth) {
+  // ReSharper disable once CppVariableCanBeMadeConstexpr
   const std::string line = "8/8/8/8/8/8/6K1/6Qr b - - 0 1 dm abc ; id \"Bad depth\" ;";
   const auto result      = EpdParser::parseOneLine(line);
   EXPECT_FALSE(result.has_value());
 }
 
 TEST_F(EpdParser_Test, parseOneLine_ZeroMateDepth) {
+  // ReSharper disable once CppVariableCanBeMadeConstexpr
   const std::string line = "8/8/8/8/8/8/6K1/6Qr b - - 0 1 dm 0 ; id \"Zero depth\" ;";
   const auto result      = EpdParser::parseOneLine(line);
   EXPECT_FALSE(result.has_value());
 }
 
 TEST_F(EpdParser_Test, parseOneLine_NegativeMateDepth) {
+  // ReSharper disable once CppVariableCanBeMadeConstexpr
   const std::string line = "8/8/8/8/8/8/6K1/6Qr b - - 0 1 dm -1 ; id \"Negative\" ;";
   const auto result      = EpdParser::parseOneLine(line);
   EXPECT_FALSE(result.has_value());
@@ -162,6 +175,7 @@ TEST_F(EpdParser_Test, parseOneLine_NegativeMateDepth) {
 // ============================================================================
 
 TEST_F(EpdParser_Test, parseOneLine_TrailingComment) {
+  // ReSharper disable once CppVariableCanBeMadeConstexpr
   const std::string line = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1 bm e4 ; id \"Test\" ; # comment";
   const auto result      = EpdParser::parseOneLine(line);
   ASSERT_TRUE(result.has_value());
@@ -169,12 +183,14 @@ TEST_F(EpdParser_Test, parseOneLine_TrailingComment) {
 }
 
 TEST_F(EpdParser_Test, parseOneLine_ExtraWhitespace) {
+  // ReSharper disable once CppVariableCanBeMadeConstexpr
   const std::string line = "  rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1   bm   e4   ;   id \"Test\" ;  ";
   const auto result      = EpdParser::parseOneLine(line);
   ASSERT_TRUE(result.has_value());
 }
 
 TEST_F(EpdParser_Test, parseOneLine_MultipleSpacesBetweenMoves) {
+  // ReSharper disable once CppVariableCanBeMadeConstexpr
   const std::string line = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1 bm e4    d4   Nf3 ; id \"Test\" ;";
   const auto result      = EpdParser::parseOneLine(line);
   ASSERT_TRUE(result.has_value());
@@ -216,6 +232,7 @@ TEST_F(EpdParser_Test, parseFile_MixedValidInvalid) {
 // ============================================================================
 
 TEST_F(EpdParser_Test, parseOneLine_ExpectedMoveSet) {
+  // ReSharper disable once CppVariableCanBeMadeConstexpr
   const std::string line = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1 bm e4 d4 ; id \"Test\" ;";
 
   const auto result = EpdParser::parseOneLine(line);
@@ -226,6 +243,7 @@ TEST_F(EpdParser_Test, parseOneLine_ExpectedMoveSet) {
 }
 
 TEST_F(EpdParser_Test, parseOneLine_DirectMateNoExpectedMove) {
+  // ReSharper disable once CppVariableCanBeMadeConstexpr
   const std::string line = "8/8/8/8/8/8/6K1/6Qr b - - 0 1 dm 1 ; id \"Mate\" ;";
 
   const auto result = EpdParser::parseOneLine(line);

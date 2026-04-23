@@ -27,9 +27,9 @@
 #include "chesscore/Position.h"
 #include "common/Logging.h"
 #include "config/ConfigManager.h"
-#include "types/types.h"
 #include "version.h"
 
+#include <stdexcept>
 #include <memory>
 #include <thread>
 
@@ -93,7 +93,7 @@ bool UciHandler::handleCommand(const std::string& cmd) {
   else if (token == "stop")            { stopCommand(); }
   else if (token == "ponderhit")       { ponderHitCommand(); }
   else if (token == "register")        { registerCommand(); }
-  else if (token == "debug")           { debugCommand(); }
+  else if (token == "debug")           { debugCommand(inStream); }
   else if (token == "perft")           { perftCommand(inStream); }
   else if (token == "bench")           { benchCommand(inStream); }
   else if (token == "getoptions")      { getOptionsCommand(); }
@@ -154,10 +154,14 @@ void UciHandler::setOptionCommand(std::istringstream& inStream) {
   LOG__INFO(Logger::get().UCIHAND_LOG, "Set option: {} = {}", name, value);
 }
 
-// TODO: check if we need to clear more state here!
-void UciHandler::uciNewGameCommand() const {
+/// Resets all engine state for a new game (UCI `ucinewgame` command).
+/// - Position reset to startpos (per UCI convention)
+/// - Search state: TT, PawnTT, history, statistics, PV, TB root info,
+///   last search result, dynamic overhead estimate (see Search::newGame())
+void UciHandler::uciNewGameCommand() {
   LOG__INFO(Logger::get().UCIHAND_LOG, "New Game");
-  pSearch->newGame(); // Clears TT, History, and recreates Evaluator (clears PawnTT)
+  pPosition = std::make_unique<Position>(); // reset to startpos
+  pSearch->newGame();
 }
 
 void UciHandler::positionCommand(std::istringstream& inStream) {
@@ -178,10 +182,14 @@ void UciHandler::positionCommand(std::istringstream& inStream) {
     }
   }
 
-  // TODO error handling when fen is invalid
-
+  // Validate and apply the FEN — on error, report via UCI and keep the previous position
   LOG__INFO(Logger::get().UCIHAND_LOG, "Set position to {}", fen);
-  pPosition = std::make_unique<Position>(fen);
+  try {
+    pPosition = std::make_unique<Position>(fen);
+  } catch (const std::invalid_argument& e) {
+    uciError(std::format("Invalid FEN: {}", e.what()));
+    return;
+  }
 
   // if "moves" are given, read all and execute them to position
   if (token == "moves") {
@@ -494,8 +502,22 @@ void UciHandler::registerCommand() const {
   uciError("UCI Protocol Command: register not implemented!");
 }
 
-void UciHandler::debugCommand() const {
-  uciError("UCI Protocol Command: debug not implemented!");
+void UciHandler::debugCommand(std::istringstream& inStream) {
+  std::string token;
+  inStream >> std::skipws >> token;
+  if (token == "on") {
+    debugMode = true;
+    sendString("Debug mode: on");
+    LOG__INFO(Logger::get().UCIHAND_LOG, "Debug mode enabled");
+  }
+  else if (token == "off") {
+    debugMode = false;
+    sendString("Debug mode: off");
+    LOG__INFO(Logger::get().UCIHAND_LOG, "Debug mode disabled");
+  }
+  else {
+    uciError(std::format("debug: expected 'on' or 'off', got '{}'", token));
+  }
 }
 
 void UciHandler::helpCommand() const {
@@ -518,7 +540,8 @@ void UciHandler::helpCommand() const {
   out("  Sets an engine option. Use 'uci' to list options and their types/defaults.");
 
   out("ucinewgame");
-  out("  Starts a new game. Stops any search and clears transposition table.");
+  out("  Starts a new game. Resets position to startpos, clears TT, pawn cache,");
+  out("  history heuristics, search statistics, and dynamic time overhead estimate.");
 
   out("position [startpos | fen <FEN>] [moves <m1> <m2> ...]");
   out("  Sets the current position. 'startpos' for initial setup or 'fen' for custom.");
@@ -570,8 +593,9 @@ void UciHandler::helpCommand() const {
   out("register");
   out("  Not implemented.");
 
-  out("debug");
-  out("  Not implemented.");
+  out("debug on|off");
+  out("  Toggles debug mode. When on, engine sends additional info strings");
+  out("  (eval breakdown, search iteration stats, diagnostic messages).");
 
   out("help");
   out("  Prints this help.");
@@ -617,16 +641,16 @@ void UciHandler::sendCurrentLine(const VariationStack& moveList) const {
 }
 
 void UciHandler::sendIterationEndInfo(int depth, int seldepth, const Value value, uint64_t nodes,
-                                      uint64_t nps, const milliseconds time, const MoveList& pv) const {
-  send(std::format("info depth {} seldepth {} multipv 1 score {} nodes {} nps {} time {} pv {}",
-                   depth, seldepth, value.str(), nodes, nps, time.count(), pv.str()));
+                                      uint64_t nps, const milliseconds time, const MoveList& pv, int multipvIndex) const {
+  send(std::format("info depth {} seldepth {} multipv {} score {} nodes {} nps {} time {} pv {}",
+                   depth, seldepth, multipvIndex, value.str(), nodes, nps, time.count(), pv.str()));
 }
 
 void UciHandler::sendAspirationResearchInfo(int depth, int seldepth, const Value value,
                                             const std::string& boundString, uint64_t nodes, uint64_t nps,
-                                            const milliseconds time, const MoveList& pv) const {
-  send(std::format("info depth {} seldepth {} multipv 1 score {} {} nodes {} nps {} time {} pv {}",
-                   depth, seldepth, value.str(), boundString, nodes, nps, time.count(), pv.str()));
+                                            const milliseconds time, const MoveList& pv, int multipvIndex) const {
+  send(std::format("info depth {} seldepth {} multipv {} score {} {} nodes {} nps {} time {} pv {}",
+                   depth, seldepth, multipvIndex, value.str(), boundString, nodes, nps, time.count(), pv.str()));
 }
 
 void UciHandler::sendCurrentRootMove(const Move currmove, std::size_t movenumber) const {

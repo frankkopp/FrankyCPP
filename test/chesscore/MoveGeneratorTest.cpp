@@ -23,6 +23,7 @@
 #include <string>
 
 #include "Test_Utils.h"
+#include "chesscore/History.h"
 #include "chesscore/MoveGenerator.h"
 #include "chesscore/Position.h"
 #include "init.h"
@@ -664,63 +665,156 @@ TEST_F(MoveGenTest, pvMove) {
 TEST_F(MoveGenTest, evasion) {
   MoveGenerator mg;
   Position p;
-  const MoveList *pseudoLegalMoves, *evasionMoves, *legalMoves;
 
-  // TODO - real tests
+  // Helper: verify every legal move appears in the evasion list (evasion must be a superset of legal)
+  const auto verifyLegalSubsetOfEvasion = [](const MoveList& legal, const MoveList& evasion) {
+    for (const Move lm : legal) {
+      const bool found = std::ranges::any_of(evasion, [&](const Move em) {
+        return em.stripped() == lm.stripped();
+      });
+      EXPECT_TRUE(found) << "Legal move " << lm.str() << " missing from evasion list";
+    }
+  };
 
-  p                = Position("r3k2r/1pp4p/2q1qNn1/3nP3/2q1Pp2/B5R1/pbp2PPP/1R4K1 b kq -");
-  pseudoLegalMoves = mg.generatePseudoLegalMoves(p, GenAll, false);
-  fprintln("PseudoLegal: {:3d} {:s}", pseudoLegalMoves->size(), pseudoLegalMoves->str());
-  evasionMoves = mg.generatePseudoLegalMoves(p, GenAll, true);
-  fprintln("Evasion    : {:3d} {:s}", evasionMoves->size(), evasionMoves->str());
-  legalMoves = mg.generateLegalMoves(p, GenAll);
-  fprintln("Legal      : {:3d} {:s}", legalMoves->size(), legalMoves->str());
-  fprintln("");
+  // --- Position 1: Single check by knight (Nf6 checks e8) ---
+  // Complex position with many pieces; evasion filters from 85 down to 4
+  {
+    p = Position("r3k2r/1pp4p/2q1qNn1/3nP3/2q1Pp2/B5R1/pbp2PPP/1R4K1 b kq -");
+    ASSERT_TRUE(p.hasCheck());
 
-  p                = Position("5k2/8/8/8/8/8/6p1/3K1R2 b - -");
-  pseudoLegalMoves = mg.generatePseudoLegalMoves(p, GenAll, false);
-  fprintln("PseudoLegal: {:3d} {:s}", pseudoLegalMoves->size(), pseudoLegalMoves->str());
-  evasionMoves = mg.generatePseudoLegalMoves(p, GenAll, true);
-  fprintln("Evasion    : {:3d} {:s}", evasionMoves->size(), evasionMoves->str());
-  legalMoves = mg.generateLegalMoves(p, GenAll);
-  fprintln("Legal      : {:3d} {:s}", legalMoves->size(), legalMoves->str());
-  fprintln("");
+    // Deep-copy each list — generatePseudoLegalMoves reuses the same internal buffer
+    const MoveList pseudoLegal = *mg.generatePseudoLegalMoves(p, GenAll, false);
+    const MoveList evasion     = *mg.generatePseudoLegalMoves(p, GenAll, true);
+    const MoveList legal       = *mg.generateLegalMoves(p, GenAll);
 
-  p                = Position("5k2/8/8/8/8/6p1/5R2/3K4 b - -");
-  pseudoLegalMoves = mg.generatePseudoLegalMoves(p, GenAll, false);
-  fprintln("PseudoLegal: {:3d} {:s}", pseudoLegalMoves->size(), pseudoLegalMoves->str());
-  evasionMoves = mg.generatePseudoLegalMoves(p, GenAll, true);
-  fprintln("Evasion    : {:3d} {:s}", evasionMoves->size(), evasionMoves->str());
-  legalMoves = mg.generateLegalMoves(p, GenAll);
-  fprintln("Legal      : {:3d} {:s}", legalMoves->size(), legalMoves->str());
-  fprintln("");
+    EXPECT_EQ(85, pseudoLegal.size());
+    EXPECT_EQ(4, evasion.size());
+    EXPECT_EQ(4, legal.size());
+    EXPECT_LE(evasion.size(), pseudoLegal.size());
+    EXPECT_LE(legal.size(), evasion.size());
+    verifyLegalSubsetOfEvasion(legal, evasion);
 
-  p                = Position("8/8/8/3k4/4Pp2/8/8/3K4 b - e3");
-  pseudoLegalMoves = mg.generatePseudoLegalMoves(p, GenAll, false);
-  fprintln("PseudoLegal: {:3d} {:s}", pseudoLegalMoves->size(), pseudoLegalMoves->str());
-  evasionMoves = mg.generatePseudoLegalMoves(p, GenAll, true);
-  fprintln("Evasion    : {:3d} {:s}", evasionMoves->size(), evasionMoves->str());
-  legalMoves = mg.generateLegalMoves(p, GenAll);
-  fprintln("Legal      : {:3d} {:s}", legalMoves->size(), legalMoves->str());
-  fprintln("");
+    // No castling in evasion when in check
+    for (const Move m : evasion) {
+      EXPECT_NE(CASTLING, m.type()) << "Castling should not appear in evasion: " << m.str();
+    }
+  }
 
-  p                = Position("8/8/8/3k2n1/8/8/6B1/3K4 b - -");
-  pseudoLegalMoves = mg.generatePseudoLegalMoves(p, GenAll, false);
-  fprintln("PseudoLegal: {:3d} {:s}", pseudoLegalMoves->size(), pseudoLegalMoves->str());
-  evasionMoves = mg.generatePseudoLegalMoves(p, GenAll, true);
-  fprintln("Evasion    : {:3d} {:s}", evasionMoves->size(), evasionMoves->str());
-  legalMoves = mg.generateLegalMoves(p, GenAll);
-  fprintln("Legal      : {:3d} {:s}", legalMoves->size(), legalMoves->str());
-  fprintln("");
+  // --- Position 2: Single check by rook along f-file (Rf1 checks f8) ---
+  // Evasion: king moves + pawn captures that block/capture on f1
+  {
+    p = Position("5k2/8/8/8/8/8/6p1/3K1R2 b - -");
+    ASSERT_TRUE(p.hasCheck());
 
-  p                = Position("5k2/3N4/8/8/8/8/6p1/3K1R2 b - - 1 1");
-  pseudoLegalMoves = mg.generatePseudoLegalMoves(p, GenAll, false);
-  fprintln("PseudoLegal: {:3d} {:s}", pseudoLegalMoves->size(), pseudoLegalMoves->str());
-  evasionMoves = mg.generatePseudoLegalMoves(p, GenAll, true);
-  fprintln("Evasion    : {:3d} {:s}", evasionMoves->size(), evasionMoves->str());
-  legalMoves = mg.generateLegalMoves(p, GenAll);
-  fprintln("Legal      : {:3d} {:s}", legalMoves->size(), legalMoves->str());
-  fprintln("");
+    const MoveList pseudoLegal = *mg.generatePseudoLegalMoves(p, GenAll, false);
+    const MoveList evasion     = *mg.generatePseudoLegalMoves(p, GenAll, true);
+    const MoveList legal       = *mg.generateLegalMoves(p, GenAll);
+
+    EXPECT_EQ(13, pseudoLegal.size());
+    EXPECT_EQ(8, evasion.size());
+    EXPECT_EQ(8, legal.size());
+    EXPECT_LE(evasion.size(), pseudoLegal.size());
+    EXPECT_LE(legal.size(), evasion.size());
+    verifyLegalSubsetOfEvasion(legal, evasion);
+  }
+
+  // --- Position 3: Single check by rook along f-file (Rf2 checks f8) ---
+  // Evasion: king moves + pawn capture on f2
+  {
+    p = Position("5k2/8/8/8/8/6p1/5R2/3K4 b - -");
+    ASSERT_TRUE(p.hasCheck());
+
+    const MoveList pseudoLegal = *mg.generatePseudoLegalMoves(p, GenAll, false);
+    const MoveList evasion     = *mg.generatePseudoLegalMoves(p, GenAll, true);
+    const MoveList legal       = *mg.generateLegalMoves(p, GenAll);
+
+    EXPECT_EQ(7, pseudoLegal.size());
+    EXPECT_EQ(5, evasion.size());
+    EXPECT_EQ(5, legal.size());
+    EXPECT_LE(evasion.size(), pseudoLegal.size());
+    EXPECT_LE(legal.size(), evasion.size());
+    verifyLegalSubsetOfEvasion(legal, evasion);
+  }
+
+  // --- Position 4: Single check by pawn (e4 attacks d5), en passant evasion ---
+  // The e4 pawn gives check to king on d5; f4xe3 en passant captures the checker
+  {
+    p = Position("8/8/8/3k4/4Pp2/8/8/3K4 b - e3");
+    ASSERT_TRUE(p.hasCheck());
+
+    const MoveList pseudoLegal = *mg.generatePseudoLegalMoves(p, GenAll, false);
+    const MoveList evasion     = *mg.generatePseudoLegalMoves(p, GenAll, true);
+    const MoveList legal       = *mg.generateLegalMoves(p, GenAll);
+
+    EXPECT_EQ(10, pseudoLegal.size());
+    EXPECT_EQ(9, evasion.size());
+    EXPECT_EQ(9, legal.size());
+    EXPECT_LE(evasion.size(), pseudoLegal.size());
+    EXPECT_LE(legal.size(), evasion.size());
+    verifyLegalSubsetOfEvasion(legal, evasion);
+
+    // En passant capture (f4e3) must be in the evasion list — it captures the checking pawn
+    const Move epMove  = Move::enPassant(SQ_F4, SQ_E3);
+    const bool epFound = std::ranges::any_of(evasion, [&](const Move m) {
+      return m.stripped() == epMove.stripped();
+    });
+    EXPECT_TRUE(epFound) << "En passant evasion f4e3 should be in evasion list";
+
+    // Direct capture of the checking pawn (d5xe4) must also be present
+    const Move captureMove  = Move::normal(SQ_D5, SQ_E4);
+    const bool captureFound = std::ranges::any_of(evasion, [&](const Move m) {
+      return m.stripped() == captureMove.stripped();
+    });
+    EXPECT_TRUE(captureFound) << "King capture d5e4 should be in evasion list";
+  }
+
+  // --- Position 5: Single check by bishop (Bg2 diagonal to d5) ---
+  // Knight can block or capture; king can move. Legal is one less than evasion
+  // (one evasion move is pseudo-legal but leaves king in check)
+  {
+    p = Position("8/8/8/3k2n1/8/8/6B1/3K4 b - -");
+    ASSERT_TRUE(p.hasCheck());
+
+    const MoveList pseudoLegal = *mg.generatePseudoLegalMoves(p, GenAll, false);
+    const MoveList evasion     = *mg.generatePseudoLegalMoves(p, GenAll, true);
+    const MoveList legal       = *mg.generateLegalMoves(p, GenAll);
+
+    EXPECT_EQ(14, pseudoLegal.size());
+    EXPECT_EQ(9, evasion.size());
+    EXPECT_EQ(8, legal.size());
+    EXPECT_LE(evasion.size(), pseudoLegal.size());
+    EXPECT_LE(legal.size(), evasion.size());
+    verifyLegalSubsetOfEvasion(legal, evasion);
+
+    // Evasion has one more move than legal — one pseudo-legal evasion is illegal
+    EXPECT_EQ(evasion.size() - legal.size(), 1)
+      << "Exactly one evasion move should be illegal (king still on diagonal)";
+  }
+
+  // --- Position 6: Double check (Nd7 + Rf1 both check f8) ---
+  // Only king moves are legal; evasionTargets returns BbZero for double check
+  {
+    p = Position("5k2/3N4/8/8/8/8/6p1/3K1R2 b - - 1 1");
+    ASSERT_TRUE(p.hasCheck());
+
+    const MoveList pseudoLegal = *mg.generatePseudoLegalMoves(p, GenAll, false);
+    const MoveList evasion     = *mg.generatePseudoLegalMoves(p, GenAll, true);
+    const MoveList legal       = *mg.generateLegalMoves(p, GenAll);
+
+    EXPECT_EQ(13, pseudoLegal.size());
+    EXPECT_EQ(4, evasion.size());
+    EXPECT_EQ(4, legal.size());
+    EXPECT_LE(evasion.size(), pseudoLegal.size());
+    EXPECT_LE(legal.size(), evasion.size());
+    verifyLegalSubsetOfEvasion(legal, evasion);
+
+    // Double check: only king moves should be generated (no blocks, no piece captures)
+    const Square kingSquare = p.getKingSquare(BLACK);
+    for (const Move m : evasion) {
+      EXPECT_EQ(kingSquare, m.from())
+        << "Double check evasion must be king move, but got " << m.str();
+    }
+  }
 }
 
 TEST_F(MoveGenTest, sortValueTest) {
@@ -730,12 +824,14 @@ TEST_F(MoveGenTest, sortValueTest) {
   // Start pos
   const auto p = Position("r3k2r/1pp4p/2q1qNn1/3nP3/2q1Pp2/B5R1/pbp2PPP/1R4K1 b kq -");
 
-  Move moveFromUci = Move::normal(SQ_G6, SQ_H4);
-  mg.storeKiller(moveFromUci);
-  moveFromUci = Move::normal(SQ_B7, SQ_B6);
-  mg.storeKiller(moveFromUci);
-  moveFromUci = Move::promotion(SQ_A2, SQ_B1, QUEEN);
-  mg.setPV(moveFromUci);
+  // Define the special moves used throughout this test
+  constexpr Move killer2 = Move::normal(SQ_G6, SQ_H4);   // stored first  → slot [1] → value 1000
+  constexpr Move killer1 = Move::normal(SQ_B7, SQ_B6);   // stored second → slot [0] → value 1001
+  constexpr Move pvMove  = Move::promotion(SQ_A2, SQ_B1, QUEEN);
+
+  mg.storeKiller(killer2);
+  mg.storeKiller(killer1);
+  mg.setPV(pvMove);
 
   mg.generatePawnMoves(p, &moves, GenNonQuiet, false, BbZero);
   mg.generateMoves(p, &moves, GenNonQuiet, false, BbZero);
@@ -754,24 +850,203 @@ TEST_F(MoveGenTest, sortValueTest) {
   }
   NEWLINE;
 
-  // sort moves
-  ranges::stable_sort(moves, moveValueGreaterComparator());
-
-  // TODO real tests
+  // sort moves — use unstable sort to match MoveGenerator's production sort
+  ranges::sort(moves, moveValueGreaterComparator());
 
   fprintln("Post sort:");
-  int counter   = 0;
-  Move lastMove = MOVE_NONE;
   for (const Move m : moves) {
     fprintln("{}", m.strVerbose());
-    if (!counter++) {
-      lastMove = m;
-      continue;
-    }
-    EXPECT_GE(lastMove.value(), m.value());
-    lastMove = m;
   }
   NEWLINE;
+
+  // --- Sanity: non-empty move list ---
+  ASSERT_FALSE(moves.empty()) << "Move list should not be empty for this position";
+
+  // --- 1. PV move must be first with VALUE_MAX ---
+  EXPECT_EQ(moves[0].stripped(), pvMove.stripped())
+    << "PV move a2b1q should be first after sort";
+  EXPECT_EQ(moves[0].value(), VALUE_MAX)
+    << "PV move should have VALUE_MAX sort value";
+
+  // --- 2. Non-increasing sort order (monotonic) ---
+  for (size_t i = 1; i < moves.size(); ++i) {
+    EXPECT_GE(moves[i - 1].value(), moves[i].value())
+      << "Sort order violated at index " << i
+      << ": " << moves[i - 1].strVerbose() << " vs " << moves[i].strVerbose();
+  }
+
+  // --- 3. Killer moves present and ordered: Killer1 (1001) before Killer2 (1000) ---
+
+  // Find killer indices in sorted list
+  int killer1Idx = -1;
+  int killer2Idx = -1;
+  for (int i = 0; i < static_cast<int>(moves.size()); ++i) {
+    if (moves[i].stripped() == killer1.stripped()) killer1Idx = i;
+    if (moves[i].stripped() == killer2.stripped()) killer2Idx = i;
+  }
+  ASSERT_NE(killer1Idx, -1) << "Killer 1 (b7b6) not found in move list";
+  ASSERT_NE(killer2Idx, -1) << "Killer 2 (g6h4) not found in move list";
+  EXPECT_LT(killer1Idx, killer2Idx)
+    << "Killer 1 (value 1001) should appear before Killer 2 (value 1000)";
+  EXPECT_EQ(moves[killer1Idx].value(), static_cast<Value>(1001));
+  EXPECT_EQ(moves[killer2Idx].value(), static_cast<Value>(1000));
+
+  // --- 4. Value-based ordering zones ---
+  // Sort-value contract (from updateSortValues + generation):
+  //   Captures/good promos:  value ~2000+  (above killers)
+  //   Killers:               value 1000/1001
+  //   Quiet moves:           value ~-2000  (below killers)
+  //   Under-promotions (R/B): value ~-5500 (intentionally below quiet)
+  //
+  // Since the list is monotonically sorted (check 2), it suffices to verify
+  // that every move with value > 1001 appears before the killers, and every
+  // move with value < 1000 appears after the killers.
+  for (int i = 0; i < static_cast<int>(moves.size()); ++i) {
+    if (moves[i].stripped() == pvMove.stripped()) continue;
+    if (moves[i].stripped() == killer1.stripped() || moves[i].stripped() == killer2.stripped()) continue;
+
+    if (moves[i].value() > static_cast<Value>(1001)) {
+      EXPECT_LT(i, killer1Idx)
+        << "Move with value > 1001 should appear before killers: " << moves[i].strVerbose();
+    }
+    if (moves[i].value() < static_cast<Value>(1000)) {
+      EXPECT_GT(i, killer2Idx)
+        << "Move with value < 1000 should appear after killers: " << moves[i].strVerbose();
+    }
+  }
+
+  // --- 5. No move (except PV) should exceed VALUE_MAX ---
+  for (size_t i = 1; i < moves.size(); ++i) {
+    EXPECT_LE(moves[i].value(), VALUE_MAX)
+      << "Non-PV move should not exceed VALUE_MAX: " << moves[i].strVerbose();
+  }
+}
+
+TEST_F(MoveGenTest, sortValueWithHistoryTest) {
+  MoveGenerator mg;
+  MoveList moves;
+
+  // Use a position after one move so getLastMove() is valid for counter-move lookup.
+  // FEN: r3k2r/1pp4p/2q1qNn1/3nP3/2q1Pp2/B5R1/pbp2PPP/1R4K1 w kq -
+  // White to move. Play Rg3-h3 (rook slides to h3, which is empty) as setup move.
+  Position p("r3k2r/1pp4p/2q1qNn1/3nP3/2q1Pp2/B5R1/pbp2PPP/1R4K1 w kq -");
+  constexpr Move setupMove = Move::normal(SQ_G3, SQ_H3);
+  p.doMove(setupMove);
+  // Now it's black to move, and p.getLastMove() == Rg3h3
+
+  // Choose quiet black moves for history/counter-move testing:
+  // - Ng6-h4: knight on g6 can go to h4 (empty square) — quiet move
+  // - Nd5-b4: knight on d5 can go to b4 (empty square) — quiet move
+  History history;
+  history.reset();
+  constexpr Move historyBoostedMove = Move::normal(SQ_G6, SQ_H4);
+  history.historyCount[BLACK][SQ_G6][SQ_H4] = 50'000; // → value boost = 50000/100 = 500
+
+  // Counter-move: after white's Rg3-h3, black's Nd5-b4 caused a cutoff before
+  constexpr Move counterBoostedMove = Move::normal(SQ_D5, SQ_B4);
+  history.counterMoves[setupMove.from()][setupMove.to()] = counterBoostedMove.stripped();
+  // Give the counter-move some base history so the total value > 0
+  history.historyCount[BLACK][SQ_D5][SQ_B4] = 10'000; // → value boost = 100 + 500 (counter) = 600
+
+  mg.setHistoryData(&history);
+
+  // Generate all moves (no PV, no killers — isolating history effect)
+  mg.generatePawnMoves(p, &moves, GenNonQuiet, false, BbZero);
+  mg.generateMoves(p, &moves, GenNonQuiet, false, BbZero);
+  mg.generateKingMoves(p, &moves, GenNonQuiet, false);
+  mg.generatePawnMoves(p, &moves, GenQuiet, false, BbZero);
+  mg.generateCastling(p, &moves, GenQuiet);
+  mg.generateMoves(p, &moves, GenQuiet, false, BbZero);
+  mg.generateKingMoves(p, &moves, GenQuiet, false);
+
+  // Apply history-based sort value updates
+  mg.updateSortValues(p, &moves);
+
+  // Sort — use unstable sort to match MoveGenerator's production sort
+  ranges::sort(moves, moveValueGreaterComparator());
+
+  fprintln("History test - Post sort:");
+  for (const Move m : moves) {
+    fprintln("{}", m.strVerbose());
+  }
+  NEWLINE;
+
+  ASSERT_FALSE(moves.empty());
+
+  // --- 1. Non-increasing sort order ---
+  for (size_t i = 1; i < moves.size(); ++i) {
+    EXPECT_GE(moves[i - 1].value(), moves[i].value())
+      << "Sort order violated at index " << i;
+  }
+
+  // --- 2. Locate the boosted moves in the sorted list ---
+  int histBoostedIdx    = -1;
+  int counterBoostedIdx = -1;
+  for (int i = 0; i < static_cast<int>(moves.size()); ++i) {
+    if (moves[i].stripped() == historyBoostedMove.stripped()) {
+      histBoostedIdx = i;
+    }
+    else if (moves[i].stripped() == counterBoostedMove.stripped()) {
+      counterBoostedIdx = i;
+    }
+  }
+  ASSERT_NE(histBoostedIdx, -1)    << "History-boosted move (g6h4) not found in move list";
+  ASSERT_NE(counterBoostedIdx, -1) << "Counter-boosted move (d5b4) not found in move list";
+
+  fprintln("History-boosted move (g6h4): value={}, idx={}",
+           std::to_string(moves[histBoostedIdx].value()), histBoostedIdx);
+  fprintln("Counter-boosted move (d5b4): value={}, idx={}",
+           std::to_string(moves[counterBoostedIdx].value()), counterBoostedIdx);
+
+  // --- 3. Compare against a no-history baseline to verify the boosts ---
+  MoveGenerator mg2;
+  MoveList movesNoHistory;
+
+  mg2.generatePawnMoves(p, &movesNoHistory, GenNonQuiet, false, BbZero);
+  mg2.generateMoves(p, &movesNoHistory, GenNonQuiet, false, BbZero);
+  mg2.generateKingMoves(p, &movesNoHistory, GenNonQuiet, false);
+  mg2.generatePawnMoves(p, &movesNoHistory, GenQuiet, false, BbZero);
+  mg2.generateCastling(p, &movesNoHistory, GenQuiet);
+  mg2.generateMoves(p, &movesNoHistory, GenQuiet, false, BbZero);
+  mg2.generateKingMoves(p, &movesNoHistory, GenQuiet, false);
+  mg2.updateSortValues(p, &movesNoHistory);
+  ranges::sort(movesNoHistory, moveValueGreaterComparator());
+
+  // Find both target moves in the no-history list to get their base values
+  Value histMoveBaseValue    = VALUE_NONE;
+  Value counterMoveBaseValue = VALUE_NONE;
+  for (const Move m : movesNoHistory) {
+    if (m.stripped() == historyBoostedMove.stripped()) {
+      histMoveBaseValue = m.value();
+    }
+    else if (m.stripped() == counterBoostedMove.stripped()) {
+      counterMoveBaseValue = m.value();
+    }
+  }
+  ASSERT_NE(histMoveBaseValue, VALUE_NONE)    << "History-boosted move should exist in no-history list";
+  ASSERT_NE(counterMoveBaseValue, VALUE_NONE) << "Counter-boosted move should exist in no-history list";
+
+  // History boost: 50000/100 = 500 points added to base value
+  const Value histBoostedValue = moves[histBoostedIdx].value();
+  EXPECT_GT(histBoostedValue, histMoveBaseValue)
+    << "History should have boosted the move's sort value above its base";
+  EXPECT_EQ(histBoostedValue, histMoveBaseValue + 500)
+    << "History boost should be exactly count/100 = 50000/100 = 500";
+
+  // Counter-move boost: 10000/100 = 100 (history) + 500 (counter) = 600 points
+  const Value counterBoostedValue = moves[counterBoostedIdx].value();
+  EXPECT_GT(counterBoostedValue, counterMoveBaseValue)
+    << "Counter-move + history should have boosted the move's sort value above its base";
+  EXPECT_EQ(counterBoostedValue, counterMoveBaseValue + 600)
+    << "Counter-move boost should be history(100) + counter(500) = 600";
+
+  // --- 4. Counter-boosted move should sort above history-only boosted move ---
+  // Counter-boost (600) > history-only boost (500), and both are knight quiet
+  // moves with similar base values, so counter-boosted should rank higher.
+  EXPECT_GT(counterBoostedValue, histBoostedValue)
+    << "Counter-move boost (600) should give higher final value than history-only (500)";
+  EXPECT_LT(counterBoostedIdx, histBoostedIdx)
+    << "Counter-boosted move should appear before history-only move in sorted list";
 }
 
 

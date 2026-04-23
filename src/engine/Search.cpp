@@ -19,11 +19,13 @@
 
 #include "Search.h"
 #include "Evaluator.h"
+#include "Handicap.h"
 #include "See.h"
 #include "common/Logging.h"
 #include "common/misc.h"
 
 #include <algorithm>
+#include <array>
 #include <chrono>
 #include <cmath>
 #include <iomanip>
@@ -86,6 +88,14 @@ void Search::newGame() {
   bestMoveStability.reset();
   tbRoot.reset();
   hadBookMove = false;
+
+  // Clear stale result from previous game
+  lastSearchResult.reset();
+  resultReady.store(false, std::memory_order_relaxed);
+
+  // Reset dynamic overhead estimate — different games may have different time controls,
+  // so the learned EMA from the previous game is not transferable.
+  measuredPostStopOverheadMs = SearchConfig.MOVE_OVERHEAD_MS;
 }
 
 void Search::isReady() {
@@ -96,7 +106,8 @@ void Search::isReady() {
 void Search::startSearch(const Position& p, const SearchLimits& sl) {
   // acquire init phase lock
   if (!initSemaphore.try_acquire()) {
-    LOG__WARN(Logger::get().SEARCH_LOG, "Search init failed as another initialization is ongoing.");
+    LOG__ERROR(Logger::get().SEARCH_LOG, "Search init failed as another initialization is ongoing.");
+    return;
   }
 
   // start search time
@@ -175,6 +186,7 @@ void Search::clearTT() const {
     return;
   }
   tt->clear();
+  // ReSharper disable once CppVariableCanBeMadeConstexpr
   const std::string msg = "Hash cleared.";
   sendString(msg);
   LOG__INFO(Logger::get().SEARCH_LOG, "{}", msg);
@@ -182,6 +194,7 @@ void Search::clearTT() const {
 
 void Search::resizeTT() const {
   if (isSearching()) {
+    // ReSharper disable once CppVariableCanBeMadeConstexpr
     const std::string msg = "Can't resize hash while searching.";
     sendString(msg);
     LOG__WARN(Logger::get().SEARCH_LOG, "{}", msg);
@@ -194,8 +207,14 @@ void Search::resizeTT() const {
 
 uint64_t Search::getTotalNodes() const {
   uint64_t total = 0;
-  for (const auto& st : searchThreadData) {
-    total += st->nodesVisited;
+  // Only sum active threads [0..numHelperThreads], not the entire vector.
+  // The vector grows but never shrinks, so stale entries beyond the active
+  // thread count could contain non-zero nodesVisited from previous searches
+  // with a higher thread count.
+  const int activeThreads = numHelperThreads + 1;
+  const auto count        = std::min(static_cast<int>(searchThreadData.size()), activeThreads);
+  for (int i = 0; i < count; ++i) {
+    total += searchThreadData[i]->nodesVisited;
   }
   return total;
 }
@@ -225,6 +244,9 @@ void Search::run() {
 
   // initialize search state (stop flag, result, time limits, UCI tracking)
   resetSearchState();
+
+  // Store root color for contempt bias (used by drawScore())
+  rootColor = position.getNextPlayer();
 
   // Note: npsTime and npsNodes are initialized later, right before iterative deepening,
   // to avoid including initialization overhead in NPS calculations
@@ -268,12 +290,10 @@ void Search::run() {
   // when not pondering and search is time controlled start timer
   if (searchLimits.timeControl && !searchLimits.ponder) { startTimer(); }
 
-  // age tt entries (skip in SMP mode - age-- in probe() is disabled for thread safety)
+  // advance TT generation counter so entries from old searches become cheaper to replace
   if (SearchConfig.USE_TT) {
+    tt->newGeneration();
     LOG__INFO(Logger::get().SEARCH_LOG, "Transposition Table: Using TT: {}", tt->str());
-    if (numHelperThreads == 0) {
-      tt->ageEntries();
-    }
   }
   else { LOG__INFO(Logger::get().SEARCH_LOG, "Transposition Table: Not using TT."); }
 
@@ -284,12 +304,12 @@ void Search::run() {
   // check for opening book move when we have a time-controlled game
   Move bookMove = MOVE_NONE;
   if (book && SearchConfig.USE_BOOK && searchLimits.timeControl) {
-    // TODO: instead of a random book move we could select a book move based on
-    //  some score and some variation (randomness)
-    bookMove = book->getRandomMove(position.getZobristKey());
+    bookMove = book->getBookMove(position.getZobristKey(), SearchConfig.BOOK_VARIETY);
     LOG__DEBUG(Logger::get().SEARCH_LOG, "Opening Book: Choosing book move {}", bookMove.str());
   }
-  else { LOG__INFO(Logger::get().SEARCH_LOG, "Opening Book: Not using book."); }
+  else {
+    LOG__INFO(Logger::get().SEARCH_LOG, "Opening Book: Not using book.");
+  }
 
   LOG__INFO(Logger::get().SEARCH_LOG, "Search using: PVS={} ASP={}", SearchConfig.USE_PVS, SearchConfig.USE_ASP);
 
@@ -313,11 +333,14 @@ void Search::run() {
     searchResult = iterativeDeepening(position);
   }
   else {
-    // If we have found a book-move an update result and omit search.
+    // If we have found a book-move, update result and omit search.
     searchResult.bestMove = bookMove;
     searchResult.bookMove = true;
     searchResult.threads  = numHelperThreads + 1;
     hadBookMove           = true;
+    if (isDebugMode()) {
+      sendString(std::format("book move: {}", bookMove.str()));
+    }
   }
   // ===========================================================================
   // /END ITERATIVE DEEPENING
@@ -331,7 +354,7 @@ void Search::run() {
     LOG__INFO(Logger::get().SEARCH_LOG, "Search finished before stopped or ponderhit! Waiting for stop/ponderhit to send result");
     std::unique_lock lock(stopMutex);
     stopConditionVar.wait(lock, [this] {
-      return stopSearchFlag.load() || (!searchLimits.ponder && !searchLimits.infinite);
+      return stopSearchFlag.load() || !(searchLimits.ponder || searchLimits.infinite);
     });
   }
 
@@ -381,12 +404,23 @@ void Search::run() {
   // Apply tablebase root override on top of best-thread selection
   applyTBRootOverride(searchResult);
 
-  // Extract and validate ponder move from PV or TT
-  extractPonderMove(searchResult, *bestThread);
+  // Apply handicap move selection OR extract ponder move (mutually exclusive).
+  // Handicap overrides the best move with a suboptimal pick from the candidate pool
+  // and disables pondering. Must come after TB override (TB moves are not overridden).
+  if (SearchConfig.HANDICAP > 0) {
+    applyHandicap(searchResult);
+  }
+  else {
+    // Extract and validate ponder move from PV or TT (normal play only)
+    extractPonderMove(searchResult, *bestThread);
+  }
 
-  // Send final UCI info line if a non-main thread was selected
-  // This ensures the GUI shows depth/score/PV consistent with the final bestmove
-  if (bestThread->id != 0) {
+  // Send final UCI info line if a non-main thread was selected.
+  // This ensures the GUI shows depth/score/PV consistent with the final bestmove.
+  // Suppressed when MultiPV > 1: sending a single "multipv 1" line here would
+  // overwrite the GUI's complete multi-PV display from the last completed iteration
+  // with a potentially different depth/score from a helper thread.
+  if (bestThread->id != 0 && SearchConfig.MULTI_PV <= 1) {
     sendFinalUciInfo(*bestThread);
   }
 
@@ -421,12 +455,12 @@ void Search::run() {
   // Updates an EMA that is subtracted from the timer budget on the next search.
   // ===========================================================================
   if (stoppedByTimer) {
-    const auto postStopNs       = (currentTime() - timerStopTime).count(); // nanoseconds
-    const auto sampleMs         = static_cast<double>(postStopNs) / 1'000'000.0;
+    const auto postStopNs           = (currentTime() - timerStopTime).count(); // nanoseconds
+    const auto sampleMs             = static_cast<double>(postStopNs) / 1'000'000.0;
     constexpr int64_t maxOverheadMs = 200;
     const int64_t floorMs           = SearchConfig.MOVE_OVERHEAD_MS;
     // EMA: 30% new sample, 70% previous estimate
-    const auto rawEmaMs = 0.3 * sampleMs + 0.7 * static_cast<double>(measuredPostStopOverheadMs);
+    const auto rawEmaMs        = 0.3 * sampleMs + 0.7 * static_cast<double>(measuredPostStopOverheadMs);
     measuredPostStopOverheadMs = std::clamp(static_cast<int64_t>(std::llround(rawEmaMs)), floorMs, maxOverheadMs);
     LOG__INFO(Logger::get().SEARCH_LOG,
               "Post-stop overhead: sample {:.3f} ms, EMA {} ms (floor {} ms, cap {} ms)",
@@ -497,14 +531,6 @@ void Search::joinHelperThreads() {
 SearchResult Search::iterativeDeepening(Position& p) {
   SearchResult searchResult{p};
 
-  // Validate config: IID and IIR are mutually exclusive
-  // TODO: Remove after we have removed one of these approaches and the related config options
-  if (SearchConfig.USE_IID && SearchConfig.USE_IIR) {
-    LOG__ERROR(Logger::get().SEARCH_LOG,
-               "Configuration error: USE_IID and USE_IIR are both enabled! "
-               "These are mutually exclusive - only enable one. IIR will be used.");
-  }
-
   // check repetition and 50-moves rule
   if (checkDrawRepAnd50(p, 2)) {
     const std::string msg = searchLimits.ponder
@@ -512,7 +538,7 @@ SearchResult Search::iterativeDeepening(Position& p) {
                               : "Search called on DRAW by Repetition or 50-moves-rule";
     if (isMainThread()) sendString(msg);
     LOG__WARN(Logger::get().SEARCH_LOG, "{}", msg);
-    searchResult.bestMoveValue = VALUE_DRAW;
+    searchResult.bestMoveValue = drawScore(p);
     return searchResult;
   }
 
@@ -537,7 +563,7 @@ SearchResult Search::iterativeDeepening(Position& p) {
                                 : "Search called on a stale mate position";
       if (isMainThread()) sendString(msg);
       LOG__WARN(Logger::get().SEARCH_LOG, "{}", msg);
-      searchResult.bestMoveValue = VALUE_DRAW;
+      searchResult.bestMoveValue = drawScore(p);
     }
     return searchResult;
   }
@@ -616,7 +642,26 @@ SearchResult Search::iterativeDeepening(Position& p) {
   }
 
   // prepare max depth from search limits
-  const int maxDepth = searchLimits.depth ? searchLimits.depth : DEPTH_MAX;
+  int maxDepth = searchLimits.depth ? searchLimits.depth : DEPTH_MAX;
+
+  // Apply handicap depth cap (main thread only — helpers share the same stop flag)
+  if (isMainThread() && SearchConfig.HANDICAP > 0) {
+    const auto hParams = handicap::getHandicapParams(SearchConfig.HANDICAP);
+    maxDepth           = std::min(maxDepth, hParams.depthCap);
+    LOG__INFO(Logger::get().SEARCH_LOG, "Handicap {}: depth capped to {}", SearchConfig.HANDICAP, maxDepth);
+
+    // Handicap time waste: sleep to consume a fraction of the time budget.
+    // The timer is already running, so the sleep eats into search time while
+    // consuming real clock time (prevents time banking that might help the engine).
+    if (hParams.timeFraction < 100 && searchLimits.timeControl) {
+      const auto wasteMs = timeLimit.count() * (100 - hParams.timeFraction) / 100;
+      if (wasteMs > 0) {
+        LOG__INFO(Logger::get().SEARCH_LOG, "Handicap {}: wasting {}ms of {}ms budget ({}% effective)",
+                  SearchConfig.HANDICAP, wasteMs, timeLimit.count(), hParams.timeFraction);
+        std::this_thread::sleep_for(milliseconds{wasteMs});
+      }
+    }
+  }
 
   // If we have a TB root move (from non-immediate probe), give it a high sort value
   // so it's searched first. This ensures the TB move is the PV if it's truly best.
@@ -655,12 +700,44 @@ SearchResult Search::iterativeDeepening(Position& p) {
   uint64_t lastIterationNodes = 0;
   uint64_t prevIterationNodes = 0;
 
-  // Helper threads start at different depths to diversify search.
-  // Main thread always starts at depth 1; helpers start at depth 1 + (id % 3).
-  // This spreads helpers across depths 2, 3, 1 (wrapping) for better TT utilization.
-  const Depth startingDepth = isMainThread() ? Depth{1} : Depth{1 + thread().id % 3};
+  // Thread depth diversification for Lazy SMP.
+  // Each helper thread searches a different subset of iteration depths to reduce redundant
+  // work and produce more diverse TT entries at varied depth levels.
+  //
+  // USE_SMP_DEPTH_SKIP = true (default):
+  //   Skip-table approach — each thread skips certain iteration depths based on its thread ID.
+  //   Threads with higher IDs skip more aggressively (size 2-4) with interleaved phases,
+  //   so at any given moment threads are spread across different depth levels.
+  //   Main thread always searches every depth.
+  //
+  // USE_SMP_DEPTH_SKIP = false (legacy):
+  //   Simple starting depth offset — helpers start at depth 1 + (id % 3), then search
+  //   every depth from there. Threads converge to the same depth after a few iterations.
+
+  // Skip tables: SkipSize controls how many depths to skip (1 = none),
+  // SkipPhase offsets within the pattern so threads with the same size are interleaved.
+  // Indexed by (threadId % TABLE_SIZE). 20 entries cover up to 20 helper threads;
+  // higher IDs wrap around and still get good diversity.
+  static constexpr int SKIP_TABLE_SIZE = 20;
+  static constexpr std::array SkipSize  = {1, 1, 2, 2, 2, 2, 3, 3, 3, 3, 3, 3, 4, 4, 4, 4, 4, 4, 4, 4};
+  static constexpr std::array SkipPhase = {0, 1, 0, 1, 2, 3, 0, 1, 2, 3, 4, 5, 0, 1, 2, 3, 4, 5, 6, 7};
+
+  const bool useDepthSkip = SearchConfig.USE_SMP_DEPTH_SKIP && !isMainThread();
+  const int skipSize  = useDepthSkip ? SkipSize[thread().id % SKIP_TABLE_SIZE]  : 1;
+  const int skipPhase = useDepthSkip ? SkipPhase[thread().id % SKIP_TABLE_SIZE] : 0;
+
+  // Legacy fallback: simple starting depth offset when skip tables are disabled
+  const Depth startingDepth = !SearchConfig.USE_SMP_DEPTH_SKIP && !isMainThread()
+                                ? Depth{1 + thread().id % 3}
+                                : Depth{1};
 
   for (auto iterationDepth = startingDepth; iterationDepth <= maxDepth; ++iterationDepth) {
+
+    // Skip-table depth diversification: helpers skip certain iteration depths
+    // so threads are spread across different depth levels at any given moment.
+    if (useDepthSkip && (static_cast<int>(iterationDepth) + skipPhase) % skipSize != 0) {
+      continue;
+    }
 
     // Before starting a new iteration, check if we have enough time left to likely complete it.
     // (main thread only - helpers just check stopSearchFlag)
@@ -746,14 +823,120 @@ SearchResult Search::iterativeDeepening(Position& p) {
 
     // =========================================================================
     // Start actual alpha beta search
-    // ASPIRATION SEARCH
+    // MultiPV loop: find top N moves per iteration
+    // When MULTI_PV == 1 (default), the loop runs once — zero overhead.
+    // Helper threads always use effectiveMultiPV == 1 for efficiency.
+    // When Handicap > 0, inflate to handicap multiPV to build a candidate pool
+    // for suboptimal move selection (extra PVs not reported to UCI).
+    // Note: multiPV may be < poolSize for gentle levels (1-2), where pool
+    // candidates use approximate previous-iteration scores with tight thresholds.
     // =========================================================================
-    if (SearchConfig.USE_ASP && iterationDepth > 3) {
-      bestValue = aspirationSearch(p, iterationDepth, bestValue);
+    int effectiveMultiPV = 1;
+    if (!isMainThread()) {
+      effectiveMultiPV = 1;
     }
-    // PVS SEARCH (or pure ALPHA BETA when PVS deactivated)
     else {
-      bestValue = rootSearch(p, iterationDepth, alpha, beta);
+      const int handicapMPV = SearchConfig.HANDICAP > 0
+                                ? handicap::getHandicapParams(SearchConfig.HANDICAP).multiPV
+                                : 1;
+      effectiveMultiPV      = std::min(
+        std::max(SearchConfig.MULTI_PV, handicapMPV),
+        static_cast<int>(thread().rootMoves.size()));
+    }
+
+    // Number of PV lines to report to UCI (user-facing MultiPV, not inflated by handicap)
+    const int reportedMultiPV = std::min(SearchConfig.MULTI_PV, effectiveMultiPV);
+
+    // Collect PV data during the loop for deferred, sorted reporting (Stockfish-style).
+    // After all PVs are searched, results are sorted by score (descending) so that
+    // the output is always monotonically non-increasing, and rootMoves[0..N] are
+    // re-ordered to match. This also produces batched UCI output with consistent
+    // node counts across all PV lines.
+    std::vector<MultiPvResult> multiPvResults;
+    multiPvResults.reserve(effectiveMultiPV);
+
+    for (int pvIdx = 0; pvIdx < effectiveMultiPV; ++pvIdx) {
+      if (pvIdx == 0) {
+        // First PV: use aspiration search as normal (or full window at shallow depths)
+        // ASPIRATION SEARCH
+        if (SearchConfig.USE_ASP && iterationDepth > 3) {
+          bestValue = aspirationSearch(p, iterationDepth, bestValue);
+        }
+        // PVS SEARCH (or pure ALPHA BETA when PVS deactivated)
+        else {
+          bestValue = rootSearch(p, iterationDepth, alpha, beta);
+        }
+      }
+      else {
+        // Secondary PVs: full window search starting from pvIdx.
+        // Moves [0..pvIdx-1] are already ranked and locked.
+        bestValue = rootSearch(p, iterationDepth, VALUE_MIN, VALUE_MAX, pvIdx);
+      }
+
+      // Break from MultiPV loop if search was stopped
+      if (stopConditions() && iterationDepth > 1) break;
+
+      // Partial sort: bring the best remaining move to position pvIdx.
+      // For pvIdx=0 this sorts the full list; for pvIdx>0 only [pvIdx..end].
+      std::ranges::stable_sort(
+        thread().rootMoves.begin() + pvIdx,
+        thread().rootMoves.end(),
+        moveValueGreaterComparator());
+
+      // Collect PV data for deferred reporting.
+      // Extract PV line now (before next pvIdx search overwrites the PV table).
+      // Use thread-local position 'p' (not Search::position) to avoid data race
+      // with the main thread which does doMove/undoMove on Search::position.
+      Position tmpPos = p;
+      multiPvResults.push_back({.pvLine   = extractPvWithTT(tmpPos),
+                                .score    = thread().rootMoves[pvIdx].value(),
+                                .seldepth = thread().statistics.currentExtraSearchDepth});
+    }
+
+    // Sort all completed PVs by score (descending) to guarantee monotonic output.
+    // This handles search instability where a secondary PV might score higher than
+    // pvIdx=0 due to richer TT state or different window dynamics.
+    if (effectiveMultiPV > 1 && static_cast<int>(multiPvResults.size()) == effectiveMultiPV) {
+      std::ranges::stable_sort(multiPvResults, [](const MultiPvResult& a, const MultiPvResult& b) {
+        return a.score > b.score;
+      });
+
+      // Re-sort rootMoves[0..effectiveMultiPV] to match the sorted result order.
+      // This ensures rootMoves[0] is the actual best move for post-iteration code
+      // (stability tracking, mate detection, aspiration window centering, etc.).
+      std::ranges::stable_sort(
+        thread().rootMoves.begin(),
+        thread().rootMoves.begin() + effectiveMultiPV,
+        moveValueGreaterComparator());
+    }
+
+    // Send PV lines to UCI in batch (main thread only, not on stop).
+    // Only send reportedMultiPV lines (user-facing), not handicap-inflated extras.
+    // All lines share the same node count snapshot — consistent like Stockfish.
+    if (isMainThread() && !multiPvResults.empty() && !stopConditions()) {
+      if (reportedMultiPV < static_cast<int>(multiPvResults.size())) {
+        // Trim to user-facing MultiPV count (handicap extras are internal only)
+        const std::vector reportedResults(
+          multiPvResults.begin(), multiPvResults.begin() + reportedMultiPV);
+        sendMultiPvResultsToUci(reportedResults, iterationDepth);
+      }
+      else {
+        sendMultiPvResultsToUci(multiPvResults, iterationDepth);
+      }
+    }
+
+    // Restore the best PV to the PV table so post-iteration code
+    // (assertions, volatility, stability, mate check, aspiration window)
+    // sees the top move and its value.
+    if (effectiveMultiPV > 1 && !multiPvResults.empty()) {
+      bestValue              = multiPvResults[0].score;
+      const auto& bestPvLine = multiPvResults[0].pvLine;
+      for (int i = 0; i < static_cast<int>(bestPvLine.size()) && i < PVTable::MAX_PLY; ++i) {
+        thread().pv(DEPTH_NONE, i) = bestPvLine[i];
+      }
+      if (static_cast<int>(bestPvLine.size()) < PVTable::MAX_PLY) {
+        thread().pv(DEPTH_NONE, static_cast<int>(bestPvLine.size())) = MOVE_NONE;
+      }
     }
     // =========================================================================
     // /End of alpha beta search for this iteration
@@ -778,7 +961,7 @@ SearchResult Search::iterativeDeepening(Position& p) {
 
     // These assertions only apply to main thread:
     // - Main thread always starts at depth 1 and completes at least one full iteration
-    // - Helper threads start at depth 2/3 and can be stopped before populating PV
+    // - Helper threads may start at different depths or skip iterations, and can be stopped before populating PV
     assert(!isMainThread() || (!thread().pv.empty() && thread().pv.first() != MOVE_NONE && "pv must contain a valid first move"));
     assert(!isMainThread() || (bestValue == thread().pv.first().value() || stopSearchFlag) && "bestValue should be equal value of thread().pv.first()");
 
@@ -880,11 +1063,15 @@ SearchResult Search::iterativeDeepening(Position& p) {
     if (!stopConditions()) {
       // sort root moves for the next iteration
       std::ranges::stable_sort(thread().rootMoves, moveValueGreaterComparator());
-      // update UCI GUI (main thread only)
+      // update stats (main thread only)
+      // UCI info was already sent per-PV-line inside the MultiPV loop above.
       if (isMainThread()) {
         ESSENTIAL_STAT_SET(thread().statistics.currentBestRootMove, thread().pv.first());
         ESSENTIAL_STAT_SET(thread().statistics.currentBestRootMoveValue, thread().pv.first().value());
-        sendIterationEndInfoToUci();
+        // Send debug eval breakdown and iteration stats when debug mode is on
+        if (isDebugMode()) {
+          sendDebugEvalInfo();
+        }
       }
       // Track completed iteration for best-thread selection (all threads)
       thread().completedIterationDepth = iterationDepth;
@@ -1004,7 +1191,7 @@ Value Search::aspirationSearch(Position& p, const Depth depth, const Value bestV
   return value;
 }
 
-Value Search::rootSearch(Position& p, const Depth depth, Value alpha, const Value beta) {
+Value Search::rootSearch(Position& p, const Depth depth, Value alpha, const Value beta, const int startIndex) {
 
   // In root search we search all moves and store the value
   // into the root moves themselves for sorting in the
@@ -1025,7 +1212,7 @@ Value Search::rootSearch(Position& p, const Depth depth, Value alpha, const Valu
   // ///////////////////////////////////////////////////////
   // MOVE LOOP
   const size_t size = thread().rootMoves.size();
-  for (size_t i = 0; i < size; i++) {
+  for (size_t i = startIndex; i < size; i++) {
     Move& moveRef = thread().rootMoves.at(i);
 
     p.doMove(moveRef);
@@ -1035,7 +1222,7 @@ Value Search::rootSearch(Position& p, const Depth depth, Value alpha, const Valu
     ESSENTIAL_STAT_SET(thread().statistics.currentRootMove, moveRef);
 
     if (checkDrawRepAnd50(p, 2)) {
-      value = VALUE_DRAW;
+      value = drawScore(p);
     }
     else {
       constexpr Depth ply{1};
@@ -1043,7 +1230,8 @@ Value Search::rootSearch(Position& p, const Depth depth, Value alpha, const Valu
       // PVS
       // First move in a node is an assumed PV Move and searched with full search window (PV Node)
       // Root's first child is a PV node (full window search)
-      if (!SearchConfig.USE_PVS || i == 0) {
+      // For MultiPV: the first move in the current sub-range (i == startIndex) is the PV candidate
+      if (!SearchConfig.USE_PVS || i == static_cast<size_t>(startIndex)) {
         value = -search(p, depth - 1, ply, -beta, -alpha, PvNode, Do_Null_Move);
       }
       else {
@@ -1106,14 +1294,12 @@ Value Search::search(Position& p, const Depth depth, const Depth ply, Value alph
   // Clear PV for this node to prevent stale data from previous iterations/branches
   // from being propagated up via thread().pv.update(). Stale PV data can contain moves from
   // different positions that are illegal in the current position.
-  // Note: IID may write to pv but clears it after extracting the ttMove.
   thread().pv.clear(ply);
 
   // Enter quiescence search when depth == 0 or max ply has been reached
   // pvNodes/nonPvNodes are tracked inside qsearch() — no need to count here.
   if (depth == 0 || ply >= MAX_DEPTH) {
-    const auto value = qsearch(p, ply, alpha, beta, nodeType);
-    return value;
+    return qsearch(p, ply, alpha, beta, nodeType);
   }
 
   // Track PV vs non-PV node statistics (after qsearch drop-through to avoid double-counting
@@ -1149,9 +1335,8 @@ Value Search::search(Position& p, const Depth depth, const Depth ply, Value alph
   bool matethreat     = false;
 
   // Variables for singular extension
-  Value ttValue     = VALUE_NONE;
-  Depth ttDepth     = DEPTH_NONE;
-  ValueType ttBound = ALPHA; // TT entry's bound type (for singular extension)
+  Value ttValue = VALUE_NONE;
+  Depth ttDepth = DEPTH_NONE;
 
   // TT Lookup (before TB probe to avoid redundant TB probes for cached results)
   // Results of searches are stored in the TT to be used to
@@ -1168,7 +1353,7 @@ Value Search::search(Position& p, const Depth depth, const Depth ply, Value alph
   // the current values.
   if (SearchConfig.USE_TT) {
     STAT_INC(thread().statistics.ttProbes);
-    if (const auto ttEntry = tt->probe(p.getZobristKey())) {
+    if (const auto ttEntry = tt->probe(p.getZobristKey(), thread().id)) {
       // tt hit
       const auto probedMove = static_cast<Move>(ttEntry->move);
       // Validate TT move before use - corrupted/torn reads from lockless TT
@@ -1178,7 +1363,6 @@ Value Search::search(Position& p, const Depth depth, const Depth ply, Value alph
       }
       ttValue = valueFromTt(ttEntry->value, ply);
       ttDepth = static_cast<Depth>(ttEntry->depth);
-      ttBound = ttEntry->type; // Capture bound type for singular extension
 
       // Track hit quality by depth (sufficient depth for cutoff vs move-only)
       if (ttDepth >= depth) { STAT_INC(thread().statistics.ttHitSufficientDepth); }
@@ -1355,7 +1539,6 @@ Value Search::search(Position& p, const Depth depth, const Depth ply, Value alph
     // Increase margin when not improving → prune less aggressively (Stockfish-style)
     // Rationale: "not improving" means eval may be unreliable, so search more carefully
     if (SearchConfig.USE_RFP_IMPROVING && !improving) {
-      // TODO: Test this with different values
       margin += Value{SearchConfig.RFP_IMPROVING_MARGIN};
     }
     if (staticEval - margin >= beta) {
@@ -1473,13 +1656,11 @@ Value Search::search(Position& p, const Depth depth, const Depth ply, Value alph
     }
   }
 
-  assert(!(SearchConfig.USE_IIR && SearchConfig.USE_IID) && "IIR and IID are mutually exclusive - please enable only one of them");
-
-  // Internal Iterative Reduction (IIR) - Modern alternative to IID
+  // Internal Iterative Reduction (IIR)
   // https://www.chessprogramming.org/Internal_Iterative_Reductions
   // Simply reduces depth when no TT move is available. The reduced search
   // will populate the TT, providing a move for future iterations.
-  // Simpler and less overhead than IID, applies to all node types.
+  // Simpler and applies to all node types.
   // Note: Creates local mutable copy of depth since parameter is const.
   Depth searchDepth = depth;
   if (SearchConfig.USE_IIR
@@ -1488,43 +1669,6 @@ Value Search::search(Position& p, const Depth depth, const Depth ply, Value alph
       && (SearchConfig.IIR_ALL_NODES || nodeType == PvNode)) {
     searchDepth = searchDepth - SearchConfig.IIR_REDUCTION;
     STAT_INC(thread().statistics.iirReductions);
-  }
-
-  // Internal Iterative Deepening (IID) - Legacy approach
-  // https://www.chessprogramming.org/Internal_Iterative_Deepening
-  // Used when no best move from the tt is available from previous
-  // searches. IID is used to find a good move to search first by
-  // searching the current position to a reduced depth and using
-  // the best move of that search as the first move at the real depth.
-  // Does not make a big difference in search tree size when move
-  // order already is good.
-  // Note: Only runs if IIR is disabled (they are mutually exclusive)
-  if (SearchConfig.USE_IID) {
-    if (depth >= SearchConfig.IID_DEPTH
-        && !ttMove // no move from TT
-        && doNull
-        && nodeType == PvNode) { // avoid in null move search
-
-      // do the actual reduced search only if we have time left
-      if (!isTimeAlmostUp()) {
-        // get the new depth and make sure it is >0
-        auto newDepthIid = depth - SearchConfig.IID_REDUCTION;
-        if (newDepthIid < 0) { newDepthIid = DEPTH_NONE; }
-
-        // IID search inherits nodeType (searching same node at reduced depth)
-        search(p, newDepthIid, ply, alpha, beta, nodeType, doNull);
-        STAT_INC(thread().statistics.iidSearches);
-
-
-        // get the best move from the reduced search if available
-        if (!thread().pv.empty(ply)) {
-          STAT_INC(thread().statistics.iidMoves);
-          ttMove = thread().pv.first(ply).stripped();
-          // Clear pv after extracting the move - IID polluted it
-          thread().pv.clear(ply);
-        }
-      }
-    }
   }
 
   // reset move generator for the actual search
@@ -1536,7 +1680,7 @@ Value Search::search(Position& p, const Depth depth, const Depth ply, Value alph
 
   // PV Move Sort
   // When we received a best move for the position from the
-  // TT or IID, we set it as PV move in the move-gen so it will
+  // TT, we set it as PV move in the move-gen so it will
   // be searched first.
   if (SearchConfig.USE_TT_PV_MOVE_SORT && ttMove != MOVE_NONE) {
     STAT_INC(thread().statistics.TtMoveUsed);
@@ -1548,6 +1692,7 @@ Value Search::search(Position& p, const Depth depth, const Depth ply, Value alph
   Value value;
   Move move;
   int movesSearched = 0; // to detect mate situations
+  const auto do_null = matethreat ? No_Null_Move : Do_Null_Move;
 
   // ///////////////////////////////////////////////////////
   // MOVE LOOP
@@ -1582,8 +1727,7 @@ Value Search::search(Position& p, const Depth depth, const Depth ply, Value alph
           && depth >= SearchConfig.CHECK_EXT_MIN_DEPTH
           && givesCheck
           && movesSearched < SearchConfig.CHECK_EXT_EARLY_LIMIT
-          && (!SearchConfig.USE_CHECK_EXT_SEE || See::see(p, move) >= 0)
-      ) {
+          && (!SearchConfig.USE_CHECK_EXT_SEE || See::see(p, move) >= 0)) {
         STAT_INC(thread().statistics.checkExtension);
         extension = DEPTH_ONE;
       }
@@ -1614,40 +1758,30 @@ Value Search::search(Position& p, const Depth depth, const Depth ply, Value alph
           && ttDepth >= depth - 3                             // TT entry was from similar or deeper search
           && std::abs(ttValue) < VALUE_CHECKMATE_THRESHOLD) { // not a mate score
 
-        // Track ALPHA-bound entries for statistics
-        const bool isLowerBound = (ttBound == BETA || ttBound == EXACT);
-        if (!isLowerBound) {
-          STAT_INC(thread().statistics.singularFilteredByBound);
-        }
+        // Reduced beta for the verification search
+        const Value singularBeta = ttValue - Value{SearchConfig.SINGULAR_MARGIN};
 
-        // Optional: Require BETA/EXACT bound (theory says yes, practice says too restrictive)
-        if (isLowerBound || !SearchConfig.USE_SINGULAR_TT_BOUND) {
-          // Reduced beta for the verification search
-          const Value singularBeta = ttValue - Value{SearchConfig.SINGULAR_MARGIN};
+        // Reduced depth for the verification search
+        Depth singularDepth = (depth - SearchConfig.SINGULAR_REDUCTION) / 2;
+        if (singularDepth < 1) { singularDepth = DEPTH_ONE; }
 
-          // Reduced depth for the verification search
-          Depth singularDepth = (depth - SearchConfig.SINGULAR_REDUCTION) / 2;
-          if (singularDepth < 1) { singularDepth = DEPTH_ONE; }
+        // Set the excluded move for this ply so the verification search skips the TT move
+        info.excludedMove = ttMove;
 
-          // Set the excluded move for this ply so the verification search skips the TT move
-          info.excludedMove = ttMove;
+        STAT_INC(thread().statistics.singularSearches);
 
-          STAT_INC(thread().statistics.singularSearches);
+        // Do a null-window search to see if any other move can reach singularBeta
+        // Uses mgSingular automatically because excludedMove is set
+        // Singular verification is a CUT node search (looking for fail-high)
+        const Value singularValue = search(p, singularDepth, ply, singularBeta - 1, singularBeta, CutNode, No_Null_Move);
 
-          // Do a null-window search to see if any other move can reach singularBeta
-          // Uses mgSingular automatically because excludedMove is set
-          // Singular verification is a CUT node search (looking for fail-high)
-          const Value singularValue = search(p, singularDepth, ply, singularBeta - 1, singularBeta, CutNode, No_Null_Move);
+        // Clear the excluded move
+        info.excludedMove = MOVE_NONE;
 
-          // Clear the excluded move
-          info.excludedMove = MOVE_NONE;
-
-
-          // If no other move reaches singularBeta, the TT move is singular - extend it
-          if (singularValue < singularBeta) {
-            STAT_INC(thread().statistics.singularExtension);
-            extension = DEPTH_ONE;
-          }
+        // If no other move reaches singularBeta, the TT move is singular - extend it
+        if (singularValue < singularBeta) {
+          STAT_INC(thread().statistics.singularExtension);
+          extension = DEPTH_ONE;
         }
       }
 
@@ -1803,7 +1937,7 @@ Value Search::search(Position& p, const Depth depth, const Depth ply, Value alph
     // if available on platform tells the cpu to
     // prefetch the tt data into cpu caches
     TT_PREFETCH;
-    // EVAL_PREFETCH;
+    EVAL_PREFETCH;
 
     // we only count legal moves
     thread().nodesVisited++;
@@ -1812,10 +1946,9 @@ Value Search::search(Position& p, const Depth depth, const Depth ply, Value alph
     sendSearchUpdateToUci();
 
     // check repetition and 50 moves
-    if (checkDrawRepAnd50(p, 2)) { value = VALUE_DRAW; }
+    if (checkDrawRepAnd50(p, 2)) { value = drawScore(p); }
     else {
 
-      const auto do_null = matethreat ? No_Null_Move : Do_Null_Move;
 
       // ///////////////////////////////////////////////////////////////////
       // PVS
@@ -1952,7 +2085,7 @@ Value Search::search(Position& p, const Depth depth, const Depth ply, Value alph
     else {
       // stalemate
       STAT_INC(thread().statistics.stalemates);
-      bestNodeValue = VALUE_DRAW;
+      bestNodeValue = drawScore(p);
     }
     // this is in any case an exact value
     staticEval = bestNodeValue;
@@ -2006,7 +2139,7 @@ Value Search::qsearch(Position& p, const Depth ply, Value alpha, Value beta, con
   Value staticEval = VALUE_NONE;
   if (SearchConfig.USE_TT && SearchConfig.USE_QS_TT) {
     STAT_INC(thread().statistics.ttProbes);
-    if (const auto ttEntry = tt->probe(p.getZobristKey())) {
+    if (const auto ttEntry = tt->probe(p.getZobristKey(), thread().id)) {
       // tt hit
       const auto probedMove = static_cast<Move>(ttEntry->move);
       // Validate TT move before use - corrupted/torn reads from lockless TT
@@ -2162,7 +2295,7 @@ Value Search::qsearch(Position& p, const Depth ply, Value alpha, Value beta, con
 
     // check repetition and 50 moves
     if (checkDrawRepAnd50(p, 2)) {
-      value = VALUE_DRAW;
+      value = drawScore(p);
     }
     else {
       // recursion into qsearch - inherit nodeType (PV nodes stay PV, non-PV stay non-PV)
@@ -2274,7 +2407,7 @@ void Search::storeTt(
   const Value value,
   const ValueType valueType,
   const Value eval) const {
-  tt->put(p.getZobristKey(), depth, move, valueToTt(value, ply), valueType, eval);
+  tt->put(p.getZobristKey(), depth, move, valueToTt(value, ply), valueType, eval, thread().id);
 }
 
 Value Search::valueToTt(const Value value, const Depth ply) {
@@ -2563,6 +2696,65 @@ void Search::applyTBRootOverride(SearchResult& result) const {
   }
 }
 
+void Search::applyHandicap(SearchResult& result) const {
+  // No-op when handicap is disabled
+  if (SearchConfig.HANDICAP <= 0) {
+    return;
+  }
+
+  // Don't override book or TB moves
+  if (result.bookMove || result.tbHit) {
+    LOG__DEBUG(Logger::get().SEARCH_LOG, "Handicap: skipping — {} move",
+               result.bookMove ? "book" : "TB");
+    return;
+  }
+
+  // Need a valid search result with root moves to pick from
+  if (result.bestMove.isNone()) {
+    LOG__WARN(Logger::get().SEARCH_LOG, "Handicap: bestMove is MOVE_NONE — this should not happen");
+    return;
+  }
+
+  // Use main thread's root moves (full pool from inflated MultiPV)
+  const auto& rootMoves = mainThread().rootMoves;
+  if (rootMoves.empty()) {
+    LOG__WARN(Logger::get().SEARCH_LOG, "Handicap: rootMoves is empty — this should not happen");
+    return;
+  }
+
+  const auto params       = handicap::getHandicapParams(SearchConfig.HANDICAP);
+  const Move originalBest = result.bestMove;
+
+  const Move selected = handicap::selectHandicapMove(
+    rootMoves,
+    params.poolSize,
+    params.scoreThreshold,
+    position.getZobristKey());
+
+  if (selected.isNone()) {
+    return;
+  }
+
+  // Override result with handicap-selected move
+  result.bestMove      = selected.stripped();
+  result.bestMoveValue = selected.value();
+  result.ponderMove    = MOVE_NONE; // pondering disabled with handicap
+  result.pv.clear();
+  result.pv.push_back(result.bestMove);
+
+  if (result.bestMove == originalBest.stripped()) {
+    LOG__INFO(Logger::get().SEARCH_LOG,
+              "Handicap {}: selected best move {} (score {})",
+              SearchConfig.HANDICAP, result.bestMove.str(), result.bestMoveValue.str());
+  }
+  else {
+    LOG__INFO(Logger::get().SEARCH_LOG,
+              "Handicap {}: selected {} (score {}) instead of best move {} (pool={}, threshold={}cp)",
+              SearchConfig.HANDICAP, result.bestMove.str(), result.bestMoveValue.str(),
+              originalBest.str(), params.poolSize, params.scoreThreshold);
+  }
+}
+
 void Search::extractPonderMove(SearchResult& result, const SearchThreadData& bestThread) {
   // Try to get ponder move from best thread's PV
   if (bestThread.pv.hasLength(DEPTH_NONE, 2)) {
@@ -2772,6 +2964,16 @@ bool Search::checkDrawRepAnd50(const Position& p, const int numberOfRepetitions)
   return p.checkRepetitions(numberOfRepetitions) || p.getHalfMoveClock() >= 100;
 }
 
+Value Search::drawScore(const Position& p) const {
+  // When contempt is 0, return VALUE_DRAW (== 0) — no bias.
+  // Positive contempt: root player gets +contempt at draw nodes (avoids draws).
+  // The sign flips when the side to move is the opponent, so the opponent
+  // sees −contempt (draws are attractive for them from our perspective).
+  const int contempt = SearchConfig.CONTEMPT;
+  if (contempt == 0) return VALUE_DRAW;
+  return p.getNextPlayer() == rootColor ? Value{contempt} : Value{-contempt};
+}
+
 void Search::setupSearchLimits(const Position& p, SearchLimits& sl) {
   if (sl.infinite) {
     LOG__INFO(Logger::get().SEARCH_LOG, "Search mode: Infinite");
@@ -2785,6 +2987,7 @@ void Search::setupSearchLimits(const Position& p, SearchLimits& sl) {
   if (sl.timeControl) {
     timeLimit   = setupTimeControl(p, sl);
     extraTimeMs = 0;
+
     if (sl.moveTime.count()) {
       LOG__INFO(Logger::get().SEARCH_LOG, "Search mode: Time Controlled: Time per Move {}", str(sl.moveTime));
     }
@@ -2935,8 +3138,9 @@ void Search::addExtraTime(const double f) {
     // where MAX_EXTRA_TIME_FACTOR * base could exceed the actual remaining time.
     const auto playerTimeMs = (position.getNextPlayer()
                                  ? searchLimits.blackTime
-                                 : searchLimits.whiteTime).count();
-    const auto clockCapMs   = std::max(int64_t{0}, playerTimeMs - measuredPostStopOverheadMs - timeLimit.count());
+                                 : searchLimits.whiteTime)
+                                .count();
+    const auto clockCapMs = std::max(int64_t{0}, playerTimeMs - measuredPostStopOverheadMs - timeLimit.count());
 
     // Use the tighter of the two caps
     const auto effectiveCapMs = std::min(maxExtraMs, clockCapMs);
@@ -2988,9 +3192,9 @@ void Search::startTimer() {
       // Subtract measured post-stop overhead so the timer fires early enough
       // for post-stop work (join helpers, select best, send bestmove) to complete
       // within the original time budget.
-      const auto overhead = milliseconds(measuredPostStopOverheadMs);
+      const auto overhead  = milliseconds(measuredPostStopOverheadMs);
       const auto rawBudget = timeLimit + milliseconds(extraTimeMs.load());
-      const auto budget  = rawBudget > overhead ? rawBudget - overhead : milliseconds{0};
+      const auto budget    = rawBudget > overhead ? rawBudget - overhead : milliseconds{0};
       if (elapsed >= budget || stopSearchFlag) { break; }
       const auto remaining_ms = std::chrono::duration_cast<milliseconds>(budget - elapsed);
       if (remaining_ms > busyWaitThreshold) {
@@ -3083,6 +3287,36 @@ void Search::sendString(const std::string& msg) const {
   LOG__INFO(Logger::get().SEARCH_LOG, "uci >> {}", msg);
 }
 
+void Search::sendDebugEvalInfo() const {
+  // Evaluate the position at the end of the PV (after applying all PV moves).
+  // This is far more informative than the root position, which is the same every
+  // iteration and often symmetric (e.g., startpos → all components are zero).
+  Position pvPos        = position;
+  const MoveList pvLine = thread().pv.extract();
+  for (const auto& move : pvLine) {
+    if (!move) break;
+    pvPos.doMove(move);
+  }
+  const EvalTrace trace = thread().evaluator.evaluateTrace(pvPos);
+  sendString(std::format("pv-leaf {} | {}", pvLine.str(), trace.str()));
+
+  // Iteration stats: TT hit-rate and beta-cut-1st-move %
+  const auto& stats       = thread().statistics;
+  const uint64_t ttHits   = stats.ttHitSufficientDepth + stats.ttHitInsufficientDepth;
+  const uint64_t ttTotal  = stats.ttProbes;
+  const double ttHitRate  = ttTotal > 0
+                              ? 100.0 * static_cast<double>(ttHits) / static_cast<double>(ttTotal)
+                              : 0.0;
+  const double betaCut1st = stats.betaCuts > 0
+                              ? 100.0 * static_cast<double>(stats.betaCutsByIndex[0]) / static_cast<double>(stats.betaCuts)
+                              : 0.0;
+  sendString(std::format("depth {} nodes {:L} tt-hitrate {:.1f}% beta-cut-1st {:.1f}%",
+                         stats.currentSearchDepth,
+                         thread().nodesVisited,
+                         ttHitRate,
+                         betaCut1st));
+}
+
 void Search::sendResult(const SearchResult& result) const {
   if (uciHandler) { uciHandler->sendResult(result.bestMove, result.ponderMove); }
 }
@@ -3118,6 +3352,44 @@ void Search::sendIterationEndInfoToUci() {
             nps(totalNodes, since),
             MILLISECONDS(since).count(),
             pvLine.str());
+}
+
+void Search::sendMultiPvResultsToUci(const std::vector<MultiPvResult>& results, const Depth iterationDepth) {
+  const nanoseconds& since = elapsedSince(startSearchTime);
+  lastUciUpdateTime        = now();
+
+  // Snapshot node count once — all PV lines share the same value (Stockfish-style).
+  const uint64_t totalNodes  = getTotalNodes();
+  const uint64_t nodesPerSec = nps(totalNodes, since);
+  const auto elapsed         = MILLISECONDS(since);
+
+  for (int i = 0; i < static_cast<int>(results.size()); ++i) {
+    const auto& [pvLine, score, seldepth] = results[i];
+    const int multipvIndex                = i + 1; // UCI multipv is 1-based
+
+    if (uciHandler) {
+      uciHandler->sendIterationEndInfo(
+        iterationDepth,
+        seldepth,
+        score,
+        totalNodes,
+        nodesPerSec,
+        elapsed,
+        pvLine,
+        multipvIndex);
+    }
+    else {
+      LOG__INFO(Logger::get().SEARCH_LOG, "depth {} seldepth {} multipv {} value {} nodes {:L} nps {:L} time {:L} pv {}",
+                iterationDepth,
+                seldepth,
+                multipvIndex,
+                score.str(),
+                totalNodes,
+                nodesPerSec,
+                elapsed.count(),
+                pvLine.str());
+    }
+  }
 }
 
 void Search::sendSearchUpdateToUci() {
@@ -3191,7 +3463,12 @@ void Search::sendAspirationResearchInfo(const std::string& boundString) const {
   const uint64_t totalNodes = getTotalNodes();
 
   if (uciHandler) {
-    if (since >= ASP_UCI_INFO_DELAY) {
+    // Suppress aspiration bound UCI output when MultiPV > 1. Sending a single
+    // "multipv 1" lowerbound/upperbound line while the GUI still displays the
+    // previous depth's complete multi-PV set causes the GUI to show a stale
+    // multipv 2..N alongside the updated multipv 1, creating a non-monotonic display.
+    // LOG output is still emitted for debugging.
+    if (since >= ASP_UCI_INFO_DELAY && SearchConfig.MULTI_PV <= 1) {
       uciHandler->sendAspirationResearchInfo(
         thread().statistics.currentSearchDepth,
         thread().statistics.currentExtraSearchDepth,
@@ -3241,7 +3518,7 @@ MoveList Search::extractPvWithTT(Position& p) const {
     // Verify the move is fully legal in current position
     // validateMove() generates all legal moves and checks if this move is among them
     // This catches stale moves where the piece no longer exists on the from-square
-    if (!pvMoveGenerator.validateMove(p, move)) break;
+    if (!thread().pvMoveGenerator.validateMove(p, move)) break;
 
     result.push_back(move);
     p.doMove(move);
@@ -3263,7 +3540,7 @@ MoveList Search::extractPvWithTT(Position& p) const {
     // Verify the move is fully legal in current position
     // validateMove() generates all legal moves and checks if this move is among them
     // This catches TT hash collisions where the stored move is invalid for this position
-    if (!pvMoveGenerator.validateMove(p, ttMove)) break;
+    if (!thread().pvMoveGenerator.validateMove(p, ttMove)) break;
 
     // Check for repetition - don't extend into a repeated position
     // Use 2 to check for threefold repetition (same as search uses)
@@ -3403,7 +3680,6 @@ std::string Search::formatDetailedStats(
   os << "Check Ext      : " << stats.checkExtension << "\n";
   os << "Threat Ext     : " << stats.threatExtension << "\n";
   os << "Singular Srch  : " << stats.singularSearches << "\n";
-  os << "Singular Filt  : " << stats.singularFilteredByBound << "\n";
   os << "Singular Ext   : " << stats.singularExtension << "\n";
 
   os << "\n------------------- TT Stats --------------------------\n";
@@ -3525,11 +3801,7 @@ std::string Search::formatDetailedStats(
     os << "PTT Misses     : " << pawnTT->getNumberOfMisses() << " (" << pttMissPct << "%)\n";
   }
 
-  os << "\n------------------- IID/IIR Stats ---------------------\n";
-  if (ConfigManager::instance().search().USE_IID) {
-    os << "IID Searches   : " << stats.iidSearches << "\n";
-    os << "IID Moves      : " << stats.iidMoves << "\n";
-  }
+  os << "\n------------------- IIR Stats -------------------------\n";
   if (ConfigManager::instance().search().USE_IIR) {
     os << "IIR Reductions : " << stats.iirReductions << "\n";
   }
@@ -3576,8 +3848,12 @@ SearchStats Search::aggregateStats() const {
   // Start with main thread's stats
   SearchStats result = mainThread().statistics;
 
-  // Add stats from all helper threads
-  for (size_t i = 1; i < searchThreadData.size(); ++i) {
+  // Add stats from active helper threads only [1..numHelperThreads].
+  // The vector grows but never shrinks, so entries beyond the active
+  // thread count could contain stale statistics from previous searches.
+  const int activeThreads = numHelperThreads + 1;
+  const auto count        = std::min(static_cast<int>(searchThreadData.size()), activeThreads);
+  for (int i = 1; i < count; ++i) {
     if (searchThreadData[i]) {
       result += searchThreadData[i]->statistics;
     }

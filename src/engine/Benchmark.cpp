@@ -21,13 +21,14 @@
 #include "BenchmarkPositions.h"
 #include "Search.h"
 #include "SearchLimits.h"
+#include "TT.h"
 #include "chesscore/Position.h"
 #include "common/Logging.h"
 #include "config/ConfigManager.h"
 #include "types/globals.h"
+#include "types/timeunits.h"
 #include "version.h"
 
-#include <chrono>
 #include <format>
 #include <iostream>
 
@@ -66,6 +67,11 @@ namespace engine {
     Search search;
     search.newGame(); // Clear TT and history
 
+    // Reset R6 instrumentation counters for this bench session
+    if constexpr (TT::TT_INSTRUMENTATION) {
+      search.resetTTInstrumentation();
+    }
+
     // Set up search limits for depth-limited search
     SearchLimits limits;
     limits.depth = config.depth;
@@ -74,7 +80,7 @@ namespace engine {
     }
 
     // Track cumulative search time (excludes TT clearing and position setup)
-    int64_t totalSearchTimeMs = 0;
+    nanoseconds totalSearchTime{0};
 
     // Process each position
     int positionNum = 0;
@@ -98,14 +104,13 @@ namespace engine {
       search.newGame();
 
       // Measure only search time
-      const auto searchStart = steady_clock::now();
+      const auto searchStart = currentTime();
 
       // Start search
       search.startSearch(position, limits);
       search.waitWhileSearching();
 
-      const auto searchEnd = steady_clock::now();
-      totalSearchTimeMs += duration_cast<milliseconds>(searchEnd - searchStart).count();
+      totalSearchTime += elapsedSince(searchStart);
 
       // Collect results
       const auto& searchResult = search.getLastSearchResult();
@@ -114,11 +119,17 @@ namespace engine {
     }
 
     // Set total time (only search time, no TT clearing overhead)
-    result.totalTime = milliseconds{totalSearchTimeMs};
+    result.totalTime = duration_cast<milliseconds>(totalSearchTime);
 
-    // Calculate NPS (avoid division by zero)
-    if (result.totalTime.count() > 0) {
-      result.nps = static_cast<double>(result.totalNodes) * 1000.0 / static_cast<double>(result.totalTime.count());
+    // Deterministic bench signature for CI regression gate
+    result.signature = result.totalNodes;
+
+    // Calculate NPS using timeunits helper (handles zero-duration safely)
+    result.nps = static_cast<double>(nps(result.totalNodes, totalSearchTime));
+
+    // Collect R6 TT instrumentation report (cumulative across all positions)
+    if constexpr (TT::TT_INSTRUMENTATION) {
+      result.ttInstrumentationReport = search.ttInstrumentationStr();
     }
 
     std::cout << "\n"; // New line after progress indicator
@@ -147,6 +158,16 @@ namespace engine {
                              result.totalNodes,
                              totalTimeSec,
                              npsInt);
+
+    // Unformatted signature line for CI/script parsing (no locale separators)
+    // Use std::format (without L) to guarantee no thousands separators even if
+    // a locale has been imbued on std::cout by other code / tests.
+    std::cout << std::format("\nBench: {}\n", result.signature) << std::flush;
+
+    // Print R6 TT instrumentation data if collected
+    if (!result.ttInstrumentationReport.empty()) {
+      std::cout << "\n" << result.ttInstrumentationReport << "\n" << std::flush;
+    }
   }
 
 } // namespace engine

@@ -90,6 +90,7 @@ namespace arena {
 
     try {
       // Start external engine with Hash and Threads options
+      // ReSharper disable once CppVariableCanBeMadeConstexpr
       const std::string uciOptions = "Hash=" + std::to_string(config_.hashSizeMB) + "; Threads=" + std::to_string(config_.threads);
 
       UCIEngine engine(config_.enginePath, config_.commandLineArgs, false, uciOptions);
@@ -176,7 +177,8 @@ namespace arena {
       // Format timestamp to be more compact (remove T, show only date + time)
       std::string ts = r.timestamp;
       if (ts.length() >= 19) {
-        ts = ts.substr(0, 10) + " " + ts.substr(11, 8); // "YYYY-MM-DD HH:MM:SS"
+        ts.replace(10, 1, " "); // "YYYY-MM-DD HH:MM:SS"
+        ts.resize(19);
       }
 
       const double timeSec = static_cast<double>(r.totalTimeMs) / 1000.0;

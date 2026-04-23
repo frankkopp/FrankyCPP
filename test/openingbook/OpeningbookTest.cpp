@@ -27,6 +27,7 @@
 #include "types/types.h"
 
 #include <gtest/gtest.h>
+#include <set>
 using testing::Eq;
 
 using namespace common;
@@ -118,6 +119,7 @@ TEST_F(OpeningBookTest, initPgnLarge) {
   fprintln("Book:  {:L} entries", book.size());
   EXPECT_EQ(4'821'615, book.size());
   fprintln("{}", book.str(1));
+  // ReSharper disable once CppVariableCanBeMadeConstexpr
   const std::string expected = "Root (190.780)";
   EXPECT_TRUE(book.str(1).find_first_of(expected) != std::string::npos);
 }
@@ -161,6 +163,7 @@ TEST_F(OpeningBookTest, serializationSimple) {
 #ifndef NDEBUG
   GTEST_SKIP() << "Skipping in debug build due to duration";
 #endif
+  // ReSharper disable once CppVariableCanBeMadeConstexpr
   const std::string filePathStr = "./books/book.txt";
   OpeningBook book(filePathStr, OpeningBook::BookFormat::SIMPLE);
 
@@ -226,4 +229,85 @@ TEST_F(OpeningBookTest, str) {
   fprintln("{}", output);
   std::string expected = "Root (1.000)";
   //  EXPECT_TRUE(book.str(1).starts_with(expected));
+}
+
+TEST_F(OpeningBookTest, getBookMoveValid) {
+  OpeningBook book("./books/book_smalltest.txt", OpeningBook::BookFormat::SIMPLE);
+  book.setUseCache(false);
+  book.initialize();
+
+  const Position position;
+  MoveGenerator mg;
+
+  // getBookMove with default variety should return a valid move from the start position
+  const Move bookMove = book.getBookMove(position.getZobristKey());
+  LOG__DEBUG(Logger::get().TEST_LOG, "getBookMove returned: {}", bookMove.strVerbose());
+  EXPECT_TRUE(bookMove.isValid());
+  EXPECT_TRUE(mg.validateMove(position, bookMove));
+}
+
+TEST_F(OpeningBookTest, getBookMoveVarietyZero) {
+  OpeningBook book("./books/book_smalltest.txt", OpeningBook::BookFormat::SIMPLE);
+  book.setUseCache(false);
+  book.initialize();
+
+  const Position position;
+  const auto rootKey = position.getZobristKey();
+
+  // Determine the expected set of highest-frequency moves from the book data.
+  // Look up each move's destination counter and find the maximum.
+  const auto& rootEntry = book.bookMap[rootKey];
+  ASSERT_FALSE(rootEntry.moves.empty());
+
+  int maxFreq = 0;
+  for (const auto& nextKey : rootEntry.nextPosition) {
+    const auto it = book.bookMap.find(nextKey);
+    if (it != book.bookMap.end()) {
+      maxFreq = std::max(maxFreq, it->second.counter);
+    }
+  }
+  ASSERT_GT(maxFreq, 0);
+
+  // Collect the move strings that are tied at max frequency
+  std::set<std::string> expectedMoves;
+  for (std::size_t i = 0; i < rootEntry.moves.size(); ++i) {
+    const auto it = book.bookMap.find(rootEntry.nextPosition[i]);
+    if (it != book.bookMap.end() && it->second.counter == maxFreq) {
+      expectedMoves.insert(rootEntry.moves[i].str());
+    }
+  }
+  ASSERT_FALSE(expectedMoves.empty());
+
+  // Log what we expect
+  std::string expectedList;
+  for (const auto& m : expectedMoves) {
+    expectedList += m + " ";
+  }
+  LOG__DEBUG(Logger::get().TEST_LOG, "Max frequency {} — expected moves: {}", maxFreq, expectedList);
+
+  // With variety=0, every returned move must be one of the top-frequency moves
+  std::set<std::string> seen;
+  for (int i = 0; i < 100; ++i) {
+    const Move move = book.getBookMove(rootKey, 0);
+    ASSERT_TRUE(move.isValid());
+    const auto moveStr = move.str();
+    EXPECT_TRUE(expectedMoves.contains(moveStr))
+      << "variety=0 returned '" << moveStr << "' which is not among the top-frequency moves";
+    seen.insert(moveStr);
+  }
+
+  // Over 100 draws, we should see most (if not all) of the tied moves
+  LOG__DEBUG(Logger::get().TEST_LOG, "variety=0 actually selected: {} of {} top moves",
+             seen.size(), expectedMoves.size());
+}
+
+TEST_F(OpeningBookTest, getBookMoveUnknownPosition) {
+  OpeningBook book("./books/book_smalltest.txt", OpeningBook::BookFormat::SIMPLE);
+  book.setUseCache(false);
+  book.initialize();
+
+  // Position not in book should return MOVE_NONE
+  const Position position("r3k2r/1ppn3p/2q1q1n1/4P3/2q1Pp2/6R1/pbp2PPP/1R4K1 b kq e3");
+  const Move bookMove = book.getBookMove(position.getZobristKey());
+  EXPECT_FALSE(bookMove.isValid());
 }

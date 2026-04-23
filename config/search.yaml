@@ -23,9 +23,14 @@ _YAML_SMOKE_TEST_MARKER: true
 # USE_BEST_THREAD_SELECTION: true
 # Score margin (centipawns) for best-thread depth vs score comparison
 # BEST_THREAD_SCORE_MARGIN: 50
+# Skip-table depth diversification for helper threads (false = simple starting depth offset)
+# USE_SMP_DEPTH_SKIP: true
 
 # Fixed overhead (milliseconds) deducted from available time per move to account for engine housekeeping
 # MOVE_OVERHEAD_MS: 10
+
+# Contempt / draw score bias in centipawns (positive = avoid draws, negative = seek draws, 0 = neutral)
+# CONTEMPT: 0
 
 # Enable/disable opening book usage
 # USE_BOOK: true
@@ -33,6 +38,8 @@ _YAML_SMOKE_TEST_MARKER: true
 # BOOK_PATH: "./books/book.txt"
 # Book format (SIMPLE/PGN/…) as string for readability; parsed in code
 # BOOK_TYPE: "SIMPLE"  # OpeningBook::BookFormat::SIMPLE
+# Book move randomness (0 = always best frequency, 100 = pure random)
+# BOOK_VARIETY: 30
 
 # Enable thinking during opponent time (pondering)
 # USE_PONDER: true
@@ -105,20 +112,9 @@ _YAML_SMOKE_TEST_MARKER: true
 # Enable history move heuristic
 # USE_HISTORY_MOVES: true
 
-# Internal Iterative Deepening (IID) - Legacy approach
-# Does a reduced-depth mini-search to find a good first move when no TT move
-# Note: Largely obsolete - PV-only restriction makes it rarely trigger
-# Note: USE_IID and USE_IIR are mutually exclusive - only enable one!
-# USE_IID: false
-# Depth at which IID triggers (in plies)
-# IID_DEPTH: 6
-# Reduction (in plies) applied by IID before searching best moves
-# IID_REDUCTION: 2
-
-# Internal Iterative Reduction (IIR) - Modern alternative to IID
+# Internal Iterative Reduction (IIR)
 # Simply reduces depth when no TT move available (Stockfish approach)
-# Much more effective than IID - 36% node reduction in testing
-# Note: USE_IID and USE_IIR are mutually exclusive - only enable one!
+# Applies to all node types for maximum effectiveness
 # USE_IIR: true
 # Minimum depth to apply IIR reduction
 # IIR_DEPTH: 4
@@ -244,10 +240,6 @@ _YAML_SMOKE_TEST_MARKER: true
 # Singular Extensions
 # When a TT move is significantly better than all alternatives, extend its search
 # USE_SINGULAR_EXT: true
-# Require BETA/EXACT TT bound for singular extension
-# Testing shows this filters 99.98% of candidates - disabled because verification search is sufficient
-# TODO: Consider removing this option entirely if strength testing confirms no value
-# USE_SINGULAR_TT_BOUND: false
 # Margin (centipawns) below TT value - if no other move reaches (ttValue - margin), move is singular
 # SINGULAR_MARGIN: 64
 # Minimum depth (plies) to attempt singular extension verification

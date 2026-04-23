@@ -72,6 +72,64 @@ Move OpeningBook::getRandomMove(const ZobristKey zobrist) const {
   return bookMove;
 }
 
+Move OpeningBook::getBookMove(const ZobristKey zobrist, const int variety) const {
+  const auto iterator = bookMap.find(zobrist);
+  if (iterator == bookMap.end() || iterator->second.moves.empty()) {
+    return MOVE_NONE;
+  }
+
+  const auto& entry = iterator->second;
+  const auto numMoves = entry.moves.size();
+
+  // Single move — no choice needed
+  if (numMoves == 1) {
+    return entry.moves[0];
+  }
+
+  // Look up destination-position frequency for each move
+  std::vector<double> freqs(numMoves);
+  for (std::size_t i = 0; i < numMoves; ++i) {
+    freqs[i] = 1.0; // default if destination not found
+    const auto destIt = bookMap.find(entry.nextPosition[i]);
+    if (destIt != bookMap.end()) {
+      freqs[i] = static_cast<double>(std::max(destIt->second.counter, 1));
+    }
+  }
+
+  // variety=0: pick randomly among the moves tied for the highest frequency
+  const int v = std::clamp(variety, 0, 100);
+  if (v == 0) {
+    const double maxFreq = *std::ranges::max_element(freqs);
+    std::vector<std::size_t> bestIndices;
+    for (std::size_t i = 0; i < numMoves; ++i) {
+      if (freqs[i] >= maxFreq) {
+        bestIndices.push_back(i);
+      }
+    }
+    std::random_device rd;
+    std::uniform_int_distribution<std::size_t> dist(0, bestIndices.size() - 1);
+    return entry.moves[bestIndices[dist(rd)]];
+  }
+
+  // variety=100: pure uniform random (ignore frequencies)
+  if (v == 100) {
+    std::random_device rd;
+    std::uniform_int_distribution<std::size_t> dist(0, numMoves - 1);
+    return entry.moves[dist(rd)];
+  }
+
+  // Blend frequency weights with uniform: weight = (1 - t) * freq + t * 1.0
+  const double t = v / 100.0;
+  std::vector<double> weights(numMoves);
+  for (std::size_t i = 0; i < numMoves; ++i) {
+    weights[i] = (1.0 - t) * freqs[i] + t * 1.0;
+  }
+
+  std::random_device rd;
+  std::discrete_distribution<std::size_t> dist(weights.begin(), weights.end());
+  return entry.moves[dist(rd)];
+}
+
 void OpeningBook::initialize() {
   if (isInitialized) {
     LOG__WARN(Logger::get().BOOK_LOG, "Opening book already initialized. Call to initialize ignored.");

@@ -246,6 +246,129 @@ TEST_F(UCITest, positionTest) {
   }
 }
 
+TEST_F(UCITest, positionFenErrorTest) {
+  ostringstream os;
+
+  // 1. Invalid FEN string — error reported, position unchanged (start pos)
+  {
+    const string command = "position fen INVALID";
+    LOG__INFO(Logger::get().TEST_LOG, "COMMAND: {}", command);
+    istringstream is(command);
+    UciHandler uciHandler(&is, &os);
+    uciHandler.loop();
+    const string result = os.str();
+    LOG__DEBUG(Logger::get().TEST_LOG, "RESPONSE: {}", result);
+    EXPECT_TRUE(result.find("info string") != string::npos);
+    EXPECT_TRUE(result.find("Invalid FEN") != string::npos);
+    // Position should still be the default start position
+    EXPECT_EQ(START_POSITION_FEN, uciHandler.pPosition->strFen());
+  }
+
+  os.str("");
+  os.clear();
+
+  // 2. Empty FEN — "position fen" with no FEN tokens
+  {
+    const string command = "position fen";
+    LOG__INFO(Logger::get().TEST_LOG, "COMMAND: {}", command);
+    istringstream is(command);
+    UciHandler uciHandler(&is, &os);
+    uciHandler.loop();
+    const string result = os.str();
+    LOG__DEBUG(Logger::get().TEST_LOG, "RESPONSE: {}", result);
+    EXPECT_TRUE(result.find("info string") != string::npos);
+    EXPECT_TRUE(result.find("Invalid FEN") != string::npos);
+    EXPECT_EQ(START_POSITION_FEN, uciHandler.pPosition->strFen());
+  }
+
+  os.str("");
+  os.clear();
+
+  // 3. Valid FEN — no error, position set correctly
+  {
+    const string command = "position fen rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
+    LOG__INFO(Logger::get().TEST_LOG, "COMMAND: {}", command);
+    istringstream is(command);
+    UciHandler uciHandler(&is, &os);
+    uciHandler.loop();
+    const string result = os.str();
+    LOG__DEBUG(Logger::get().TEST_LOG, "RESPONSE: {}", result);
+    EXPECT_TRUE(result.find("Invalid FEN") == string::npos);
+    EXPECT_EQ(START_POSITION_FEN, uciHandler.pPosition->strFen());
+  }
+
+  os.str("");
+  os.clear();
+
+  // 4. Invalid FEN followed by moves — error on FEN, moves not applied, position unchanged
+  {
+    const string command = "position fen INVALID moves e2e4";
+    LOG__INFO(Logger::get().TEST_LOG, "COMMAND: {}", command);
+    istringstream is(command);
+    UciHandler uciHandler(&is, &os);
+    uciHandler.loop();
+    const string result = os.str();
+    LOG__DEBUG(Logger::get().TEST_LOG, "RESPONSE: {}", result);
+    EXPECT_TRUE(result.find("info string") != string::npos);
+    EXPECT_TRUE(result.find("Invalid FEN") != string::npos);
+    EXPECT_EQ(START_POSITION_FEN, uciHandler.pPosition->strFen());
+  }
+}
+
+//=============================================================================
+// Test: ucinewgame resets all engine state
+// Verifies:
+//   1. Position is reset to startpos after a custom position was set
+//   2. Search result is cleared (hasResult() == false)
+//   3. Engine still functions after ucinewgame (can search successfully)
+//=============================================================================
+TEST_F(UCITest, uciNewGameResetsState) {
+  ostringstream os;
+
+  // Set a non-startpos position and run a short search to populate state
+  const string setup = "position fen r3k2r/p1ppqpb1/bn2pnp1/3PN3/1p2P3/2N2Q1p/PPPBBPPP/R3K2R w KQkq -\n"
+                       "go depth 4";
+  LOG__INFO(Logger::get().TEST_LOG, "SETUP: {}", setup);
+  istringstream isSetup(setup);
+  UciHandler uciHandler(&isSetup, &os);
+  uciHandler.loop();
+
+  // Wait for search to finish
+  uciHandler.getSearchPtr()->waitWhileSearching();
+  ASSERT_TRUE(uciHandler.getSearchPtr()->hasResult()) << "Search must produce a result";
+  EXPECT_NE(START_POSITION_FEN, uciHandler.pPosition->strFen()) << "Position should be Kiwi Pete, not startpos";
+
+  // Now send ucinewgame
+  os.str("");
+  os.clear();
+  const string newGameCmd = "ucinewgame\nisready";
+  LOG__INFO(Logger::get().TEST_LOG, "COMMAND: {}", newGameCmd);
+  istringstream isNewGame(newGameCmd);
+  uciHandler.loop(&isNewGame);
+
+  // 1. Position must be reset to startpos
+  EXPECT_EQ(START_POSITION_FEN, uciHandler.pPosition->strFen())
+    << "ucinewgame must reset position to startpos";
+
+  // 2. Search result must be cleared
+  EXPECT_FALSE(uciHandler.getSearchPtr()->hasResult())
+    << "ucinewgame must clear the last search result";
+
+  // 3. Verify engine still works — run another short search
+  os.str("");
+  os.clear();
+  const string goCmd = "go depth 3";
+  LOG__INFO(Logger::get().TEST_LOG, "COMMAND: {}", goCmd);
+  istringstream isGo(goCmd);
+  uciHandler.loop(&isGo);
+  uciHandler.getSearchPtr()->waitWhileSearching();
+
+  EXPECT_TRUE(uciHandler.getSearchPtr()->hasResult())
+    << "Engine must still produce a result after ucinewgame";
+  EXPECT_EQ(START_POSITION_FEN, uciHandler.pPosition->strFen())
+    << "Position should still be startpos (no position command sent)";
+}
+
 TEST_F(UCITest, goPerft) {
   ostringstream os;
   int endDepth = 4;
@@ -1031,4 +1154,116 @@ TEST_F(UCITest, resetAllOptionsToDefaults) {
   LOG__DEBUG(Logger::get().TEST_LOG, "Current options:\n{}", optionsStr);
 
   SUCCEED();
+}
+
+// =============================================================================
+// Debug command tests (C2)
+// =============================================================================
+
+TEST_F(UCITest, debugDefault) {
+  // Debug mode should be off by default
+  ostringstream os;
+  istringstream is("isready");
+  UciHandler uciHandler(&is, &os);
+  uciHandler.loop();
+
+  EXPECT_FALSE(uciHandler.isDebugMode());
+}
+
+TEST_F(UCITest, debugOnOff) {
+  ostringstream os;
+  // Send debug on, then debug off, then quit
+  istringstream is("debug on\ndebug off\nquit");
+  UciHandler uciHandler(&is, &os);
+
+  // Verify default is off
+  EXPECT_FALSE(uciHandler.isDebugMode());
+
+  uciHandler.loop();
+  const string result = os.str();
+  LOG__DEBUG(Logger::get().TEST_LOG, "RESPONSE:\n{}", result);
+
+  // Output should contain confirmation for both on and off
+  EXPECT_NE(result.find("info string Debug mode: on"), string::npos);
+  EXPECT_NE(result.find("info string Debug mode: off"), string::npos);
+
+  // After processing "debug off", debug mode should be off
+  EXPECT_FALSE(uciHandler.isDebugMode());
+}
+
+TEST_F(UCITest, debugBadArg) {
+  ostringstream os;
+  istringstream is("debug foo\nquit");
+  UciHandler uciHandler(&is, &os);
+  uciHandler.loop();
+  const string result = os.str();
+  LOG__DEBUG(Logger::get().TEST_LOG, "RESPONSE:\n{}", result);
+
+  // Should contain an error message about invalid argument
+  EXPECT_NE(result.find("expected 'on' or 'off'"), string::npos);
+  // Debug mode should remain off (default)
+  EXPECT_FALSE(uciHandler.isDebugMode());
+}
+
+TEST_F(UCITest, debugInfoDuringSearch) {
+  Logger::get().UCIHAND_LOG->set_level(spdlog::level::warn);
+  Logger::get().UCI_LOG->set_level(spdlog::level::warn);
+  Logger::get().SEARCH_LOG->set_level(spdlog::level::warn);
+  Logger::get().TT_LOG->set_level(spdlog::level::warn);
+
+  ostringstream os;
+  // Enable debug, set position, run a short search, then quit
+  istringstream is("debug on\nposition startpos\ngo movetime 200\nquit");
+  UciHandler uciHandler(&is, &os);
+  uciHandler.loop();
+
+  // Wait briefly for search to finish
+  uciHandler.getSearchPtr()->waitWhileSearching();
+
+  const string result = os.str();
+  LOG__DEBUG(Logger::get().TEST_LOG, "RESPONSE:\n{}", result);
+
+  // Debug mode should produce PV leaf eval breakdown info strings
+  EXPECT_NE(result.find("info string pv-leaf"), string::npos);
+  // Eval breakdown should contain component labels
+  EXPECT_NE(result.find("eval:"), string::npos);
+  // Should also have iteration stats with tt-hitrate
+  EXPECT_NE(result.find("tt-hitrate"), string::npos);
+  EXPECT_NE(result.find("beta-cut-1st"), string::npos);
+
+  Logger::get().UCIHAND_LOG->set_level(spdlog::level::debug);
+  Logger::get().UCI_LOG->set_level(spdlog::level::debug);
+  Logger::get().SEARCH_LOG->set_level(spdlog::level::debug);
+  Logger::get().TT_LOG->set_level(spdlog::level::debug);
+}
+
+TEST_F(UCITest, debugBookMove) {
+  // Enable book for this test (SetUp disables it by default)
+  CONFIG_OVERRIDE(s.USE_BOOK = true;);
+
+  Logger::get().UCIHAND_LOG->set_level(spdlog::level::warn);
+  Logger::get().UCI_LOG->set_level(spdlog::level::warn);
+  Logger::get().SEARCH_LOG->set_level(spdlog::level::warn);
+  Logger::get().BOOK_LOG->set_level(spdlog::level::warn);
+
+  ostringstream os;
+  // Enable debug, set startpos (has book entries), use movetime (enables timeControl for book)
+  istringstream is("debug on\nposition startpos\ngo movetime 5000\nquit");
+  UciHandler uciHandler(&is, &os);
+  uciHandler.loop();
+
+  // Wait for search/book move to complete
+  uciHandler.getSearchPtr()->waitWhileSearching();
+
+  const string result = os.str();
+  LOG__DEBUG(Logger::get().TEST_LOG, "RESPONSE:\n{}", result);
+
+  // When debug is on and a book move is found, we expect the book move info string
+  EXPECT_NE(result.find("info string book move:"), string::npos) << "Expected book move debug info string in output:\n" << result;
+
+  // Should also have bestmove in the output
+  EXPECT_NE(result.find("bestmove"), string::npos);
+
+  // No eval breakdown expected — book moves skip the search entirely
+  // (The eval trace is only sent at iteration end during search)
 }

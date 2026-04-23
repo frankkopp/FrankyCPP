@@ -44,16 +44,35 @@ namespace config {
     // time mgmt
     CONFIG_ESSENTIAL int MOVE_OVERHEAD_MS = 10;
 
+    // contempt — draw score bias in centipawns from the engine's perspective.
+    // Positive = avoid draws (play for win), negative = seek draws.
+    // 0 = neutral (VALUE_DRAW == 0). Typical values: 10–25 cp.
+    CONFIG_ESSENTIAL int CONTEMPT = 0;
+
+    // MultiPV — number of principal variations to report.
+    // 1 = standard single-best-move mode (zero overhead).
+    // >1 = analysis mode: find and report the top N moves with scores and PV lines.
+    CONFIG_ESSENTIAL int MULTI_PV = 1;
+
+    // Handicap — strength limitation via multiple levers.
+    // 0 = full strength (zero overhead). 1–20 = progressively weaker play.
+    // Five levers per level: time reduction, MultiPV inflation, depth cap,
+    // candidate pool size, and score threshold for move selection.
+    // Pondering is disabled when Handicap > 0.
+    CONFIG_ESSENTIAL int HANDICAP = 0;
+
     // Multi-threading (Lazy SMP)
     CONFIG_ESSENTIAL int THREADS                = 4;    // Number of search threads (1 = single-threaded, no SMP overhead)
     CONFIG_CONST int SMP_HELPER_START_DEPTH     = 4;    // Depth at which to launch helper threads (allows TT priming)
     CONFIG_CONST bool USE_BEST_THREAD_SELECTION = true; // Select best result from any thread (not just main)
     CONFIG_CONST int BEST_THREAD_SCORE_MARGIN   = 50;   // Score margin (cp) for depth vs score comparison
+    CONFIG_CONST bool USE_SMP_DEPTH_SKIP        = true; // Skip-table depth diversification for helper threads
 
     // book
     CONFIG_ESSENTIAL bool USE_BOOK         = true;
     CONFIG_ESSENTIAL std::string BOOK_PATH = "./books/book.txt";
     CONFIG_ESSENTIAL std::string BOOK_TYPE = "SIMPLE"; // OpeningBook::BookFormat as string
+    CONFIG_ESSENTIAL int BOOK_VARIETY      = 30;       // 0 = always best frequency, 100 = pure random
 
     // pondering
     CONFIG_ESSENTIAL bool USE_PONDER = true;
@@ -97,17 +116,9 @@ namespace config {
     CONFIG_CONST bool USE_HISTORY_COUNTER = true;
     CONFIG_CONST bool USE_HISTORY_MOVES   = true;
 
-    // Internal Iterative Deepening (IID) - legacy approach
-    // Does a reduced-depth mini-search to find a good first move when no TT move
-    // Note: Largely obsolete - PV-only restriction makes it rarely trigger due to TT
-    CONFIG_CONST bool USE_IID      = false; // Disabled - IIR is more effective
-    CONFIG_CONST int IID_DEPTH     = 6;
-    CONFIG_CONST int IID_REDUCTION = 2;
-
-    // Internal Iterative Reduction (IIR) - modern alternative to IID
+    // Internal Iterative Reduction (IIR)
     // Simply reduces depth when no TT move available (Stockfish approach)
-    // Much more effective than IID because it applies to ALL node types
-    // Note: USE_IID and USE_IIR are mutually exclusive - only enable one!
+    // Applies to all node types for maximum effectiveness
     CONFIG_CONST bool USE_IIR       = true; // Enabled - 36% node reduction in testing
     CONFIG_CONST int IIR_DEPTH      = 4;    // Minimum depth to apply IIR
     CONFIG_CONST int IIR_REDUCTION  = 2;    // How much to reduce depth
@@ -191,9 +202,6 @@ namespace config {
 
     // singular extensions
     CONFIG_CONST bool USE_SINGULAR_EXT = true;
-    // Require BETA/EXACT TT bound - DISABLED: filters 99.98% of candidates, verification search is sufficient
-    // TODO: Consider removing this option entirely after strength testing
-    CONFIG_CONST bool USE_SINGULAR_TT_BOUND = false;
     CONFIG_CONST int SINGULAR_MARGIN        = 64; // centipawns below TT value to consider singular
     CONFIG_CONST int SINGULAR_MIN_DEPTH     = 8;  // minimum depth to attempt singular extension
     CONFIG_CONST int SINGULAR_REDUCTION     = 4;  // depth reduction for verification search

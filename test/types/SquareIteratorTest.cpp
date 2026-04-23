@@ -105,6 +105,7 @@ TEST_F(SquareIteratorTest, UseInAlgorithms) {
   for (Square s : Square::all()) {
     names += s.str();
   }
+  // ReSharper disable once CppVariableCanBeMadeConstexpr
   const std::string expected = "a1b1c1d1e1f1g1h1"
                                "a2b2c2d2e2f2g2h2"
                                "a3b3c3d3e3f3g3h3"

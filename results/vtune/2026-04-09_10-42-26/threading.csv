@@ -1,0 +1,1200 @@
+Function,CPU Time,CPU Time:Effective Time,CPU Time:Spin Time,CPU Time:Overhead Time,Instructions Retired,Microarchitecture Usage(%),Microarchitecture Usage:Microarchitecture Usage(%),Microarchitecture Usage:CPI Rate,Module,Function (Full),Source File,Start Address
+"std::_Atomic_storage<unsigned __int64,8>::load",2.883809,2.883809,0.0,0.0,7352725000,8.0,8.0,2.188595,frankycpp_v1.8.exe,"std::_Atomic_storage<unsigned __int64,8>::load",atomic,0x14026d603
+chess::Attacks::`anonymous namespace'::sliderLookup,1.931872,1.931872,0.0,0.0,27883450000,41.0,41.0,0.387648,frankycpp_v1.8.exe,"chess::Attacks::`anonymous namespace'::sliderLookup(const chess::PieceType, const class chess::Square, const class chess::Bitboard)",attacks.cpp,0x14016c950
+chess::Attacks::attacks,0.915939,0.915939,0.0,0.0,13681160000,43.5,43.5,0.383757,frankycpp_v1.8.exe,"chess::Attacks::attacks(enum chess::PieceType,class chess::Square,class chess::Bitboard)",attacks.cpp,0x14016c9b0
+engine::TT::ageEntries::__l2::<lambda_1>::operator(),0.816946,0.816946,0.0,0.0,2770375000,11.7,11.7,1.412973,frankycpp_v1.8.exe,engine::TT::ageEntries::__l2::<lambda_1>::operator(),TT.cpp,0x14026e693
+engine::Evaluator::kingEval,0.692954,0.692954,0.0,0.0,9536080000,36.9,36.9,0.431847,frankycpp_v1.8.exe,"engine::Evaluator::kingEval(class chess::Position const &,struct chess::Score &,class chess::Color)",Evaluator.cpp,0x14026ad90
+engine::Search::search,0.539964,0.539964,0.0,0.0,6681845000,36.1,36.1,0.415957,frankycpp_v1.8.exe,"engine::Search::search(class chess::Position &,enum chess::Depth,enum chess::Depth,class chess::Value,class chess::Value,enum engine::Search::NodeType,enum engine::Search::Do_Null)",Search.cpp,0x14021f280
+func@0x1800126c0,0.416972,0.416972,0.0,0.0,0,1.2,1.2,,vcruntime140.dll,func@0x1800126c0,[Unknown],0x1800126c0
+engine::Evaluator::pieceEval,0.409973,0.409973,0.0,0.0,6448235000,51.0,51.0,0.348816,frankycpp_v1.8.exe,"engine::Evaluator::pieceEval(class chess::Position const &,struct chess::Score &,class chess::Color,enum chess::PieceType)",Evaluator.cpp,0x14026a320
+engine::Search::qsearch,0.364976,0.364976,0.0,0.0,3983350000,30.7,30.7,0.552632,frankycpp_v1.8.exe,"engine::Search::qsearch(class chess::Position &,enum chess::Depth,class chess::Value,class chess::Value,enum engine::Search::NodeType)",Search.cpp,0x140220ca0
+std::_Checked_x86_x64_countr_zero<unsigned __int64>,0.328978,0.328978,0.0,0.0,5519785000,49.4,49.4,0.300597,frankycpp_v1.8.exe,std::_Checked_x86_x64_countr_zero<unsigned __int64>(unsigned __int64),__msvc_bit_utils.hpp,0x140265580
+chess::MoveGenerator::updateSortValues,0.323979,0.323979,0.0,0.0,3659890000,,,0.411620,frankycpp_v1.8.exe,"chess::MoveGenerator::updateSortValues(class chess::Position const &,class chess::StaticMoveList<256> *)",MoveGenerator.cpp,0x140262e70
+engine::Search::thread,0.304980,0.304980,0.0,0.0,2138430000,19.1,19.1,0.782913,frankycpp_v1.8.exe,engine::Search::thread,Search.h,0x1402212c6
+engine::TT::put,0.302980,0.302980,0.0,0.0,3303485000,33.0,33.0,0.468722,frankycpp_v1.8.exe,"engine::TT::put(unsigned __int64,enum chess::Depth,class chess::Move,class chess::Value,enum chess::ValueType,class chess::Value)",TT.cpp,0x14026d390
+engine::Evaluator::rookEval,0.298980,0.298980,0.0,0.0,5235260000,,,0.309497,frankycpp_v1.8.exe,"engine::Evaluator::rookEval(class chess::Position const &,struct chess::Score &,class chess::Color,class chess::Color,class chess::Square)",Evaluator.cpp,0x14026a9c0
+std::_Checked_popcount<unsigned __int64>,0.293981,0.293981,0.0,0.0,3968375000,,,0.406792,frankycpp_v1.8.exe,std::_Checked_popcount<unsigned __int64>(unsigned __int64),__msvc_bit_utils.hpp,0x140241510
+chess::MoveGenerator::fillOnDemandMoveList,0.290981,0.290981,0.0,0.0,3680855000,,,0.422295,frankycpp_v1.8.exe,"chess::MoveGenerator::fillOnDemandMoveList(class chess::Position const &,enum chess::GenMode,bool)",MoveGenerator.cpp,0x140262b20
+"std::ranges::_Insertion_sort_common<chess::Move *,chess::moveValueGreaterComparator,std::identity>",0.285981,0.285981,0.0,0.0,2779360000,27.2,27.2,0.568966,frankycpp_v1.8.exe,"std::ranges::_Insertion_sort_common<chess::Move *,chess::moveValueGreaterComparator,std::identity>(class chess::Move *, class chess::Move *, struct chess::moveValueGreaterComparator, struct std::identity)",algorithm,0x140236d80
+chess::MoveGenerator::getNextPseudoLegalMove,0.280981,0.280981,0.0,0.0,3932435000,41.4,41.4,0.406702,frankycpp_v1.8.exe,"chess::MoveGenerator::getNextPseudoLegalMove(class chess::Position const &,enum chess::GenMode,bool)",MoveGenerator.cpp,0x140260df0
+"std::_Atomic_storage<unsigned __int64,8>::load",0.261983,0.261983,0.0,0.0,937435000,11.0,11.0,1.581470,frankycpp_v1.8.exe,"std::_Atomic_storage<unsigned __int64,8>::load",atomic,0x140267581
+chess::Position::givesCheck,0.256983,0.256983,0.0,0.0,3845580000,,,0.374611,frankycpp_v1.8.exe,chess::Position::givesCheck(class chess::Move),Position.cpp,0x14025c510
+engine::Search::thread,0.255983,0.255983,0.0,0.0,1641260000,,,0.832117,frankycpp_v1.8.exe,engine::Search::thread,Search.h,0x140220604
+engine::Evaluator::threatEval,0.246984,0.246984,0.0,0.0,3264550000,47.0,47.0,0.408257,frankycpp_v1.8.exe,"engine::Evaluator::threatEval(class chess::Position const &,struct chess::Score &,class chess::Color)",Evaluator.cpp,0x14026b1e0
+engine::Evaluator::coordinationEval,0.236984,0.236984,0.0,0.0,2776365000,,,0.523193,frankycpp_v1.8.exe,"engine::Evaluator::coordinationEval(class chess::Position const &,struct chess::Score &,class chess::Color)",Evaluator.cpp,0x14026b380
+engine::Evaluator::evaluate,0.234984,0.234984,0.0,0.0,4154065000,56.7,56.7,0.314348,frankycpp_v1.8.exe,engine::Evaluator::evaluate(class chess::Position const &),Evaluator.cpp,0x140269890
+chess::MoveGenerator::generateMoves,0.227985,0.227985,0.0,0.0,3468210000,39.8,39.8,0.403282,frankycpp_v1.8.exe,"chess::MoveGenerator::generateMoves(class chess::Position const &,class chess::StaticMoveList<256> *,enum chess::GenMode,bool,class chess::Bitboard)",MoveGenerator.cpp,0x140263ad0
+"std::_Atomic_address_as<__int64,std::_Atomic_padded<unsigned __int64> >",0.198987,0.198987,0.0,0.0,3111805000,40.1,40.1,0.384986,frankycpp_v1.8.exe,"std::_Atomic_address_as<__int64,std::_Atomic_padded<unsigned __int64> >",xatomic.h,0x140268d20
+chess::Position::removePiece,0.193987,0.193987,0.0,0.0,2186350000,38.3,38.3,0.421918,frankycpp_v1.8.exe,chess::Position::removePiece(class chess::Square),Position.cpp,0x14025d720
+chess::Position::isAttacked,0.160989,0.160989,0.0,0.0,2078530000,41.3,41.3,0.402017,frankycpp_v1.8.exe,"chess::Position::isAttacked(class chess::Square,class chess::Color)",Position.cpp,0x14025c1e0
+chess::Position::doMove,0.158989,0.158989,0.0,0.0,2201325000,36.1,36.1,0.454422,frankycpp_v1.8.exe,chess::Position::doMove(class chess::Move),Position.cpp,0x14025b980
+chess::Position::putPiece,0.157990,0.157990,0.0,0.0,2093505000,,,0.432046,frankycpp_v1.8.exe,"chess::Position::putPiece(enum chess::Piece,class chess::Square)",Position.cpp,0x14025d610
+engine::Evaluator::bishopEval,0.156990,0.156990,0.0,0.0,2213305000,,,0.359946,frankycpp_v1.8.exe,engine::Evaluator::bishopEval,Evaluator.cpp,0x14026a5b8
+engine::Evaluator::knightEval,0.154990,0.154990,0.0,0.0,2288180000,,,0.378272,frankycpp_v1.8.exe,"engine::Evaluator::knightEval(class chess::Position const &,struct chess::Score &,class chess::Color,class chess::Color,class chess::Square)",Evaluator.cpp,0x14026a6d0
+chess::MoveGenerator::generatePawnMoves,0.126992,0.126992,0.0,0.0,1530445000,37.5,37.5,0.403131,frankycpp_v1.8.exe,"chess::MoveGenerator::generatePawnMoves(class chess::Position const &,class chess::StaticMoveList<256> *,enum chess::GenMode,bool,class chess::Bitboard)",MoveGenerator.cpp,0x1402630a0
+engine::Evaluator::queenEval,0.118992,0.118992,0.0,0.0,1689180000,,,0.315603,frankycpp_v1.8.exe,engine::Evaluator::queenEval,Evaluator.cpp,0x14026a3b9
+engine::See::see,0.113992,0.113992,0.0,0.0,1811975000,45.9,45.9,0.423140,frankycpp_v1.8.exe,"engine::See::see(class chess::Position const &,class chess::Move)",See.cpp,0x14029e620
+"std::_Atomic_storage<unsigned __int64,8>::store",0.109993,0.109993,0.0,0.0,1533440000,,,0.382812,frankycpp_v1.8.exe,"std::_Atomic_storage<unsigned __int64,8>::store",atomic,0x14026d478
+engine::TT::probe,0.097994,0.097994,0.0,0.0,515140000,12.7,12.7,0.965116,frankycpp_v1.8.exe,engine::TT::probe(unsigned __int64 const &),TT.cpp,0x14026d5d0
+chess::Position::undoMove,0.096994,0.096994,0.0,0.0,976370000,,,0.450920,frankycpp_v1.8.exe,chess::Position::undoMove(void),Position.cpp,0x14025be60
+engine::Evaluator::pawnEval,0.086994,0.086994,0.0,0.0,1278865000,42.9,42.9,0.323185,frankycpp_v1.8.exe,"engine::Evaluator::pawnEval(class chess::Position const &,struct chess::Score &)",Evaluator.cpp,0x140269e60
+std::_Unchecked_popcount<unsigned __int64>,0.084994,0.084994,0.0,0.0,1066220000,37.4,37.4,0.460674,frankycpp_v1.8.exe,std::_Unchecked_popcount<unsigned __int64>(unsigned __int64),__msvc_bit_utils.hpp,0x140241500
+chess::moveValueGreaterComparator::operator(),0.081995,0.081995,0.0,0.0,838600000,29.4,29.4,0.407143,frankycpp_v1.8.exe,chess::moveValueGreaterComparator::operator(),move.h,0x140236da0
+"std::array<int,64>::operator[]",0.076995,0.076995,0.0,0.0,772710000,,,0.445736,frankycpp_v1.8.exe,"std::array<int,64>::operator[]",array,0x140262f37
+chess::Position::wasLegalMove,0.072995,0.072995,0.0,0.0,1153075000,47.8,47.8,0.301299,frankycpp_v1.8.exe,chess::Position::wasLegalMove(void),Position.cpp,0x14025c6d0
+"std::ranges::_Sort_fn::_Sort_common<chess::Move *,chess::moveValueGreaterComparator,std::identity>",0.070995,0.070995,0.0,0.0,658900000,28.5,28.5,0.468182,frankycpp_v1.8.exe,"std::ranges::_Sort_fn::_Sort_common<chess::Move *,chess::moveValueGreaterComparator,std::identity>(class chess::Move *, class chess::Move *, __int64, struct chess::moveValueGreaterComparator, struct std::identity)",algorithm,0x1402642e0
+chess::Bitboard::operator^=,0.062996,0.062996,0.0,0.0,754740000,,,0.436508,frankycpp_v1.8.exe,chess::Bitboard::operator^=,bitboard.h,0x14025d775
+chess::MoveGenerator::generateKingMoves,0.060996,0.060996,0.0,0.0,694840000,,,0.418103,frankycpp_v1.8.exe,"chess::MoveGenerator::generateKingMoves(class chess::Position const &,class chess::StaticMoveList<256> *,enum chess::GenMode,bool)",MoveGenerator.cpp,0x140263d90
+chess::Bitboard::shifted,0.058996,0.058996,0.0,0.0,1195005000,,,0.388471,frankycpp_v1.8.exe,chess::Bitboard::shifted,bitboard.h,0x14026319d
+chess::Move::encode,0.058996,0.058996,0.0,0.0,748750000,,,0.524000,frankycpp_v1.8.exe,chess::Move::encode,move.h,0x140263c25
+engine::TT::Entry::{ctor},0.056996,0.056996,0.0,0.0,83860000,2.0,2.0,3.357143,frankycpp_v1.8.exe,engine::TT::Entry::{ctor},TT.h,0x14026d60f
+chess::Position::movePiece,0.054996,0.054996,0.0,0.0,428285000,,,0.566434,frankycpp_v1.8.exe,"chess::Position::movePiece(class chess::Square,class chess::Square)",Position.cpp,0x14025d5e0
+engine::See::attacksTo,0.054996,0.054996,0.0,0.0,829615000,,,0.368231,frankycpp_v1.8.exe,"engine::See::attacksTo(class chess::Position const &,class chess::Square,class chess::Color)",See.cpp,0x14029e990
+chess::Position::getPiece,0.053996,0.053996,0.0,0.0,401330000,,,0.597015,frankycpp_v1.8.exe,chess::Position::getPiece,Position.h,0x14026ae45
+engine::See::revealedAttacks,0.053996,0.053996,0.0,0.0,712810000,36.0,36.0,0.407563,frankycpp_v1.8.exe,"engine::See::revealedAttacks(class chess::Position const &,class chess::Square,class chess::Bitboard,class chess::Color)",See.cpp,0x14029eae0
+chess::makePiece,0.052996,0.052996,0.0,0.0,488185000,31.0,31.0,0.527607,frankycpp_v1.8.exe,chess::makePiece,piece.h,0x14026ae4c
+"std::array<unsigned __int64,64>::operator[]",0.052996,0.052996,0.0,0.0,718800000,40.9,40.9,0.470833,frankycpp_v1.8.exe,"std::array<unsigned __int64,64>::operator[]",array,0x14025d762
+std::popcount,0.052996,0.052996,0.0,0.0,685855000,46.3,46.3,0.323144,frankycpp_v1.8.exe,std::popcount,bit,0x14026b2af
+chess::operator&,0.047997,0.047997,0.0,0.0,593010000,,,0.484848,frankycpp_v1.8.exe,chess::operator&,bitboard.h,0x14026b296
+std::_Countr_zero_tzcnt<unsigned __int64>,0.046997,0.046997,0.0,0.0,601995000,34.4,34.4,0.393035,frankycpp_v1.8.exe,std::_Countr_zero_tzcnt<unsigned __int64>(unsigned __int64),__msvc_bit_utils.hpp,0x140265570
+"std::_Atomic_storage<unsigned __int64,8>::load",0.045997,0.045997,0.0,0.0,464225000,34.2,34.2,0.483871,frankycpp_v1.8.exe,"std::_Atomic_storage<unsigned __int64,8>::load",atomic,0x14026d3e0
+engine::Search::sendSearchUpdateToUci,0.044997,0.044997,0.0,0.0,62895000,7.0,7.0,3.047619,frankycpp_v1.8.exe,engine::Search::sendSearchUpdateToUci(void),Search.cpp,0x14022aa80
+chess::Bitboard::operator bool,0.043997,0.043997,0.0,0.0,766720000,40.9,40.9,0.335938,frankycpp_v1.8.exe,chess::Bitboard::operator bool,bitboard.h,0x140263bc4
+"std::array<chess::Bitboard,64>::operator[]",0.043997,0.043997,0.0,0.0,625955000,48.7,48.7,0.334928,frankycpp_v1.8.exe,"std::array<chess::Bitboard,64>::operator[]",array,0x14016ca40
+chess::operator*,0.042997,0.042997,0.0,0.0,637935000,49.5,49.5,0.276995,frankycpp_v1.8.exe,chess::operator*,value.h,0x140269d85
+chess::Bitboard::operator|=,0.040997,0.040997,0.0,0.0,422295000,44.2,44.2,0.439716,frankycpp_v1.8.exe,chess::Bitboard::operator|=,bitboard.h,0x14025d662
+chess::Square::{ctor},0.038997,0.038997,0.0,0.0,706820000,42.8,42.8,0.313559,frankycpp_v1.8.exe,chess::Square::{ctor},square.h,0x14025c545
+chess::Bitboard::shifted,0.036998,0.036998,0.0,0.0,395340000,29.7,29.7,0.431818,frankycpp_v1.8.exe,chess::Bitboard::shifted(class chess::Direction),bitboard.h,0x140265360
+chess::Move::operator==,0.035998,0.035998,0.0,0.0,539100000,,,0.400000,frankycpp_v1.8.exe,chess::Move::operator==,PVTable.h,0x140262fa6
+chess::Bitboard::operator|=,0.034998,0.034998,0.0,0.0,440265000,54.5,54.5,0.340136,frankycpp_v1.8.exe,chess::Bitboard::operator|=,bitboard.h,0x14026a70b
+engine::Search::storeTt,0.034998,0.034998,0.0,0.0,443260000,,,0.439189,frankycpp_v1.8.exe,"engine::Search::storeTt(class chess::Position const &,enum chess::Depth,enum chess::Depth,class chess::Move,class chess::Value,enum chess::ValueType,class chess::Value)",Search.cpp,0x1402216f0
+std::countr_zero,0.034998,0.034998,0.0,0.0,428285000,34.7,34.7,0.433566,frankycpp_v1.8.exe,std::countr_zero,bit,0x140263b72
+chess::operator&,0.032998,0.032998,0.0,0.0,676870000,53.1,53.1,0.176991,frankycpp_v1.8.exe,chess::operator&,bitboard.h,0x14026aa85
+engine::PawnTT::probe,0.032998,0.032998,0.0,0.0,700830000,77.1,77.1,0.205128,frankycpp_v1.8.exe,engine::PawnTT::probe(unsigned __int64),PawnTT.cpp,0x140267540
+chess::Move::encode,0.031998,0.031998,0.0,0.0,278535000,31.7,31.7,0.451613,frankycpp_v1.8.exe,chess::Move::encode,move.h,0x140263cfd
+"std::array<chess::Value,25>::operator[]",0.031998,0.031998,0.0,0.0,359400000,44.9,44.9,0.441667,frankycpp_v1.8.exe,"std::array<chess::Value,25>::operator[]",array,0x140263c19
+chess::MoveGenerator::resetOnDemand,0.030998,0.030998,0.0,0.0,80865000,16.8,16.8,1.148148,frankycpp_v1.8.exe,chess::MoveGenerator::resetOnDemand,MoveGenerator.h,0x14022109e
+chess::operator<,0.030998,0.030998,0.0,0.0,359400000,33.9,33.9,0.475000,frankycpp_v1.8.exe,chess::operator<,rank.h,0x14026ae34
+engine::See::getLeastValuablePiece,0.029998,0.029998,0.0,0.0,491180000,58.8,58.8,0.286585,frankycpp_v1.8.exe,"engine::See::getLeastValuablePiece(class chess::Position const &,class chess::Bitboard,class chess::Color)",See.cpp,0x14029e910
+chess::StaticMoveList<256>::push_back,0.028998,0.028998,0.0,0.0,260565000,23.9,23.9,0.494253,frankycpp_v1.8.exe,chess::StaticMoveList<256>::push_back,staticmovelist.h,0x140263d06
+chess::Position::hasCheck,0.027998,0.027998,0.0,0.0,236605000,16.2,16.2,0.582278,frankycpp_v1.8.exe,chess::Position::hasCheck(void),Position.cpp,0x14025c4c0
+chess::Position::attacksTo,0.025998,0.025998,0.0,0.0,287520000,52.8,52.8,0.395833,frankycpp_v1.8.exe,"chess::Position::attacksTo(class chess::Square,class chess::Color)",Position.cpp,0x14025c370
+chess::operator+,0.025998,0.025998,0.0,0.0,281530000,33.9,33.9,0.436170,frankycpp_v1.8.exe,chess::operator+,value.h,0x140269db1
+"std::_Atomic_storage<unsigned __int64,8>::store",0.025998,0.025998,0.0,0.0,116805000,18.0,18.0,1.128205,frankycpp_v1.8.exe,"std::_Atomic_storage<unsigned __int64,8>::store",atomic,0x14026d68f
+chess::MoveGenerator::isPseudoLegal,0.024998,0.024998,0.0,0.0,176705000,21.9,21.9,0.915254,frankycpp_v1.8.exe,"chess::MoveGenerator::isPseudoLegal(class chess::Position const &,class chess::Move)",MoveGenerator.cpp,0x140261080
+chess::Position::getLastMove,0.024998,0.024998,0.0,0.0,281530000,37.9,37.9,0.340426,frankycpp_v1.8.exe,chess::Position::getLastMove,Position.h,0x140262f70
+chess::operator&,0.023998,0.023998,0.0,0.0,464225000,61.0,61.0,0.174194,frankycpp_v1.8.exe,chess::operator&,bitboard.h,0x14029ea97
+"std::array<chess::Bitboard,64>::operator[]",0.023998,0.023998,0.0,0.0,359400000,66.7,66.7,0.325000,frankycpp_v1.8.exe,"std::array<chess::Bitboard,64>::operator[]",array,0x14026a6ee
+std::countr_zero,0.023998,0.023998,0.0,0.0,760730000,98.8,98.8,0.141732,frankycpp_v1.8.exe,std::countr_zero,bit,0x140269a30
+chess::Bitboard::operator|=,0.022998,0.022998,0.0,0.0,278535000,34.7,34.7,0.462366,frankycpp_v1.8.exe,chess::Bitboard::operator|=,bitboard.h,0x14025d656
+chess::typeOf,0.022998,0.022998,0.0,0.0,392345000,35.0,35.0,0.450382,frankycpp_v1.8.exe,chess::typeOf,piece.h,0x14025d744
+"std::_Hash<std::_Umap_traits<unsigned __int64,book::BookEntry,std::_Uhash_compare<unsigned __int64,std::hash<unsigned __int64>,std::equal_to<unsigned __int64> >,std::allocator<std::pair<unsigned __int64 const ,book::BookEntry> >,0> >::_Find_last",0.022998,0.022998,0.0,0.0,11980000,2.3,2.3,9.000000,frankycpp_v1.8.exe,"std::_Hash<std::_Umap_traits<unsigned __int64,book::BookEntry,std::_Uhash_compare<unsigned __int64,std::hash<unsigned __int64>,std::equal_to<unsigned __int64> >,std::allocator<std::pair<unsigned __int64 const ,book::BookEntry> >,0> >::_Find_last",xhash,0x140288080
+std::countr_zero,0.022998,0.022998,0.0,0.0,742760000,,,0.137097,frankycpp_v1.8.exe,std::countr_zero,bit,0x140269a70
+chess::operator&,0.021999,0.021999,0.0,0.0,170715000,47.4,47.4,0.473684,frankycpp_v1.8.exe,chess::operator&,bitboard.h,0x14025c641
+chess::operator&,0.021999,0.021999,0.0,0.0,167720000,29.1,29.1,0.910714,frankycpp_v1.8.exe,chess::operator&,bitboard.h,0x14026b27d
+chess::operator&,0.020999,0.020999,0.0,0.0,248585000,36.7,36.7,0.493976,frankycpp_v1.8.exe,chess::operator&,bitboard.h,0x14026af5f
+chess::operator&,0.020999,0.020999,0.0,0.0,185690000,41.1,41.1,0.306452,frankycpp_v1.8.exe,chess::operator&,bitboard.h,0x14026b116
+engine::PawnTT::Entry::Entry,0.020999,0.020999,0.0,0.0,697835000,84.0,84.0,0.210300,frankycpp_v1.8.exe,engine::PawnTT::Entry::Entry(struct engine::PawnTT::Entry const &),PawnTT.cpp,0x1402665d0
+_security_check_cookie,0.019999,0.019999,0.0,0.0,149750000,23.7,23.7,0.640000,frankycpp_v1.8.exe,_security_check_cookie,amdsecgs.asm,0x140619cf0
+chess::Bitboard::operator bool,0.019999,0.019999,0.0,0.0,206655000,55.8,55.8,0.463768,frankycpp_v1.8.exe,chess::Bitboard::operator bool,bitboard.h,0x140263b55
+chess::Bitboard::popLSB,0.019999,0.019999,0.0,0.0,182695000,24.1,24.1,0.737705,frankycpp_v1.8.exe,chess::Bitboard::popLSB,bitboard.h,0x14026b3f0
+chess::operator&,0.019999,0.019999,0.0,0.0,149750000,32.7,32.7,0.540000,frankycpp_v1.8.exe,chess::operator&,bitboard.h,0x14026b4b8
+chess::operator*,0.019999,0.019999,0.0,0.0,155740000,48.4,48.4,0.269231,frankycpp_v1.8.exe,chess::operator*,value.h,0x140269d8d
+chess::operator|,0.019999,0.019999,0.0,0.0,170715000,36.6,36.6,0.684211,frankycpp_v1.8.exe,chess::operator|,bitboard.h,0x14026b215
+engine::Search::goodCapture,0.019999,0.019999,0.0,0.0,350415000,33.0,33.0,0.393162,frankycpp_v1.8.exe,"engine::Search::goodCapture(class chess::Position const &,class chess::Move,bool)",Search.cpp,0x1402215b0
+engine::TT::prefetch,0.019999,0.019999,0.0,0.0,401330000,49.3,49.3,0.283582,frankycpp_v1.8.exe,engine::TT::prefetch,TT.h,0x1402205ee
+chess::Bitboard::popLSB,0.018999,0.018999,0.0,0.0,230615000,74.4,74.4,0.298701,frankycpp_v1.8.exe,chess::Bitboard::popLSB,bitboard.h,0x140263b72
+chess::Move::operator==,0.018999,0.018999,0.0,0.0,245590000,50.7,50.7,0.329268,frankycpp_v1.8.exe,chess::Move::operator==,PVTable.h,0x14021ffdb
+chess::operator&,0.018999,0.018999,0.0,0.0,203660000,34.9,34.9,0.411765,frankycpp_v1.8.exe,chess::operator&,bitboard.h,0x140220268
+"std::_Atomic_reinterpret_as<__int64,unsigned __int64>",0.018999,0.018999,0.0,0.0,179700000,33.9,33.9,0.450000,frankycpp_v1.8.exe,"std::_Atomic_reinterpret_as<__int64,unsigned __int64>(unsigned __int64 const & __ptr64)",atomic,0x140268c00
+std::countr_zero,0.018999,0.018999,0.0,0.0,260565000,36.4,36.4,0.413793,frankycpp_v1.8.exe,std::countr_zero,bit,0x14026a3b1
+std::ranges::_Partition_by_median_guess_common,0.018999,0.018999,0.0,0.0,74875000,10.1,10.1,1.000000,frankycpp_v1.8.exe,std::ranges::_Partition_by_median_guess_common,algorithm,0x14026433f
+chess::Position::getPieceBb,0.017999,0.017999,0.0,0.0,302495000,42.1,42.1,0.514851,frankycpp_v1.8.exe,chess::Position::getPieceBb,Position.h,0x14026b28b
+chess::Value::{ctor},0.017999,0.017999,0.0,0.0,257570000,41.4,41.4,0.348837,frankycpp_v1.8.exe,chess::Value::{ctor},value.h,0x14029eb80
+chess::operator++,0.017999,0.017999,0.0,0.0,269550000,45.4,45.4,0.455556,frankycpp_v1.8.exe,chess::operator++,piecetype.h,0x140263d59
+"std::array<std::array<unsigned __int64,64>,16>::operator[]",0.017999,0.017999,0.0,0.0,110815000,27.4,27.4,0.918919,frankycpp_v1.8.exe,"std::array<std::array<unsigned __int64,64>,16>::operator[]",array,0x14025d75b
+"std::unique_ptr<engine::TT::TTCluster [0],std::default_delete<engine::TT::TTCluster [0]> >::operator[]",0.017999,0.017999,0.0,0.0,410315000,48.8,48.8,0.423358,frankycpp_v1.8.exe,"std::unique_ptr<engine::TT::TTCluster [0],std::default_delete<engine::TT::TTCluster [0]> >::operator[]",memory,0x1402212bb
+chess::Move::stripped,0.016999,0.016999,0.0,0.0,218635000,34.6,34.6,0.315068,frankycpp_v1.8.exe,chess::Move::stripped,move.h,0x140262ec0
+chess::operator&,0.016999,0.016999,0.0,0.0,83860000,14.6,14.6,0.785714,frankycpp_v1.8.exe,chess::operator&,bitboard.h,0x14026b444
+"std::_Atomic_storage<unsigned __int64,8>::store",0.016999,0.016999,0.0,0.0,332445000,36.1,36.1,0.414414,frankycpp_v1.8.exe,"std::_Atomic_storage<unsigned __int64,8>::store",atomic,0x14026d593
+chess::Move::from,0.015999,0.015999,0.0,0.0,251580000,46.0,46.0,0.309524,frankycpp_v1.8.exe,chess::Move::from,move.h,0x14021ffed
+chess::MoveGenerator::resetOnDemand,0.015999,0.015999,0.0,0.0,158735000,31.9,31.9,0.547170,frankycpp_v1.8.exe,chess::MoveGenerator::resetOnDemand,MoveGenerator.h,0x14021ff2e
+chess::operator&,0.015999,0.015999,0.0,0.0,188685000,,,0.523810,frankycpp_v1.8.exe,chess::operator&,bitboard.h,0x14025c22c
+chess::operator<,0.015999,0.015999,0.0,0.0,338435000,48.3,48.3,0.389381,frankycpp_v1.8.exe,chess::operator<,value.h,0x14029e7b8
+chess::operator~,0.015999,0.015999,0.0,0.0,215640000,51.0,51.0,0.208333,frankycpp_v1.8.exe,chess::operator~,color.h,0x14025bdcb
+"std::array<int,64>::operator[]",0.015999,0.015999,0.0,0.0,458235000,54.7,54.7,0.254902,frankycpp_v1.8.exe,"std::array<int,64>::operator[]",array,0x14026a45d
+"std::array<std::array<chess::Move,64>,64>::operator[]",0.015999,0.015999,0.0,0.0,188685000,53.8,53.8,0.380952,frankycpp_v1.8.exe,"std::array<std::array<chess::Move,64>,64>::operator[]",array,0x140262fa0
+chess::Bitboard::popLSB,0.014999,0.014999,0.0,0.0,254575000,37.0,37.0,0.400000,frankycpp_v1.8.exe,chess::Bitboard::popLSB,bitboard.h,0x14026aee0
+chess::operator*,0.014999,0.014999,0.0,0.0,65890000,41.5,41.5,1.045455,frankycpp_v1.8.exe,chess::operator*,value.h,0x140269dc7
+chess::operator<<,0.014999,0.014999,0.0,0.0,224625000,37.5,37.5,0.386667,frankycpp_v1.8.exe,chess::operator<<,bitboard.h,0x14026af5a
+chess::operator|,0.014999,0.014999,0.0,0.0,152745000,37.2,37.2,0.470588,frankycpp_v1.8.exe,chess::operator|,bitboard.h,0x14029eb03
+chess::operator~,0.014999,0.014999,0.0,0.0,203660000,32.6,32.6,0.352941,frankycpp_v1.8.exe,chess::operator~,color.h,0x140220264
+engine::Search::stopConditions,0.014999,0.014999,0.0,0.0,59900000,14.4,14.4,1.200000,frankycpp_v1.8.exe,engine::Search::stopConditions(void),Search.cpp,0x140225a60
+std::popcount,0.014999,0.014999,0.0,0.0,167720000,53.2,53.2,0.321429,frankycpp_v1.8.exe,std::popcount,bit,0x14026a72d
+chess::Color::sign,0.013999,0.013999,0.0,0.0,242595000,36.5,36.5,0.283951,frankycpp_v1.8.exe,chess::Color::sign,color.h,0x140263258
+chess::operator&,0.013999,0.013999,0.0,0.0,197670000,,,0.484848,frankycpp_v1.8.exe,chess::operator&,bitboard.h,0x14025c62a
+chess::operator&,0.013999,0.013999,0.0,0.0,134775000,40.4,40.4,0.644444,frankycpp_v1.8.exe,chess::operator&,bitboard.h,0x14025c27c
+chess::operator&,0.013999,0.013999,0.0,0.0,158735000,45.4,45.4,0.339623,frankycpp_v1.8.exe,chess::operator&,bitboard.h,0x14026ab03
+engine::Search::checkDrawRepAnd50,0.013999,0.013999,0.0,0.0,38935000,1.7,1.7,2.076923,frankycpp_v1.8.exe,"engine::Search::checkDrawRepAnd50(class chess::Position const &,int)",Search.cpp,0x140225ae0
+std::countr_zero,0.013999,0.013999,0.0,0.0,194675000,37.9,37.9,0.430769,frankycpp_v1.8.exe,std::countr_zero,bit,0x14026aee0
+chess::Bitboard::operator|=,0.012999,0.012999,0.0,0.0,248585000,54.0,54.0,0.265060,frankycpp_v1.8.exe,chess::Bitboard::operator|=,bitboard.h,0x14026a5db
+chess::Position::getPieceBb,0.012999,0.012999,0.0,0.0,137770000,,,0.500000,frankycpp_v1.8.exe,chess::Position::getPieceBb,Position.h,0x14026a337
+chess::operator&,0.012999,0.012999,0.0,0.0,152745000,43.7,43.7,0.549020,frankycpp_v1.8.exe,chess::operator&,bitboard.h,0x14026b14d
+chess::operator&,0.012999,0.012999,0.0,0.0,149750000,,,0.580000,frankycpp_v1.8.exe,chess::operator&,bitboard.h,0x14025c2b7
+chess::operator+=,0.012999,0.012999,0.0,0.0,164725000,,,0.363636,frankycpp_v1.8.exe,chess::operator+=,value.h,0x14026b1a5
+chess::operator|,0.012999,0.012999,0.0,0.0,341430000,77.7,77.7,0.210526,frankycpp_v1.8.exe,chess::operator|,bitboard.h,0x14029ea8c
+std::atomic<bool>::operator bool,0.012999,0.012999,0.0,0.0,29950000,13.6,13.6,1.400000,frankycpp_v1.8.exe,std::atomic<bool>::operator bool,atomic,0x140225acb
+chess::Bitboard::popLSB,0.011999,0.011999,0.0,0.0,89850000,40.0,40.0,0.300000,frankycpp_v1.8.exe,chess::Bitboard::popLSB,bitboard.h,0x14026a1d4
+chess::operator&,0.011999,0.011999,0.0,0.0,107820000,47.2,47.2,0.222222,frankycpp_v1.8.exe,chess::operator&,bitboard.h,0x14026aa36
+chess::operator|,0.011999,0.011999,0.0,0.0,95840000,48.6,48.6,0.500000,frankycpp_v1.8.exe,chess::operator|,bitboard.h,0x14029ea27
+chess::operator~,0.011999,0.011999,0.0,0.0,122795000,30.8,30.8,0.341463,frankycpp_v1.8.exe,chess::operator~,color.h,0x14026adbf
+func@0x1400e34a0,0.011999,0.011999,0.0,0.0,0,0.8,0.8,,nvlddmkm.sys,func@0x1400e34a0,[Unknown],0x1400e34a0
+std::popcount,0.011999,0.011999,0.0,0.0,248585000,62.8,62.8,0.313253,frankycpp_v1.8.exe,std::popcount,bit,0x14026a55d
+chess::Bitboard::operator|=,0.010999,0.010999,0.0,0.0,137770000,43.8,43.8,0.304348,frankycpp_v1.8.exe,chess::Bitboard::operator|=,bitboard.h,0x14026aa1e
+chess::Bitboard::{ctor},0.010999,0.010999,0.0,0.0,194675000,50.7,50.7,0.384615,frankycpp_v1.8.exe,chess::Bitboard::{ctor},bitboard.h,0x14029eb47
+chess::Move::to,0.010999,0.010999,0.0,0.0,167720000,33.3,33.3,0.446429,frankycpp_v1.8.exe,chess::Move::to,move.h,0x140220273
+chess::MoveGenerator::getEvasionTargets,0.010999,0.010999,0.0,0.0,122795000,,,0.439024,frankycpp_v1.8.exe,chess::MoveGenerator::getEvasionTargets(class chess::Position const &),MoveGenerator.cpp,0x140263010
+chess::Position::checkRepetitions,0.010999,0.010999,0.0,0.0,41930000,9.0,9.0,1.928571,frankycpp_v1.8.exe,chess::Position::checkRepetitions(int),Position.cpp,0x14025c8d0
+chess::Position::getPieceBb,0.010999,0.010999,0.0,0.0,188685000,30.9,30.9,0.380952,frankycpp_v1.8.exe,chess::Position::getPieceBb,Position.h,0x140263b40
+chess::Value::operator int,0.010999,0.010999,0.0,0.0,155740000,21.4,21.4,0.230769,frankycpp_v1.8.exe,chess::Value::operator int,value.h,0x14025d7f9
+chess::operator&,0.010999,0.010999,0.0,0.0,107820000,39.8,39.8,0.500000,frankycpp_v1.8.exe,chess::operator&,bitboard.h,0x14025c29b
+chess::operator+=,0.010999,0.010999,0.0,0.0,80865000,58.5,58.5,0.333333,frankycpp_v1.8.exe,chess::operator+=,value.h,0x14026a4cf
+engine::Search::search::__l2::<lambda_1>::operator(),0.010999,0.010999,0.0,0.0,149750000,60.0,60.0,0.380000,frankycpp_v1.8.exe,engine::Search::search::__l2::<lambda_1>::operator(),Search.cpp,0x14021f973
+"std::_Atomic_storage<unsigned __int64,8>::load",0.010999,0.010999,0.0,0.0,71880000,19.8,19.8,1.041667,frankycpp_v1.8.exe,"std::_Atomic_storage<unsigned __int64,8>::load",atomic,0x14026e6a0
+std::min,0.010999,0.010999,0.0,0.0,161730000,23.6,23.6,0.518519,frankycpp_v1.8.exe,std::min,utility,0x14026b0c1
+std::popcount,0.010999,0.010999,0.0,0.0,143760000,42.6,42.6,0.500000,frankycpp_v1.8.exe,std::popcount,bit,0x14026b247
+chess::Attacks::detail::Magic::index,0.009999,0.009999,0.0,0.0,92845000,30.3,30.3,0.451613,frankycpp_v1.8.exe,chess::Attacks::detail::Magic::index,attacks.h,0x14016c985
+chess::Direction::operator int,0.009999,0.009999,0.0,0.0,143760000,43.3,43.3,0.270833,frankycpp_v1.8.exe,chess::Direction::operator int,direction.h,0x140265360
+chess::Position::getPieceBb,0.009999,0.009999,0.0,0.0,146755000,33.3,33.3,0.448980,frankycpp_v1.8.exe,chess::Position::getPieceBb,Position.h,0x14026adcb
+chess::Position::isCapturingMove,0.009999,0.009999,0.0,0.0,227620000,40.2,40.2,0.302632,frankycpp_v1.8.exe,chess::Position::isCapturingMove,Position.h,0x140220264
+chess::Value::isCheckMate,0.009999,0.009999,0.0,0.0,116805000,,,0.538462,frankycpp_v1.8.exe,chess::Value::isCheckMate,value.h,0x140221754
+chess::colorOf,0.009999,0.009999,0.0,0.0,83860000,22.4,22.4,0.714286,frankycpp_v1.8.exe,chess::colorOf,piece.h,0x14025d749
+chess::operator&,0.009999,0.009999,0.0,0.0,107820000,53.7,53.7,0.472222,frankycpp_v1.8.exe,chess::operator&,bitboard.h,0x14025c66f
+chess::operator&,0.009999,0.009999,0.0,0.0,200665000,45.3,45.3,0.492537,frankycpp_v1.8.exe,chess::operator&,bitboard.h,0x14025c688
+chess::operator+=,0.009999,0.009999,0.0,0.0,155740000,69.6,69.6,0.192308,frankycpp_v1.8.exe,chess::operator+=,value.h,0x140269ecb
+chess::operator-,0.009999,0.009999,0.0,0.0,137770000,48.3,48.3,0.239130,frankycpp_v1.8.exe,chess::operator-,depth.h,0x14022000a
+chess::operator<,0.009999,0.009999,0.0,0.0,74875000,34.5,34.5,0.480000,frankycpp_v1.8.exe,chess::operator<,file.h,0x14026ae20
+chess::operator|,0.009999,0.009999,0.0,0.0,146755000,66.0,66.0,0.244898,frankycpp_v1.8.exe,chess::operator|,bitboard.h,0x14029eb16
+chess::typeOf,0.009999,0.009999,0.0,0.0,197670000,43.4,43.4,0.318182,frankycpp_v1.8.exe,chess::typeOf,piece.h,0x14022121b
+chess::typeOf,0.009999,0.009999,0.0,0.0,80865000,31.9,31.9,0.444444,frankycpp_v1.8.exe,chess::typeOf,piece.h,0x140263c13
+engine::Search::thread,0.009999,0.009999,0.0,0.0,38935000,15.6,15.6,1.923077,frankycpp_v1.8.exe,engine::Search::thread,Search.h,0x140221095
+func@0x1406ac320,0.009999,0.009999,0.0,0.0,8985000,10.9,10.9,5.333333,ntoskrnl.exe,func@0x1406ac320,[Unknown],0x1406ac320
+"std::array<chess::Bitboard,64>::operator[]",0.009999,0.009999,0.0,0.0,179700000,35.7,35.7,0.566667,frankycpp_v1.8.exe,"std::array<chess::Bitboard,64>::operator[]",array,0x14025c1ff
+"std::array<chess::HistoryState,1024>::operator[]",0.009999,0.009999,0.0,0.0,56905000,16.7,16.7,0.789474,frankycpp_v1.8.exe,"std::array<chess::HistoryState,1024>::operator[]",array,0x14025be9a
+_std_type_info_compare,0.008999,0.008999,0.0,0.0,116805000,,,0.179487,vcruntime140.dll,_std_type_info_compare,[Unknown],0x180005030
+chess::Bitboard::operator bool,0.008999,0.008999,0.0,0.0,92845000,53.6,53.6,0.741935,frankycpp_v1.8.exe,chess::Bitboard::operator bool,bitboard.h,0x140263ec0
+chess::Bitboard::operator|=,0.008999,0.008999,0.0,0.0,89850000,57.3,57.3,0.600000,frankycpp_v1.8.exe,chess::Bitboard::operator|=,bitboard.h,0x14026a5e5
+chess::Bitboard::operator|=,0.008999,0.008999,0.0,0.0,164725000,38.2,38.2,0.236364,frankycpp_v1.8.exe,chess::Bitboard::operator|=,bitboard.h,0x14026aa11
+chess::Bitboard::operator~,0.008999,0.008999,0.0,0.0,26955000,50.0,50.0,1.777778,frankycpp_v1.8.exe,chess::Bitboard::operator~,bitboard.h,0x1402633b2
+chess::Move::stripped,0.008999,0.008999,0.0,0.0,77870000,38.9,38.9,0.615385,frankycpp_v1.8.exe,chess::Move::stripped,move.h,0x140260f22
+chess::Position::clearEnPassant,0.008999,0.008999,0.0,0.0,119800000,43.2,43.2,0.300000,frankycpp_v1.8.exe,chess::Position::clearEnPassant,Position.cpp,0x14025bd1c
+chess::Position::getKingSquare,0.008999,0.008999,0.0,0.0,74875000,34.2,34.2,0.720000,frankycpp_v1.8.exe,chess::Position::getKingSquare,Position.h,0x14026abd8
+chess::Square::file,0.008999,0.008999,0.0,0.0,92845000,68.1,68.1,0.516129,frankycpp_v1.8.exe,chess::Square::file,square.h,0x14026ae06
+chess::Value::operator int,0.008999,0.008999,0.0,0.0,149750000,32.3,32.3,0.400000,frankycpp_v1.8.exe,chess::Value::operator int,value.h,0x14025d6e6
+chess::operator&,0.008999,0.008999,0.0,0.0,119800000,52.4,52.4,0.200000,frankycpp_v1.8.exe,chess::operator&,bitboard.h,0x14026af65
+func@0x18001d470,0.008999,0.008999,0.0,0.0,140765000,28.7,28.7,0.404255,ntdll.dll,func@0x18001d470,[Unknown],0x18001d470
+"std::_Atomic_address_as<__int64,std::_Atomic_padded<unsigned __int64> >",0.008999,0.008999,0.0,0.0,128785000,31.1,31.1,0.325581,frankycpp_v1.8.exe,"std::_Atomic_address_as<__int64,std::_Atomic_padded<unsigned __int64> >",xatomic.h,0x140268c10
+"std::_Atomic_storage<unsigned __int64,8>::store",0.008999,0.008999,0.0,0.0,68885000,24.0,24.0,0.913043,frankycpp_v1.8.exe,"std::_Atomic_storage<unsigned __int64,8>::store",atomic,0x14026d64f
+"std::array<chess::Move,64>::operator[]",0.008999,0.008999,0.0,0.0,257570000,32.5,32.5,0.383721,frankycpp_v1.8.exe,"std::array<chess::Move,64>::operator[]",array,0x140262fa4
+std::atomic<unsigned __int64>::{ctor},0.008999,0.008999,0.0,0.0,155740000,83.0,83.0,0.288462,frankycpp_v1.8.exe,std::atomic<unsigned __int64>::{ctor},atomic,0x1402665df
+chess::Bitboard::operator^=,0.007999,0.007999,0.0,0.0,89850000,31.7,31.7,0.600000,frankycpp_v1.8.exe,chess::Bitboard::operator^=,bitboard.h,0x14025d769
+chess::Bitboard::popLSB,0.007999,0.007999,0.0,0.0,74875000,30.5,30.5,0.400000,frankycpp_v1.8.exe,chess::Bitboard::popLSB,bitboard.h,0x14026b412
+chess::StaticMoveList<256>::empty,0.007999,0.007999,0.0,0.0,47920000,36.7,36.7,0.500000,frankycpp_v1.8.exe,chess::StaticMoveList<256>::empty,staticmovelist.h,0x140262b2b
+chess::StaticMoveList<256>::push_back,0.007999,0.007999,0.0,0.0,167720000,41.4,41.4,0.678571,frankycpp_v1.8.exe,chess::StaticMoveList<256>::push_back,staticmovelist.h,0x140263c4a
+chess::Value::isCheckMate,0.007999,0.007999,0.0,0.0,32945000,11.9,11.9,1.181818,frankycpp_v1.8.exe,chess::Value::isCheckMate,value.h,0x140221794
+chess::Value::operator int,0.007999,0.007999,0.0,0.0,80865000,55.9,55.9,0.703704,frankycpp_v1.8.exe,chess::Value::operator int,value.h,0x14025d6f6
+chess::operator&,0.007999,0.007999,0.0,0.0,14975000,31.4,31.4,2.400000,frankycpp_v1.8.exe,chess::operator&,bitboard.h,0x14026b26f
+chess::operator&,0.007999,0.007999,0.0,0.0,134775000,61.2,61.2,0.355556,frankycpp_v1.8.exe,chess::operator&,bitboard.h,0x14026ab80
+chess::operator&,0.007999,0.007999,0.0,0.0,143760000,44.7,44.7,0.395833,frankycpp_v1.8.exe,chess::operator&,bitboard.h,0x14026b4aa
+chess::operator+,0.007999,0.007999,0.0,0.0,113810000,68.1,68.1,0.315789,frankycpp_v1.8.exe,chess::operator+,value.h,0x140221228
+chess::operator<,0.007999,0.007999,0.0,0.0,83860000,44.3,44.3,0.428571,frankycpp_v1.8.exe,chess::operator<,file.h,0x14026af4a
+chess::operator|,0.007999,0.007999,0.0,0.0,62895000,29.5,29.5,0.428571,frankycpp_v1.8.exe,chess::operator|,bitboard.h,0x14026b436
+chess::operator~,0.007999,0.007999,0.0,0.0,62895000,24.8,24.8,1.047619,frankycpp_v1.8.exe,chess::operator~,color.h,0x14025be8c
+chess::typeOf,0.007999,0.007999,0.0,0.0,68885000,41.8,41.8,0.565217,frankycpp_v1.8.exe,chess::typeOf,piece.h,0x14025bd51
+chess::typeOf,0.007999,0.007999,0.0,0.0,95840000,43.5,43.5,0.187500,frankycpp_v1.8.exe,chess::typeOf,piece.h,0x14025c54f
+chess::typeOf,0.007999,0.007999,0.0,0.0,233610000,48.7,48.7,0.397436,frankycpp_v1.8.exe,chess::typeOf,piece.h,0x140263c2e
+engine::Search::thread,0.007999,0.007999,0.0,0.0,41930000,17.2,17.2,0.928571,frankycpp_v1.8.exe,engine::Search::thread,Search.h,0x14021fef1
+engine::Search::thread,0.007999,0.007999,0.0,0.0,29950000,10.0,10.0,1.400000,frankycpp_v1.8.exe,engine::Search::thread,Search.h,0x14021f2aa
+func@0x1406b92ae,0.007999,0.007999,0.0,0.0,2995000,0.0,0.0,6.000000,ntoskrnl.exe,func@0x1406b92ae,[Unknown],0x1406b92ae
+"std::array<chess::Value,25>::operator[]",0.007999,0.007999,0.0,0.0,65890000,25.8,25.8,0.545455,frankycpp_v1.8.exe,"std::array<chess::Value,25>::operator[]",array,0x14026340a
+"std::array<chess::Value,32>::operator[]",0.007999,0.007999,0.0,0.0,119800000,22.1,22.1,0.175000,frankycpp_v1.8.exe,"std::array<chess::Value,32>::operator[]",array,0x14029e788
+std::popcount,0.007999,0.007999,0.0,0.0,104825000,36.1,36.1,0.457143,frankycpp_v1.8.exe,std::popcount,bit,0x14026a607
+chess::Bitboard::operator bool,0.007000,0.007000,0.0,0.0,35940000,64.7,64.7,0.416667,frankycpp_v1.8.exe,chess::Bitboard::operator bool,bitboard.h,0x14026b06b
+chess::Bitboard::operator bool,0.007000,0.007000,0.0,0.0,134775000,,,0.222222,frankycpp_v1.8.exe,chess::Bitboard::operator bool,bitboard.h,0x14026af1d
+chess::Bitboard::operator|=,0.007000,0.007000,0.0,0.0,41930000,59.3,59.3,0.428571,frankycpp_v1.8.exe,chess::Bitboard::operator|=,bitboard.h,0x14026a3f6
+chess::Bitboard::operator|=,0.007000,0.007000,0.0,0.0,59900000,42.9,42.9,0.300000,frankycpp_v1.8.exe,chess::Bitboard::operator|=,bitboard.h,0x14026a007
+chess::Bitboard::operator~,0.007000,0.007000,0.0,0.0,92845000,51.0,51.0,0.387097,frankycpp_v1.8.exe,chess::Bitboard::operator~,bitboard.h,0x14026a00a
+chess::Bitboard::popLSB,0.007000,0.007000,0.0,0.0,68885000,72.7,72.7,0.478261,frankycpp_v1.8.exe,chess::Bitboard::popLSB,bitboard.h,0x14026a6a0
+chess::Move::from,0.007000,0.007000,0.0,0.0,38935000,,,0.923077,frankycpp_v1.8.exe,chess::Move::from,move.h,0x14025bfff
+chess::Move::type,0.007000,0.007000,0.0,0.0,80865000,65.5,65.5,0.333333,frankycpp_v1.8.exe,chess::Move::type,move.h,0x1402211e9
+chess::Position::getPiece,0.007000,0.007000,0.0,0.0,71880000,61.1,61.1,0.583333,frankycpp_v1.8.exe,chess::Position::getPiece,Position.h,0x14029e70d
+chess::Position::getPieceBb,0.007000,0.007000,0.0,0.0,155740000,43.7,43.7,0.480769,frankycpp_v1.8.exe,chess::Position::getPieceBb,Position.h,0x14026b12f
+chess::StaticMoveList<256>::empty,0.007000,0.007000,0.0,0.0,59900000,27.5,27.5,0.400000,frankycpp_v1.8.exe,chess::StaticMoveList<256>::empty,staticmovelist.h,0x140262de2
+chess::StaticMoveList<256>::push_back,0.007000,0.007000,0.0,0.0,47920000,,,0.187500,frankycpp_v1.8.exe,chess::StaticMoveList<256>::push_back,staticmovelist.h,0x140263fff
+chess::operator&,0.007000,0.007000,0.0,0.0,95840000,29.9,29.9,0.562500,frankycpp_v1.8.exe,chess::operator&,bitboard.h,0x14026b482
+chess::operator&,0.007000,0.007000,0.0,0.0,107820000,,,0.583333,frankycpp_v1.8.exe,chess::operator&,bitboard.h,0x14026a7c9
+chess::operator*,0.007000,0.007000,0.0,0.0,236605000,81.6,81.6,0.151899,frankycpp_v1.8.exe,chess::operator*,value.h,0x14026998c
+chess::operator+=,0.007000,0.007000,0.0,0.0,119800000,76.2,76.2,0.225000,frankycpp_v1.8.exe,chess::operator+=,value.h,0x140269ec3
+chess::operator-,0.007000,0.007000,0.0,0.0,89850000,30.2,30.2,0.300000,frankycpp_v1.8.exe,chess::operator-,value.h,0x14029e8cd
+chess::typeOf,0.007000,0.007000,0.0,0.0,68885000,,,0.304348,frankycpp_v1.8.exe,chess::typeOf,piece.h,0x1402202c0
+engine::TT::Entry::Entry,0.007000,0.007000,0.0,0.0,101830000,46.8,46.8,0.529412,frankycpp_v1.8.exe,engine::TT::Entry::Entry(void),TT.h,0x14026dd70
+"std::_Atomic_storage<unsigned __int64,8>::store",0.007000,0.007000,0.0,0.0,44925000,13.9,13.9,0.733333,frankycpp_v1.8.exe,"std::_Atomic_storage<unsigned __int64,8>::store",atomic,0x14026d4f6
+"std::array<chess::Bitboard,64>::operator[]",0.007000,0.007000,0.0,0.0,50915000,47.5,47.5,0.529412,frankycpp_v1.8.exe,"std::array<chess::Bitboard,64>::operator[]",array,0x140269fe0
+"std::array<chess::Bitboard,64>::operator[]",0.007000,0.007000,0.0,0.0,17970000,52.9,52.9,0.833333,frankycpp_v1.8.exe,"std::array<chess::Bitboard,64>::operator[]",array,0x14026a7e4
+"std::array<chess::Move,128>::operator[]",0.007000,0.007000,0.0,0.0,2995000,1.8,1.8,18.000000,frankycpp_v1.8.exe,"std::array<chess::Move,128>::operator[]",array,0x140220cfb
+"std::array<chess::Value,25>::operator[]",0.007000,0.007000,0.0,0.0,50915000,36.0,36.0,0.294118,frankycpp_v1.8.exe,"std::array<chess::Value,25>::operator[]",array,0x140263cf2
+std::countr_zero,0.007000,0.007000,0.0,0.0,38935000,25.9,25.9,0.615385,frankycpp_v1.8.exe,std::countr_zero,bit,0x140263de4
+std::ranges::_Sort_fn::operator(),0.007000,0.007000,0.0,0.0,122795000,19.0,19.0,0.463415,frankycpp_v1.8.exe,std::ranges::_Sort_fn::operator(),algorithm,0x140262dee
+chess::Bitboard::operator bool,0.006000,0.006000,0.0,0.0,44925000,62.5,62.5,0.466667,frankycpp_v1.8.exe,chess::Bitboard::operator bool,bitboard.h,0x14026a546
+chess::Bitboard::operator bool,0.006000,0.006000,0.0,0.0,113810000,32.9,32.9,0.421053,frankycpp_v1.8.exe,chess::Bitboard::operator bool,bitboard.h,0x140263cb9
+chess::Bitboard::operator bool,0.006000,0.006000,0.0,0.0,41930000,30.8,30.8,0.428571,frankycpp_v1.8.exe,chess::Bitboard::operator bool,bitboard.h,0x14026b018
+chess::Bitboard::operator|=,0.006000,0.006000,0.0,0.0,116805000,45.6,45.6,0.333333,frankycpp_v1.8.exe,chess::Bitboard::operator|=,bitboard.h,0x140269a78
+chess::Direction::pawnPush,0.006000,0.006000,0.0,0.0,155740000,40.3,40.3,0.230769,frankycpp_v1.8.exe,chess::Direction::pawnPush,direction.h,0x1402633ca
+chess::Move::operator==,0.006000,0.006000,0.0,0.0,65890000,23.4,23.4,0.681818,frankycpp_v1.8.exe,chess::Move::operator==,PVTable.h,0x140262f08
+chess::Move::to,0.006000,0.006000,0.0,0.0,92845000,43.5,43.5,0.387097,frankycpp_v1.8.exe,chess::Move::to,move.h,0x1402215cd
+chess::Position::checkInsufficientMaterial,0.006000,0.006000,0.0,0.0,164725000,64.2,64.2,0.236364,frankycpp_v1.8.exe,chess::Position::checkInsufficientMaterial(void),Position.cpp,0x14025c9a0
+chess::Position::doNullMove,0.006000,0.006000,0.0,0.0,41930000,10.5,10.5,0.785714,frankycpp_v1.8.exe,chess::Position::doNullMove(void),Position.cpp,0x14025c0a0
+chess::Position::getPieceBb,0.006000,0.006000,0.0,0.0,80865000,,,0.407407,frankycpp_v1.8.exe,chess::Position::getPieceBb,Position.h,0x14026b471
+chess::Position::getPieceBb,0.006000,0.006000,0.0,0.0,77870000,23.4,23.4,0.538462,frankycpp_v1.8.exe,chess::Position::getPieceBb,Position.h,0x14026b48d
+chess::Square::pawnPush,0.006000,0.006000,0.0,0.0,83860000,40.5,40.5,0.250000,frankycpp_v1.8.exe,chess::Square::pawnPush,square.h,0x14025bd75
+chess::StaticMoveList<256>::push_back,0.006000,0.006000,0.0,0.0,104825000,31.2,31.2,0.428571,frankycpp_v1.8.exe,chess::StaticMoveList<256>::push_back,staticmovelist.h,0x140263446
+chess::operator&,0.006000,0.006000,0.0,0.0,41930000,36.4,36.4,0.285714,frankycpp_v1.8.exe,chess::operator&,bitboard.h,0x14026a037
+chess::operator*,0.006000,0.006000,0.0,0.0,17970000,33.3,33.3,0.333333,frankycpp_v1.8.exe,chess::operator*,value.h,0x140269994
+chess::operator+,0.006000,0.006000,0.0,0.0,122795000,33.3,33.3,0.390244,frankycpp_v1.8.exe,chess::operator+,direction.h,0x140263199
+chess::operator+=,0.006000,0.006000,0.0,0.0,179700000,89.1,89.1,0.150000,frankycpp_v1.8.exe,chess::operator+=,value.h,0x14026996a
+chess::operator-,0.006000,0.006000,0.0,0.0,44925000,18.5,18.5,0.666667,frankycpp_v1.8.exe,chess::operator-,value.h,0x14029e783
+chess::operator|,0.006000,0.006000,0.0,0.0,44925000,60.0,60.0,0.600000,frankycpp_v1.8.exe,chess::operator|,bitboard.h,0x14026a5b8
+chess::operator|,0.006000,0.006000,0.0,0.0,74875000,45.9,45.9,0.280000,frankycpp_v1.8.exe,chess::operator|,bitboard.h,0x14026b0ec
+engine::Evaluator::valueFromScore,0.006000,0.006000,0.0,0.0,80865000,78.9,78.9,0.370370,frankycpp_v1.8.exe,engine::Evaluator::valueFromScore,Evaluator.cpp,0x14026998c
+engine::PawnTT::put,0.006000,0.006000,0.0,0.0,44925000,17.5,17.5,0.800000,frankycpp_v1.8.exe,"engine::PawnTT::put(struct engine::PawnTT::Entry *,unsigned __int64,struct chess::Score,class chess::Bitboard,class chess::Bitboard)",PawnTT.cpp,0x140267360
+func@0x14033c480,0.006000,0.006000,0.0,0.0,11980000,12.5,12.5,2.000000,ntoskrnl.exe,func@0x14033c480,[Unknown],0x14033c480
+func@0x1406b1283,0.006000,0.006000,0.0,0.0,0,7.8,7.8,,ntoskrnl.exe,func@0x1406b1283,[Unknown],0x1406b1283
+std::countr_zero,0.006000,0.006000,0.0,0.0,62895000,25.9,25.9,0.523810,frankycpp_v1.8.exe,std::countr_zero,bit,0x14026b3f5
+std::optional<engine::PawnTT::Entry>::{ctor},0.006000,0.006000,0.0,0.0,161730000,71.4,71.4,0.203704,frankycpp_v1.8.exe,std::optional<engine::PawnTT::Entry>::{ctor},optional,0x1402675a0
+std::popcount,0.006000,0.006000,0.0,0.0,119800000,39.7,39.7,0.375000,frankycpp_v1.8.exe,std::popcount,bit,0x14026b4b0
+chess::Bitboard::operator bool,0.005000,0.005000,0.0,0.0,41930000,28.6,28.6,1.071429,frankycpp_v1.8.exe,chess::Bitboard::operator bool,bitboard.h,0x14026a68b
+chess::Bitboard::operator|=,0.005000,0.005000,0.0,0.0,95840000,25.5,25.5,0.250000,frankycpp_v1.8.exe,chess::Bitboard::operator|=,bitboard.h,0x14026a078
+chess::Bitboard::operator|=,0.005000,0.005000,0.0,0.0,131780000,64.2,64.2,0.295455,frankycpp_v1.8.exe,chess::Bitboard::operator|=,bitboard.h,0x14026a706
+chess::Bitboard::operator~,0.005000,0.005000,0.0,0.0,47920000,,,0.812500,frankycpp_v1.8.exe,chess::Bitboard::operator~,bitboard.h,0x14026b0e7
+chess::Bitboard::popLSB,0.005000,0.005000,0.0,0.0,152745000,66.1,66.1,0.431373,frankycpp_v1.8.exe,chess::Bitboard::popLSB,bitboard.h,0x14026a5b0
+chess::Bitboard::popLSB,0.005000,0.005000,0.0,0.0,35940000,31.2,31.2,0.250000,frankycpp_v1.8.exe,chess::Bitboard::popLSB,bitboard.h,0x140269fc0
+chess::CastlingRights::operator-=,0.005000,0.005000,0.0,0.0,68885000,62.5,62.5,0.478261,frankycpp_v1.8.exe,chess::CastlingRights::operator-=,castlingrights.h,0x14025bcff
+chess::Move::operator==,0.005000,0.005000,0.0,0.0,50915000,9.5,9.5,0.529412,frankycpp_v1.8.exe,chess::Move::operator==,PVTable.h,0x1402211ce
+chess::Move::operator==,0.005000,0.005000,0.0,0.0,26955000,25.0,25.0,0.555556,frankycpp_v1.8.exe,chess::Move::operator==,PVTable.h,0x140262eca
+chess::Move::stripped,0.005000,0.005000,0.0,0.0,29950000,27.3,27.3,0.700000,frankycpp_v1.8.exe,chess::Move::stripped,move.h,0x140260efc
+chess::Position::getGamePhaseFactor,0.005000,0.005000,0.0,0.0,137770000,100.0,100.0,0.173913,frankycpp_v1.8.exe,chess::Position::getGamePhaseFactor,Position.h,0x14026991b
+chess::Position::getPieceBb,0.005000,0.005000,0.0,0.0,71880000,,,0.250000,frankycpp_v1.8.exe,chess::Position::getPieceBb,Position.h,0x14026a7b8
+chess::Position::undoNullMove,0.005000,0.005000,0.0,0.0,38935000,10.7,10.7,0.076923,frankycpp_v1.8.exe,chess::Position::undoNullMove(void),Position.cpp,0x14025c180
+chess::Value::operator int,0.005000,0.005000,0.0,0.0,77870000,41.9,41.9,0.538462,frankycpp_v1.8.exe,chess::Value::operator int,value.h,0x14025d6be
+chess::Value::operator int,0.005000,0.005000,0.0,0.0,71880000,46.9,46.9,0.291667,frankycpp_v1.8.exe,chess::Value::operator int,value.h,0x14025d7be
+chess::Value::{ctor},0.005000,0.005000,0.0,0.0,53910000,48.9,48.9,0.500000,frankycpp_v1.8.exe,chess::Value::{ctor},value.h,0x14029e7a5
+chess::colorOf,0.005000,0.005000,0.0,0.0,41930000,51.9,51.9,0.928571,frankycpp_v1.8.exe,chess::colorOf,piece.h,0x14025d622
+chess::operator&,0.005000,0.005000,0.0,0.0,89850000,,,0.333333,frankycpp_v1.8.exe,chess::operator&,bitboard.h,0x140263bb5
+chess::operator&,0.005000,0.005000,0.0,0.0,32945000,17.9,17.9,1.000000,frankycpp_v1.8.exe,chess::operator&,bitboard.h,0x14026b25a
+chess::operator&,0.005000,0.005000,0.0,0.0,47920000,18.4,18.4,0.437500,frankycpp_v1.8.exe,chess::operator&,bitboard.h,0x14026a876
+chess::operator&,0.005000,0.005000,0.0,0.0,161730000,29.2,29.2,0.314815,frankycpp_v1.8.exe,chess::operator&,bitboard.h,0x14029eb33
+chess::operator+,0.005000,0.005000,0.0,0.0,38935000,27.5,27.5,0.769231,frankycpp_v1.8.exe,chess::operator+,castlingrights.h,0x14025bce4
+chess::operator+=,0.005000,0.005000,0.0,0.0,89850000,42.1,42.1,0.066667,frankycpp_v1.8.exe,chess::operator+=,value.h,0x14026a639
+chess::operator~,0.005000,0.005000,0.0,0.0,56905000,35.3,35.3,0.157895,frankycpp_v1.8.exe,chess::operator~,color.h,0x140263bb0
+chess::typeOf,0.005000,0.005000,0.0,0.0,104825000,100.0,100.0,0.228571,frankycpp_v1.8.exe,chess::typeOf,piece.h,0x14029e711
+engine::Search::thread,0.005000,0.005000,0.0,0.0,38935000,71.4,71.4,0.384615,frankycpp_v1.8.exe,engine::Search::thread,Search.h,0x1402204b9
+engine::Search::valueToTt,0.005000,0.005000,0.0,0.0,134775000,40.0,40.0,0.400000,frankycpp_v1.8.exe,"engine::Search::valueToTt(class chess::Value,enum chess::Depth)",Search.cpp,0x140221750
+func@0x1402e4c76,0.005000,0.005000,0.0,0.0,0,8.3,8.3,,ntoskrnl.exe,func@0x1402e4c76,[Unknown],0x1402e4c76
+func@0x1800cfb60,0.005000,0.005000,0.0,0.0,20965000,11.1,11.1,1.000000,ntdll.dll,func@0x1800cfb60,[Unknown],0x1800cfb60
+"std::_Atomic_address_as<char,struct std::_Atomic_padded<bool> >",0.005000,0.005000,0.0,0.0,53910000,,,0.777778,frankycpp_v1.8.exe,"std::_Atomic_address_as<char,struct std::_Atomic_padded<bool> >(struct std::_Atomic_padded<bool> const &)",xatomic.h,0x140160710
+"std::array<chess::Bitboard,8>::operator[]",0.005000,0.005000,0.0,0.0,41930000,29.6,29.6,0.571429,frankycpp_v1.8.exe,"std::array<chess::Bitboard,8>::operator[]",array,0x1402636ba
+std::max,0.005000,0.005000,0.0,0.0,41930000,44.0,44.0,0.571429,frankycpp_v1.8.exe,std::max,utility,0x14029e8b5
+std::popcount,0.005000,0.005000,0.0,0.0,116805000,30.8,30.8,0.307692,frankycpp_v1.8.exe,std::popcount,bit,0x14026b498
+RtlFreeHeap,0.004000,0.004000,0.0,0.0,65890000,40.8,40.8,0.500000,ntdll.dll,RtlFreeHeap,[Unknown],0x180078ba0
+chess::Bitboard::operator bool,0.004000,0.004000,0.0,0.0,89850000,30.6,30.6,0.466667,frankycpp_v1.8.exe,chess::Bitboard::operator bool,bitboard.h,0x14026b45c
+chess::Bitboard::operator bool,0.004000,0.004000,0.0,0.0,104825000,46.3,46.3,0.428571,frankycpp_v1.8.exe,chess::Bitboard::operator bool,bitboard.h,0x1402636e1
+chess::Bitboard::operator bool,0.004000,0.004000,0.0,0.0,68885000,65.6,65.6,0.086957,frankycpp_v1.8.exe,chess::Bitboard::operator bool,bitboard.h,0x14026a6c2
+chess::Bitboard::operator|=,0.004000,0.004000,0.0,0.0,50915000,62.5,62.5,0.764706,frankycpp_v1.8.exe,chess::Bitboard::operator|=,bitboard.h,0x14026a054
+chess::Bitboard::operator|=,0.004000,0.004000,0.0,0.0,50915000,100.0,100.0,0.352941,frankycpp_v1.8.exe,chess::Bitboard::operator|=,bitboard.h,0x140269a95
+chess::Move::encode,0.004000,0.004000,0.0,0.0,14975000,33.3,33.3,1.200000,frankycpp_v1.8.exe,chess::Move::encode,move.h,0x14026401e
+chess::Move::{ctor},0.004000,0.004000,0.0,0.0,38935000,21.1,21.1,0.307692,frankycpp_v1.8.exe,chess::Move::{ctor},move.h,0x140264006
+chess::Position::getLastMove,0.004000,0.004000,0.0,0.0,95840000,,,0.281250,frankycpp_v1.8.exe,chess::Position::getLastMove,Position.h,0x140262f7b
+chess::Position::getPieceBb,0.004000,0.004000,0.0,0.0,71880000,38.1,38.1,0.458333,frankycpp_v1.8.exe,chess::Position::getPieceBb,Position.h,0x14026b16a
+chess::Position::getPieceBb,0.004000,0.004000,0.0,0.0,35940000,50.0,50.0,0.666667,frankycpp_v1.8.exe,chess::Position::getPieceBb,Position.h,0x14026b3bc
+chess::Rank::promotionFor,0.004000,0.004000,0.0,0.0,14975000,7.4,7.4,1.800000,frankycpp_v1.8.exe,chess::Rank::promotionFor,rank.h,0x1402637ff
+chess::Square::{ctor},0.004000,0.004000,0.0,0.0,20965000,34.4,34.4,0.714286,frankycpp_v1.8.exe,chess::Square::{ctor},square.h,0x14025b9c5
+chess::StaticMoveList<128>::pop_back,0.004000,0.004000,0.0,0.0,59900000,20.0,20.0,0.100000,frankycpp_v1.8.exe,chess::StaticMoveList<128>::pop_back,staticmovelist.h,0x140220818
+chess::StaticMoveList<128>::push_back,0.004000,0.004000,0.0,0.0,5990000,0.0,0.0,3.500000,frankycpp_v1.8.exe,chess::StaticMoveList<128>::push_back,staticmovelist.h,0x1402212f8
+chess::StaticMoveList<128>::push_back,0.004000,0.004000,0.0,0.0,8985000,9.7,9.7,2.666667,frankycpp_v1.8.exe,chess::StaticMoveList<128>::push_back,staticmovelist.h,0x140220616
+chess::StaticMoveList<256>::push_back,0.004000,0.004000,0.0,0.0,56905000,53.5,53.5,0.684211,frankycpp_v1.8.exe,chess::StaticMoveList<256>::push_back,staticmovelist.h,0x140263f9a
+chess::StaticMoveList<256>::push_back,0.004000,0.004000,0.0,0.0,53910000,29.0,29.0,0.444444,frankycpp_v1.8.exe,chess::StaticMoveList<256>::push_back,staticmovelist.h,0x1402639bc
+chess::operator&,0.004000,0.004000,0.0,0.0,2995000,100.0,100.0,0.0,frankycpp_v1.8.exe,chess::operator&,bitboard.h,0x1402637d5
+chess::operator&,0.004000,0.004000,0.0,0.0,182695000,60.9,60.9,0.262295,frankycpp_v1.8.exe,chess::operator&,bitboard.h,0x14029e92a
+chess::operator&,0.004000,0.004000,0.0,0.0,50915000,65.2,65.2,0.235294,frankycpp_v1.8.exe,chess::operator&,bitboard.h,0x14029e942
+chess::operator&,0.004000,0.004000,0.0,0.0,71880000,100.0,100.0,0.083333,frankycpp_v1.8.exe,chess::operator&,bitboard.h,0x14026aa8d
+chess::operator&,0.004000,0.004000,0.0,0.0,65890000,40.0,40.0,0.636364,frankycpp_v1.8.exe,chess::operator&,bitboard.h,0x14026b49d
+chess::operator+=,0.004000,0.004000,0.0,0.0,161730000,71.1,71.1,0.203704,frankycpp_v1.8.exe,chess::operator+=,value.h,0x14026a762
+chess::operator+=,0.004000,0.004000,0.0,0.0,62895000,42.9,42.9,0.333333,frankycpp_v1.8.exe,chess::operator+=,value.h,0x14026b4f9
+chess::operator-,0.004000,0.004000,0.0,0.0,14975000,17.2,17.2,0.800000,frankycpp_v1.8.exe,chess::operator-,value.h,0x1402639e4
+chess::operator-,0.004000,0.004000,0.0,0.0,17970000,33.3,33.3,1.000000,frankycpp_v1.8.exe,chess::operator-,direction.h,0x140263403
+chess::operator-,0.004000,0.004000,0.0,0.0,26955000,60.0,60.0,0.666667,frankycpp_v1.8.exe,chess::operator-,depth.h,0x14022044c
+chess::operator-,0.004000,0.004000,0.0,0.0,23960000,26.5,26.5,0.250000,frankycpp_v1.8.exe,chess::operator-,value.h,0x140221375
+chess::operator^=,0.004000,0.004000,0.0,0.0,29950000,54.5,54.5,0.100000,frankycpp_v1.8.exe,chess::operator^=,bitboards.h,0x14029e7d2
+chess::operator|,0.004000,0.004000,0.0,0.0,101830000,25.6,25.6,0.235294,frankycpp_v1.8.exe,chess::operator|,bitboard.h,0x14029ea3a
+chess::operator|,0.004000,0.004000,0.0,0.0,38935000,36.7,36.7,0.538462,frankycpp_v1.8.exe,chess::operator|,bitboard.h,0x14026aec7
+chess::operator~,0.004000,0.004000,0.0,0.0,47920000,56.4,56.4,0.875000,frankycpp_v1.8.exe,chess::operator~,color.h,0x14026a86a
+engine::Search::thread,0.004000,0.004000,0.0,0.0,8985000,21.7,21.7,2.000000,frankycpp_v1.8.exe,engine::Search::thread,Search.h,0x140220e4f
+func@0x1400010e0,0.004000,0.004000,0.0,0.0,0,0.0,0.0,,intelppm.sys,func@0x1400010e0,[Unknown],0x1400010e0
+func@0x140294a20,0.004000,0.004000,0.0,0.0,38935000,,,0.307692,ntoskrnl.exe,func@0x140294a20,[Unknown],0x140294a20
+func@0x1406b1730,0.004000,0.004000,0.0,0.0,0,57.1,57.1,0.0,ntoskrnl.exe,func@0x1406b1730,[Unknown],0x1406b1730
+func@0x1406b2070,0.004000,0.004000,0.0,0.0,2995000,40.0,40.0,1.000000,ntoskrnl.exe,func@0x1406b2070,[Unknown],0x1406b2070
+func@0x1406b239f,0.004000,0.004000,0.0,0.0,2995000,,,13.000000,ntoskrnl.exe,func@0x1406b239f,[Unknown],0x1406b239f
+"std::_List_node<std::pair<unsigned __int64 const ,book::BookEntry>,void *>::_Freenode",0.004000,0.004000,0.0,0.0,8985000,14.8,14.8,1.666667,frankycpp_v1.8.exe,"std::_List_node<std::pair<unsigned __int64 const ,book::BookEntry>,void *>::_Freenode",list,0x140239d73
+"std::_Tree<std::_Tset_traits<boost::archive::detail::basic_iarchive_impl::cobject_type,std::less<boost::archive::detail::basic_iarchive_impl::cobject_type>,std::allocator<boost::archive::detail::basic_iarchive_impl::cobject_type>,0> >::insert",0.004000,0.004000,0.0,0.0,11980000,28.6,28.6,0.0,frankycpp_v1.8.exe,"std::_Tree<std::_Tset_traits<boost::archive::detail::basic_iarchive_impl::cobject_type,std::less<boost::archive::detail::basic_iarchive_impl::cobject_type>,std::allocator<boost::archive::detail::basic_iarchive_impl::cobject_type>,0> >::insert",xtree,0x1402af778
+"std::array<unsigned __int64,64>::operator[]",0.004000,0.004000,0.0,0.0,89850000,34.3,34.3,0.266667,frankycpp_v1.8.exe,"std::array<unsigned __int64,64>::operator[]",array,0x14025d67a
+std::countr_zero,0.004000,0.004000,0.0,0.0,20965000,33.3,33.3,1.285714,frankycpp_v1.8.exe,std::countr_zero,bit,0x14026a1d4
+std::min,0.004000,0.004000,0.0,0.0,35940000,30.3,30.3,0.583333,frankycpp_v1.8.exe,std::min,utility,0x140220437
+std::popcount,0.004000,0.004000,0.0,0.0,8985000,40.7,40.7,1.333333,frankycpp_v1.8.exe,std::popcount,bit,0x14026b263
+std::popcount,0.004000,0.004000,0.0,0.0,20965000,31.1,31.1,1.571429,frankycpp_v1.8.exe,std::popcount,bit,0x14026b3cb
+"std::unique_ptr<engine::PawnTT::Entry [0],std::default_delete<engine::PawnTT::Entry [0]> >::operator[]",0.004000,0.004000,0.0,0.0,74875000,70.0,70.0,0.160000,frankycpp_v1.8.exe,"std::unique_ptr<engine::PawnTT::Entry [0],std::default_delete<engine::PawnTT::Entry [0]> >::operator[]",memory,0x140267579
+chess::Bitboard::operator^=,0.003000,0.003000,0.0,0.0,2995000,14.3,14.3,1.000000,frankycpp_v1.8.exe,chess::Bitboard::operator^=,bitboard.h,0x14025c5e2
+chess::Bitboard::operator|=,0.003000,0.003000,0.0,0.0,8985000,,,0.666667,frankycpp_v1.8.exe,chess::Bitboard::operator|=,bitboard.h,0x140269a38
+chess::Bitboard::operator|=,0.003000,0.003000,0.0,0.0,35940000,40.0,40.0,0.416667,frankycpp_v1.8.exe,chess::Bitboard::operator|=,bitboard.h,0x14026a3e9
+chess::Bitboard::popLSB,0.003000,0.003000,0.0,0.0,2995000,31.2,31.2,1.000000,frankycpp_v1.8.exe,chess::Bitboard::popLSB,bitboard.h,0x140263ce4
+chess::Color::iterator::operator++,0.003000,0.003000,0.0,0.0,23960000,14.8,14.8,1.375000,frankycpp_v1.8.exe,chess::Color::iterator::operator++,color.h,0x14026a21c
+chess::Color::sign,0.003000,0.003000,0.0,0.0,14975000,55.6,55.6,0.200000,frankycpp_v1.8.exe,chess::Color::sign,color.h,0x14026adf4
+chess::Move::encode,0.003000,0.003000,0.0,0.0,71880000,32.5,32.5,0.541667,frankycpp_v1.8.exe,chess::Move::encode,move.h,0x14026343d
+chess::Move::promotionType,0.003000,0.003000,0.0,0.0,23960000,44.4,44.4,0.500000,frankycpp_v1.8.exe,chess::Move::promotionType,move.h,0x14025c5be
+chess::Move::setValue,0.003000,0.003000,0.0,0.0,47920000,44.8,44.8,0.250000,frankycpp_v1.8.exe,chess::Move::setValue,move.h,0x140262fc4
+chess::Position::getKingSquare,0.003000,0.003000,0.0,0.0,158735000,86.2,86.2,0.094340,frankycpp_v1.8.exe,chess::Position::getKingSquare,Position.h,0x140269a05
+chess::Position::getNextPlayer,0.003000,0.003000,0.0,0.0,32945000,55.0,55.0,0.272727,frankycpp_v1.8.exe,chess::Position::getNextPlayer,Position.h,0x140262e7e
+chess::Position::getPieceBb,0.003000,0.003000,0.0,0.0,29950000,37.9,37.9,0.700000,frankycpp_v1.8.exe,chess::Position::getPieceBb,Position.h,0x14026b211
+chess::Position::getPieceBb,0.003000,0.003000,0.0,0.0,11980000,100.0,100.0,0.250000,frankycpp_v1.8.exe,chess::Position::getPieceBb,Position.h,0x14026b23f
+chess::Position::getPieceBb,0.003000,0.003000,0.0,0.0,11980000,8.3,8.3,0.500000,frankycpp_v1.8.exe,chess::Position::getPieceBb,Position.h,0x140263dce
+chess::Position::getPieceBb,0.003000,0.003000,0.0,0.0,29950000,70.0,70.0,0.400000,frankycpp_v1.8.exe,chess::Position::getPieceBb,Position.h,0x14026b107
+chess::Position::isLegalMove,0.003000,0.003000,0.0,0.0,5990000,0.0,0.0,0.0,frankycpp_v1.8.exe,chess::Position::isLegalMove(class chess::Move),Position.cpp,0x14025c800
+chess::Square::rank,0.003000,0.003000,0.0,0.0,98835000,35.7,35.7,0.181818,frankycpp_v1.8.exe,chess::Square::rank,square.h,0x14026aacd
+chess::StaticMoveList<128>::pop_back,0.003000,0.003000,0.0,0.0,50915000,27.0,27.0,0.294118,frankycpp_v1.8.exe,chess::StaticMoveList<128>::pop_back,staticmovelist.h,0x14022137b
+chess::StaticMoveList<256>::empty,0.003000,0.003000,0.0,0.0,74875000,27.1,27.1,0.560000,frankycpp_v1.8.exe,chess::StaticMoveList<256>::empty,staticmovelist.h,0x140260ed3
+chess::Value::operator int,0.003000,0.003000,0.0,0.0,56905000,44.6,44.6,0.684211,frankycpp_v1.8.exe,chess::Value::operator int,value.h,0x14025d7e6
+chess::moveValueGreaterComparator::operator(),0.003000,0.003000,0.0,0.0,8985000,20.7,20.7,3.333333,frankycpp_v1.8.exe,chess::moveValueGreaterComparator::operator(),move.h,0x140264480
+chess::operator&,0.003000,0.003000,0.0,0.0,41930000,75.0,75.0,0.571429,frankycpp_v1.8.exe,chess::operator&,bitboard.h,0x1402208d4
+chess::operator&,0.003000,0.003000,0.0,0.0,26955000,7.7,7.7,0.555556,frankycpp_v1.8.exe,chess::operator&,bitboard.h,0x140261331
+chess::operator&,0.003000,0.003000,0.0,0.0,38935000,100.0,100.0,0.307692,frankycpp_v1.8.exe,chess::operator&,bitboard.h,0x14029e962
+chess::operator&,0.003000,0.003000,0.0,0.0,11980000,30.0,30.0,0.0,frankycpp_v1.8.exe,chess::operator&,bitboard.h,0x14026aed7
+chess::operator&,0.003000,0.003000,0.0,0.0,86855000,32.7,32.7,0.344828,frankycpp_v1.8.exe,chess::operator&,bitboard.h,0x14026abde
+chess::operator&,0.003000,0.003000,0.0,0.0,11980000,40.0,40.0,1.250000,frankycpp_v1.8.exe,chess::operator&,bitboard.h,0x14026a019
+chess::operator+,0.003000,0.003000,0.0,0.0,14975000,63.6,63.6,1.200000,frankycpp_v1.8.exe,chess::operator+,value.h,0x140220315
+chess::operator-,0.003000,0.003000,0.0,0.0,32945000,26.3,26.3,0.545455,frankycpp_v1.8.exe,chess::operator-,value.h,0x140263931
+chess::operator-,0.003000,0.003000,0.0,0.0,14975000,14.8,14.8,0.800000,frankycpp_v1.8.exe,chess::operator-,value.h,0x1402206d2
+chess::operator|,0.003000,0.003000,0.0,0.0,50915000,66.7,66.7,0.0,frankycpp_v1.8.exe,chess::operator|,bitboard.h,0x14025c462
+chess::valueOf,0.003000,0.003000,0.0,0.0,80865000,30.4,30.4,0.111111,frankycpp_v1.8.exe,chess::valueOf,value.h,0x1402202c0
+engine::Search::evaluate,0.003000,0.003000,0.0,0.0,197670000,63.4,63.4,0.136364,frankycpp_v1.8.exe,engine::Search::evaluate,Search.cpp,0x140220fc7
+engine::Search::valueFromTt,0.003000,0.003000,0.0,0.0,23960000,28.0,28.0,0.625000,frankycpp_v1.8.exe,"engine::Search::valueFromTt(class chess::Value,enum chess::Depth)",Search.cpp,0x140221790
+engine::TT::prefetch,0.003000,0.003000,0.0,0.0,35940000,57.1,57.1,0.416667,frankycpp_v1.8.exe,engine::TT::prefetch,TT.h,0x1402212b3
+func@0x14021e510,0.003000,0.003000,0.0,0.0,23960000,35.0,35.0,0.250000,ntoskrnl.exe,func@0x14021e510,[Unknown],0x14021e510
+func@0x1402947e0,0.003000,0.003000,0.0,0.0,0,13.3,13.3,,ntoskrnl.exe,func@0x1402947e0,[Unknown],0x1402947e0
+func@0x14029ddc3,0.003000,0.003000,0.0,0.0,2995000,14.3,14.3,5.000000,ntoskrnl.exe,func@0x14029ddc3,[Unknown],0x14029ddc3
+func@0x1402cf110,0.003000,0.003000,0.0,0.0,2995000,0.0,0.0,0.0,ntoskrnl.exe,func@0x1402cf110,[Unknown],0x1402cf110
+func@0x1402eb8ad,0.003000,0.003000,0.0,0.0,5990000,0.0,0.0,3.500000,ntoskrnl.exe,func@0x1402eb8ad,[Unknown],0x1402eb8ad
+func@0x140318ce0,0.003000,0.003000,0.0,0.0,0,9.1,9.1,,ntoskrnl.exe,func@0x140318ce0,[Unknown],0x140318ce0
+"std::array<chess::HistoryState,1024>::operator[]",0.003000,0.003000,0.0,0.0,23960000,24.1,24.1,0.500000,frankycpp_v1.8.exe,"std::array<chess::HistoryState,1024>::operator[]",array,0x14025b9f8
+"std::array<engine::PlyInfo,128>::operator[]",0.003000,0.003000,0.0,0.0,32945000,15.2,15.2,0.272727,frankycpp_v1.8.exe,"std::array<engine::PlyInfo,128>::operator[]",array,0x14021ff0c
+"std::array<int,64>::operator[]",0.003000,0.003000,0.0,0.0,35940000,77.8,77.8,0.583333,frankycpp_v1.8.exe,"std::array<int,64>::operator[]",array,0x14022091a
+"std::array<int,64>::operator[]",0.003000,0.003000,0.0,0.0,35940000,8.3,8.3,0.250000,frankycpp_v1.8.exe,"std::array<int,64>::operator[]",array,0x1402204c5
+"std::array<std::array<chess::Bitboard,64>,8>::operator[]",0.003000,0.003000,0.0,0.0,23960000,61.5,61.5,0.125000,frankycpp_v1.8.exe,"std::array<std::array<chess::Bitboard,64>,8>::operator[]",array,0x14026ab2e
+std::atomic<bool>::operator bool,0.003000,0.003000,0.0,0.0,59900000,22.6,22.6,0.300000,frankycpp_v1.8.exe,std::atomic<bool>::operator bool,atomic,0x140225a64
+"std::basic_streambuf<char,struct std::char_traits<char> >::sgetn",0.003000,0.003000,0.0,0.0,56905000,100.0,100.0,0.315789,msvcp140.dll,"std::basic_streambuf<char,struct std::char_traits<char> >::sgetn(char * __ptr64,__int64)",[Unknown],0x180009110
+std::countr_zero,0.003000,0.003000,0.0,0.0,44925000,25.0,25.0,0.600000,frankycpp_v1.8.exe,std::countr_zero,bit,0x14026a6a0
+std::countr_zero,0.003000,0.003000,0.0,0.0,17970000,54.5,54.5,0.0,frankycpp_v1.8.exe,std::countr_zero,bit,0x14029e968
+std::countr_zero,0.003000,0.003000,0.0,0.0,47920000,47.5,47.5,0.625000,frankycpp_v1.8.exe,std::countr_zero,bit,0x14026a520
+std::popcount,0.003000,0.003000,0.0,0.0,59900000,19.2,19.2,0.600000,frankycpp_v1.8.exe,std::popcount,bit,0x14026b155
+std::popcount,0.003000,0.003000,0.0,0.0,47920000,57.1,57.1,0.375000,frankycpp_v1.8.exe,std::popcount,bit,0x14026b4a5
+std::ranges::_Swap::_Cpo::operator(),0.003000,0.003000,0.0,0.0,2995000,21.4,21.4,0.0,frankycpp_v1.8.exe,std::ranges::_Swap::_Cpo::operator(),concepts,0x1402644c8
+"std::unique_ptr<engine::TT::TTCluster [0],std::default_delete<engine::TT::TTCluster [0]> >::operator[]",0.003000,0.003000,0.0,0.0,59900000,30.8,30.8,0.100000,frankycpp_v1.8.exe,"std::unique_ptr<engine::TT::TTCluster [0],std::default_delete<engine::TT::TTCluster [0]> >::operator[]",memory,0x1402205f9
+ExpInterlockedPopEntrySList,0.002000,0.002000,0.0,0.0,2995000,7.7,7.7,3.000000,ntoskrnl.exe,ExpInterlockedPopEntrySList,[Unknown],0x1406b2dc0
+KeClockInterruptNotify,0.002000,0.002000,0.0,0.0,5990000,14.3,14.3,4.000000,ntoskrnl.exe,KeClockInterruptNotify,[Unknown],0x1402eb510
+RtlCopyMemory,0.002000,0.002000,0.0,0.0,2995000,18.2,18.2,4.000000,ntoskrnl.exe,RtlCopyMemory,[Unknown],0x1406bf140
+RtlNumberOfSetBitsEx,0.002000,0.002000,0.0,0.0,5990000,25.0,25.0,0.500000,ntoskrnl.exe,RtlNumberOfSetBitsEx,[Unknown],0x140410170
+`vector constructor iterator',0.002000,0.002000,0.0,0.0,35940000,35.0,35.0,0.250000,frankycpp_v1.8.exe,"`vector constructor iterator'(void *,unsigned __int64,unsigned __int64,void * (*)(void *))",[Unknown],0x14010f320
+boost::archive::detail::basic_iarchive::get_library_version,0.002000,0.002000,0.0,0.0,35940000,33.3,33.3,0.333333,frankycpp_v1.8.exe,boost::archive::detail::basic_iarchive::get_library_version(void),basic_iarchive.cpp,0x1402aeea0
+boost::archive::detail::basic_iarchive::load_object,0.002000,0.002000,0.0,0.0,17970000,44.4,44.4,0.833333,frankycpp_v1.8.exe,"boost::archive::detail::basic_iarchive::load_object(void *,class boost::archive::detail::basic_iserializer const &)",basic_iarchive.cpp,0x1402aef00
+chess::Bitboard::operator&=,0.002000,0.002000,0.0,0.0,23960000,28.6,28.6,0.250000,frankycpp_v1.8.exe,chess::Bitboard::operator&=,bitboard.h,0x1402633ba
+chess::Bitboard::operator|=,0.002000,0.002000,0.0,0.0,17970000,42.9,42.9,0.333333,frankycpp_v1.8.exe,chess::Bitboard::operator|=,bitboard.h,0x14026a043
+chess::Direction::pawnPush,0.002000,0.002000,0.0,0.0,11980000,11.1,11.1,0.0,frankycpp_v1.8.exe,chess::Direction::pawnPush,direction.h,0x140263276
+chess::Direction::{ctor},0.002000,0.002000,0.0,0.0,23960000,41.7,41.7,0.625000,frankycpp_v1.8.exe,chess::Direction::{ctor},direction.h,0x1402636cd
+chess::Move::encode,0.002000,0.002000,0.0,0.0,5990000,25.0,25.0,0.500000,frankycpp_v1.8.exe,chess::Move::encode,move.h,0x140263732
+chess::Move::operator==,0.002000,0.002000,0.0,0.0,29950000,,,0.200000,frankycpp_v1.8.exe,chess::Move::operator==,PVTable.h,0x1402200fb
+chess::Move::operator==,0.002000,0.002000,0.0,0.0,26955000,52.9,52.9,0.333333,frankycpp_v1.8.exe,chess::Move::operator==,PVTable.h,0x140260eff
+chess::Move::setValue,0.002000,0.002000,0.0,0.0,2995000,22.2,22.2,3.000000,frankycpp_v1.8.exe,chess::Move::setValue,move.h,0x140262ed2
+chess::Position::getKingSquare,0.002000,0.002000,0.0,0.0,20965000,47.1,47.1,0.285714,frankycpp_v1.8.exe,chess::Position::getKingSquare,Position.h,0x14026a448
+chess::Position::getKingSquare,0.002000,0.002000,0.0,0.0,35940000,26.1,26.1,0.166667,frankycpp_v1.8.exe,chess::Position::getKingSquare,Position.h,0x14026adb9
+chess::Position::getNextPlayer,0.002000,0.002000,0.0,0.0,35940000,25.0,25.0,0.500000,frankycpp_v1.8.exe,chess::Position::getNextPlayer,Position.h,0x140263dae
+chess::Position::getOccupiedBb,0.002000,0.002000,0.0,0.0,8985000,28.6,28.6,0.333333,frankycpp_v1.8.exe,chess::Position::getOccupiedBb,Position.h,0x14025c5cd
+chess::Position::getPiece,0.002000,0.002000,0.0,0.0,29950000,100.0,100.0,0.100000,frankycpp_v1.8.exe,chess::Position::getPiece,Position.h,0x14022120e
+chess::Position::getPieceBb,0.002000,0.002000,0.0,0.0,86855000,86.2,86.2,0.310345,frankycpp_v1.8.exe,chess::Position::getPieceBb,Position.h,0x14029e95a
+chess::Square::rank,0.002000,0.002000,0.0,0.0,44925000,72.2,72.2,0.600000,frankycpp_v1.8.exe,chess::Square::rank,square.h,0x14026a79f
+chess::Square::rank,0.002000,0.002000,0.0,0.0,14975000,,,1.000000,frankycpp_v1.8.exe,chess::Square::rank,square.h,0x14026a1ea
+chess::Square::rank,0.002000,0.002000,0.0,0.0,26955000,31.2,31.2,0.333333,frankycpp_v1.8.exe,chess::Square::rank,square.h,0x14026ae03
+chess::Square::{ctor},0.002000,0.002000,0.0,0.0,29950000,18.8,18.8,0.400000,frankycpp_v1.8.exe,chess::Square::{ctor},square.h,0x14026a5cb
+chess::StaticMoveList<256>::end,0.002000,0.002000,0.0,0.0,32945000,,,0.545455,frankycpp_v1.8.exe,chess::StaticMoveList<256>::end,staticmovelist.h,0x140262dee
+chess::colorOf,0.002000,0.002000,0.0,0.0,17970000,7.7,7.7,0.666667,frankycpp_v1.8.exe,chess::colorOf,piece.h,0x1402610f1
+chess::moveValueGreaterComparator::operator(),0.002000,0.002000,0.0,0.0,0,0.0,0.0,0.0,frankycpp_v1.8.exe,chess::moveValueGreaterComparator::operator(),move.h,0x140265105
+chess::moveValueGreaterComparator::operator(),0.002000,0.002000,0.0,0.0,11980000,23.8,23.8,1.000000,frankycpp_v1.8.exe,chess::moveValueGreaterComparator::operator(),move.h,0x140264440
+chess::operator&,0.002000,0.002000,0.0,0.0,20965000,23.5,23.5,0.428571,frankycpp_v1.8.exe,chess::operator&,bitboard.h,0x14026a048
+chess::operator&,0.002000,0.002000,0.0,0.0,14975000,100.0,100.0,0.800000,frankycpp_v1.8.exe,chess::operator&,bitboard.h,0x14025c42f
+chess::operator&,0.002000,0.002000,0.0,0.0,98835000,31.1,31.1,0.333333,frankycpp_v1.8.exe,chess::operator&,bitboard.h,0x14025c46d
+chess::operator&,0.002000,0.002000,0.0,0.0,50915000,73.1,73.1,0.352941,frankycpp_v1.8.exe,chess::operator&,bitboard.h,0x140263265
+chess::operator&,0.002000,0.002000,0.0,0.0,53910000,20.7,20.7,0.222222,frankycpp_v1.8.exe,chess::operator&,bitboard.h,0x14026a5fa
+chess::operator&,0.002000,0.002000,0.0,0.0,23960000,15.0,15.0,0.375000,frankycpp_v1.8.exe,chess::operator&,bitboard.h,0x14026b102
+chess::operator+,0.002000,0.002000,0.0,0.0,41930000,38.5,38.5,0.500000,frankycpp_v1.8.exe,chess::operator+,depth.h,0x140220207
+chess::operator+,0.002000,0.002000,0.0,0.0,50915000,38.2,38.2,0.176471,frankycpp_v1.8.exe,chess::operator+,value.h,0x140220311
+chess::operator+,0.002000,0.002000,0.0,0.0,8985000,100.0,100.0,0.0,frankycpp_v1.8.exe,chess::operator+,value.h,0x140221211
+chess::operator+=,0.002000,0.002000,0.0,0.0,44925000,33.3,33.3,0.600000,frankycpp_v1.8.exe,chess::operator+=,value.h,0x14026b348
+chess::operator+=,0.002000,0.002000,0.0,0.0,71880000,45.7,45.7,0.250000,frankycpp_v1.8.exe,chess::operator+=,value.h,0x14026a4e2
+chess::operator+=,0.002000,0.002000,0.0,0.0,5990000,18.2,18.2,1.500000,frankycpp_v1.8.exe,chess::operator+=,value.h,0x14026a2fd
+chess::operator+=,0.002000,0.002000,0.0,0.0,47920000,100.0,100.0,0.375000,frankycpp_v1.8.exe,chess::operator+=,value.h,0x14026ac13
+chess::operator+=,0.002000,0.002000,0.0,0.0,74875000,50.0,50.0,0.280000,frankycpp_v1.8.exe,chess::operator+=,value.h,0x14026ac23
+chess::operator-,0.002000,0.002000,0.0,0.0,17970000,26.1,26.1,0.500000,frankycpp_v1.8.exe,chess::operator-,value.h,0x14022080e
+chess::operator-,0.002000,0.002000,0.0,0.0,11980000,22.9,22.9,0.250000,frankycpp_v1.8.exe,chess::operator-,value.h,0x14029e767
+chess::operator-,0.002000,0.002000,0.0,0.0,38935000,26.3,26.3,0.230769,frankycpp_v1.8.exe,chess::operator-,value.h,0x140263c51
+chess::operator-,0.002000,0.002000,0.0,0.0,8985000,0.0,0.0,0.0,frankycpp_v1.8.exe,chess::operator-,value.h,0x14022068f
+chess::operator-,0.002000,0.002000,0.0,0.0,23960000,47.1,47.1,0.250000,frankycpp_v1.8.exe,chess::operator-,value.h,0x14029e8b0
+chess::operator-,0.002000,0.002000,0.0,0.0,5990000,4.5,4.5,7.500000,frankycpp_v1.8.exe,chess::operator-,value.h,0x140220d9a
+chess::operator-,0.002000,0.002000,0.0,0.0,14975000,14.3,14.3,0.400000,frankycpp_v1.8.exe,chess::operator-,value.h,0x14021fbbb
+chess::operator==,0.002000,0.002000,0.0,0.0,0,0.0,0.0,,frankycpp_v1.8.exe,chess::operator==,castlingrights.h,0x14021f619
+chess::operator|,0.002000,0.002000,0.0,0.0,20965000,90.0,90.0,0.142857,frankycpp_v1.8.exe,chess::operator|,bitboard.h,0x14026a9e4
+chess::operator|,0.002000,0.002000,0.0,0.0,20965000,69.2,69.2,0.142857,frankycpp_v1.8.exe,chess::operator|,bitboard.h,0x14029e6a7
+chess::operator|,0.002000,0.002000,0.0,0.0,20965000,100.0,100.0,0.571429,frankycpp_v1.8.exe,chess::operator|,bitboard.h,0x140263685
+chess::operator|,0.002000,0.002000,0.0,0.0,38935000,11.1,11.1,0.153846,frankycpp_v1.8.exe,chess::operator|,bitboard.h,0x14025c3fd
+chess::operator|,0.002000,0.002000,0.0,0.0,23960000,35.3,35.3,0.250000,frankycpp_v1.8.exe,chess::operator|,bitboard.h,0x140264080
+chess::operator~,0.002000,0.002000,0.0,0.0,8985000,21.4,21.4,1.333333,frankycpp_v1.8.exe,chess::operator~,color.h,0x140263fd4
+chess::typeOf,0.002000,0.002000,0.0,0.0,35940000,48.0,48.0,0.750000,frankycpp_v1.8.exe,chess::typeOf,piece.h,0x14026340e
+chess::typeOf,0.002000,0.002000,0.0,0.0,29950000,0.0,0.0,0.200000,frankycpp_v1.8.exe,chess::typeOf,piece.h,0x1402633ff
+chess::valueOf,0.002000,0.002000,0.0,0.0,11980000,36.4,36.4,0.0,frankycpp_v1.8.exe,chess::valueOf,value.h,0x14029e75e
+engine::Evaluator::valueFromScore,0.002000,0.002000,0.0,0.0,35940000,42.9,42.9,0.416667,frankycpp_v1.8.exe,engine::Evaluator::valueFromScore,Evaluator.cpp,0x140269d85
+engine::PVTable::update,0.002000,0.002000,0.0,0.0,0,0.0,0.0,0.0,frankycpp_v1.8.exe,"engine::PVTable::update(class chess::Move,enum chess::Depth)",PVTable.h,0x140213c80
+engine::Search::isTimeAlmostUp,0.002000,0.002000,0.0,0.0,17970000,19.0,19.0,0.500000,frankycpp_v1.8.exe,engine::Search::isTimeAlmostUp(void),Search.cpp,0x1402271e0
+engine::Search::thread,0.002000,0.002000,0.0,0.0,11980000,35.7,35.7,1.500000,frankycpp_v1.8.exe,engine::Search::thread,Search.h,0x14021faff
+engine::Search::thread,0.002000,0.002000,0.0,0.0,11980000,50.0,50.0,0.500000,frankycpp_v1.8.exe,engine::Search::thread,Search.h,0x140221418
+engine::Search::thread,0.002000,0.002000,0.0,0.0,23960000,29.4,29.4,0.375000,frankycpp_v1.8.exe,engine::Search::thread,Search.h,0x14021f9ba
+func@0x140026fb0,0.002000,0.002000,0.0,0.0,0,0.0,0.0,,dxgmms2.sys,func@0x140026fb0,[Unknown],0x140026fb0
+func@0x140202360,0.002000,0.002000,0.0,0.0,17970000,54.5,54.5,0.0,ntoskrnl.exe,func@0x140202360,[Unknown],0x140202360
+func@0x140222210,0.002000,0.002000,0.0,0.0,0,33.3,33.3,,ntoskrnl.exe,func@0x140222210,[Unknown],0x140222210
+func@0x140255da0,0.002000,0.002000,0.0,0.0,0,10.0,10.0,,ntoskrnl.exe,func@0x140255da0,[Unknown],0x140255da0
+func@0x140286820,0.002000,0.002000,0.0,0.0,8985000,58.3,58.3,0.333333,ntoskrnl.exe,func@0x140286820,[Unknown],0x140286820
+func@0x1402e6c70,0.002000,0.002000,0.0,0.0,0,22.2,22.2,,ntoskrnl.exe,func@0x1402e6c70,[Unknown],0x1402e6c70
+func@0x1402ebfd0,0.002000,0.002000,0.0,0.0,0,0.0,0.0,0.0,ntoskrnl.exe,func@0x1402ebfd0,[Unknown],0x1402ebfd0
+func@0x14033fa70,0.002000,0.002000,0.0,0.0,0,0.0,0.0,0.0,ntoskrnl.exe,func@0x14033fa70,[Unknown],0x14033fa70
+func@0x1403446c0,0.002000,0.002000,0.0,0.0,0,0.0,0.0,,ntoskrnl.exe,func@0x1403446c0,[Unknown],0x1403446c0
+func@0x1403993e0,0.002000,0.002000,0.0,0.0,2995000,0.0,0.0,1.000000,nvlddmkm.sys,func@0x1403993e0,[Unknown],0x1403993e0
+func@0x1403b39fc,0.002000,0.002000,0.0,0.0,0,0.0,0.0,0.0,ntoskrnl.exe,func@0x1403b39fc,[Unknown],0x1403b39fc
+func@0x14042b5d0,0.002000,0.002000,0.0,0.0,5990000,11.1,11.1,0.0,ntoskrnl.exe,func@0x14042b5d0,[Unknown],0x14042b5d0
+func@0x1406bd583,0.002000,0.002000,0.0,0.0,0,0.0,0.0,,ntoskrnl.exe,func@0x1406bd583,[Unknown],0x1406bd583
+func@0x140846520,0.002000,0.002000,0.0,0.0,0,0.0,0.0,,ntoskrnl.exe,func@0x140846520,[Unknown],0x140846520
+func@0x140d0e350,0.002000,0.002000,0.0,0.0,0,0.0,0.0,,nvlddmkm.sys,func@0x140d0e350,[Unknown],0x140d0e350
+func@0x180011200,0.002000,0.002000,0.0,0.0,35940000,,,0.250000,vcruntime140.dll,func@0x180011200,[Unknown],0x180011200
+func@0x18003d4f0,0.002000,0.002000,0.0,0.0,2995000,0.0,0.0,6.000000,ntdll.dll,func@0x18003d4f0,[Unknown],0x18003d4f0
+func@0x180094c8b,0.002000,0.002000,0.0,0.0,0,0.0,0.0,,ntdll.dll,func@0x180094c8b,[Unknown],0x180094c8b
+log,0.002000,0.002000,0.0,0.0,11980000,100.0,100.0,0.0,ucrtbase.dll,log,[Unknown],0x1800a84d0
+malloc_base,0.002000,0.002000,0.0,0.0,5990000,12.5,12.5,1.000000,ucrtbase.dll,malloc_base,[Unknown],0x180010100
+"std::_Atomic_storage<unsigned __int64,8>::load",0.002000,0.002000,0.0,0.0,11980000,9.8,9.8,1.500000,frankycpp_v1.8.exe,"std::_Atomic_storage<unsigned __int64,8>::load",atomic,0x14026d6b7
+std::_Fnv1a_append_bytes,0.002000,0.002000,0.0,0.0,17970000,33.3,33.3,0.333333,frankycpp_v1.8.exe,std::_Fnv1a_append_bytes,type_traits,0x140282960
+"std::_For_each_ivdep<engine::TT::TTCluster *,`engine::TT::ageEntries'::`2'::<lambda_1> >",0.002000,0.002000,0.0,0.0,32945000,34.9,34.9,0.818182,frankycpp_v1.8.exe,"std::_For_each_ivdep<engine::TT::TTCluster *,`engine::TT::ageEntries'::`2'::<lambda_1> >(struct engine::TT::TTCluster *, struct engine::TT::TTCluster *, class engine::TT::ageEntries::__l2::<lambda_1>)",execution,0x14026e670
+"std::array<chess::Bitboard,64>::operator[]",0.002000,0.002000,0.0,0.0,8985000,100.0,100.0,0.666667,frankycpp_v1.8.exe,"std::array<chess::Bitboard,64>::operator[]",array,0x14025c5d4
+"std::array<chess::Bitboard,64>::operator[]",0.002000,0.002000,0.0,0.0,23960000,30.8,30.8,0.250000,frankycpp_v1.8.exe,"std::array<chess::Bitboard,64>::operator[]",array,0x14026306a
+"std::array<std::array<chess::Bitboard,64>,8>::operator[]",0.002000,0.002000,0.0,0.0,11980000,47.4,47.4,0.500000,frankycpp_v1.8.exe,"std::array<std::array<chess::Bitboard,64>,8>::operator[]",array,0x14026ab90
+"std::array<std::array<int,64>,64>::operator[]",0.002000,0.002000,0.0,0.0,26955000,30.4,30.4,0.444444,frankycpp_v1.8.exe,"std::array<std::array<int,64>,64>::operator[]",array,0x140262f45
+std::atomic<unsigned __int64>::{ctor},0.002000,0.002000,0.0,0.0,32945000,41.2,41.2,0.090909,frankycpp_v1.8.exe,std::atomic<unsigned __int64>::{ctor},atomic,0x14026dd70
+std::clamp,0.002000,0.002000,0.0,0.0,62895000,25.6,25.6,0.476190,frankycpp_v1.8.exe,std::clamp,algorithm,0x140220581
+std::countr_zero,0.002000,0.002000,0.0,0.0,11980000,87.5,87.5,0.0,frankycpp_v1.8.exe,std::countr_zero,bit,0x14026b030
+std::countr_zero,0.002000,0.002000,0.0,0.0,5990000,16.7,16.7,0.500000,frankycpp_v1.8.exe,std::countr_zero,bit,0x140269fc0
+std::max,0.002000,0.002000,0.0,0.0,74875000,90.3,90.3,0.360000,frankycpp_v1.8.exe,std::max,utility,0x14029e7af
+std::popcount,0.002000,0.002000,0.0,0.0,56905000,21.7,21.7,0.578947,frankycpp_v1.8.exe,std::popcount,bit,0x14026b272
+std::popcount,0.002000,0.002000,0.0,0.0,23960000,84.6,84.6,0.500000,frankycpp_v1.8.exe,std::popcount,bit,0x14026a0dd
+std::popcount,0.002000,0.002000,0.0,0.0,26955000,60.0,60.0,0.555556,frankycpp_v1.8.exe,std::popcount,bit,0x14026a41c
+"std::unique_ptr<engine::PawnTT::Entry [0],std::default_delete<engine::PawnTT::Entry [0]> >::operator[]",0.002000,0.002000,0.0,0.0,11980000,2.3,2.3,0.750000,frankycpp_v1.8.exe,"std::unique_ptr<engine::PawnTT::Entry [0],std::default_delete<engine::PawnTT::Entry [0]> >::operator[]",memory,0x1402212e9
+"std::unique_ptr<engine::PawnTT::Entry [0],std::default_delete<engine::PawnTT::Entry [0]> >::operator[]",0.002000,0.002000,0.0,0.0,11980000,21.7,21.7,1.250000,frankycpp_v1.8.exe,"std::unique_ptr<engine::PawnTT::Entry [0],std::default_delete<engine::PawnTT::Entry [0]> >::operator[]",memory,0x14026a2d6
+ExFreePoolWithTag,0.001000,0.001000,0.0,0.0,2995000,0.0,0.0,0.0,ntoskrnl.exe,ExFreePoolWithTag,[Unknown],0x140b71cd0
+KeAndAffinityEx2,0.001000,0.001000,0.0,0.0,2995000,0.0,0.0,0.0,ntoskrnl.exe,KeAndAffinityEx2,[Unknown],0x1402052e0
+KeReleaseInStackQueuedSpinLock,0.001000,0.001000,0.0,0.0,0,0.0,0.0,0.0,ntoskrnl.exe,KeReleaseInStackQueuedSpinLock,[Unknown],0x140276e00
+KeSetEvent,0.001000,0.001000,0.0,0.0,0,0.0,0.0,0.0,ntoskrnl.exe,KeSetEvent,[Unknown],0x1402736d0
+KeWaitForMutexObject,0.001000,0.001000,0.0,0.0,0,0.0,0.0,0.0,ntoskrnl.exe,KeWaitForMutexObject,[Unknown],0x1402ef890
+KfRaiseIrql,0.001000,0.001000,0.0,0.0,2995000,100.0,100.0,0.0,ntoskrnl.exe,KfRaiseIrql,[Unknown],0x1403f9650
+ObfDereferenceObject,0.001000,0.001000,0.0,0.0,2995000,0.0,0.0,0.0,ntoskrnl.exe,ObfDereferenceObject,[Unknown],0x14031f940
+Query_perf_frequency,0.001000,0.001000,0.0,0.0,0,0.0,0.0,,msvcp140.dll,Query_perf_frequency,[Unknown],0x180012980
+RtlFlsGetValue,0.001000,0.001000,0.0,0.0,0,0.0,0.0,0.0,ntdll.dll,RtlFlsGetValue,[Unknown],0x1800dc3b0
+RtlImageNtHeader,0.001000,0.001000,0.0,0.0,0,0.0,0.0,0.0,ntoskrnl.exe,RtlImageNtHeader,[Unknown],0x14043cdb0
+RtlUnicodeToMultiByteN,0.001000,0.001000,0.0,0.0,0,0.0,0.0,0.0,ntdll.dll,RtlUnicodeToMultiByteN,[Unknown],0x1800b69f0
+SleepConditionVariableSRW,0.001000,0.001000,0.0,0.0,0,0.0,0.0,0.0,kernelbase.dll,SleepConditionVariableSRW,[Unknown],0x180041d40
+YAML::RegEx::MatchUnchecked<class YAML::StreamCharSource>,0.001000,0.001000,0.0,0.0,8985000,0.0,0.0,0.0,frankycpp_v1.8.exe,YAML::RegEx::MatchUnchecked<class YAML::StreamCharSource>(class YAML::StreamCharSource const &),regeximpl.h,0x1402f3050
+YAML::Stream::eat,0.001000,0.001000,0.0,0.0,0,0.0,0.0,0.0,frankycpp_v1.8.exe,YAML::Stream::eat(int),stream.cpp,0x1402ffc20
+[Import thunk _std_type_info_compare],0.001000,0.001000,0.0,0.0,23960000,85.7,85.7,0.250000,frankycpp_v1.8.exe,[Import thunk _std_type_info_compare],[Unknown],0x14061b89e
+[Import thunk malloc],0.001000,0.001000,0.0,0.0,0,50.0,50.0,0.0,frankycpp_v1.8.exe,[Import thunk malloc],[Unknown],0x14061ba6c
+[Import thunk memcpy],0.001000,0.001000,0.0,0.0,20965000,16.7,16.7,0.285714,frankycpp_v1.8.exe,[Import thunk memcpy],[Unknown],0x14061b8c2
+[Import thunk memmove],0.001000,0.001000,0.0,0.0,0,0.0,0.0,0.0,frankycpp_v1.8.exe,[Import thunk memmove],[Unknown],0x14061b8e0
+[Outside any known module],0.001000,0.001000,0.0,0.0,0,0.0,0.0,,[Unknown],[Outside any known module],[Unknown],0x0
+"boost::archive::basic_binary_iprimitive<class boost::archive::binary_iarchive,char,struct std::char_traits<char> >::load_binary",0.001000,0.001000,0.0,0.0,5990000,0.0,0.0,0.0,frankycpp_v1.8.exe,"boost::archive::basic_binary_iprimitive<class boost::archive::binary_iarchive,char,struct std::char_traits<char> >::load_binary(void *,unsigned __int64)",basic_binary_iprimitive.hpp,0x140285820
+boost::archive::detail::basic_iarchive_impl::load_object,0.001000,0.001000,0.0,0.0,11980000,100.0,100.0,0.250000,frankycpp_v1.8.exe,boost::archive::detail::basic_iarchive_impl::load_object,basic_iarchive.cpp,0x1402aef21
+boost::archive::detail::basic_iarchive_impl::register_type,0.001000,0.001000,0.0,0.0,41930000,34.6,34.6,0.285714,frankycpp_v1.8.exe,boost::archive::detail::basic_iarchive_impl::register_type(class boost::archive::detail::basic_iserializer const &),basic_iarchive.cpp,0x1402af740
+boost::archive::detail::basic_serializer::operator<,0.001000,0.001000,0.0,0.0,2995000,80.0,80.0,1.000000,frankycpp_v1.8.exe,boost::archive::detail::basic_serializer::operator<,basic_serializer.hpp,0x1402af7d8
+boost::archive::detail::basic_serializer::operator<,0.001000,0.001000,0.0,0.0,62895000,86.7,86.7,0.285714,frankycpp_v1.8.exe,boost::archive::detail::basic_serializer::operator<,basic_serializer.hpp,0x1402af793
+boost::archive::detail::common_iarchive<boost::archive::binary_iarchive>::load_override,0.001000,0.001000,0.0,0.0,2995000,0.0,0.0,0.0,frankycpp_v1.8.exe,boost::archive::detail::common_iarchive<boost::archive::binary_iarchive>::load_override,common_iarchive.hpp,0x14028c0c0
+boost::archive::detail::interface_iarchive<boost::archive::binary_iarchive>::This,0.001000,0.001000,0.0,0.0,2995000,,,0.0,frankycpp_v1.8.exe,boost::archive::detail::interface_iarchive<boost::archive::binary_iarchive>::This,interface_iarchive.hpp,0x140288dc3
+"boost::archive::detail::iserializer<class boost::archive::binary_iarchive,class std::vector<unsigned __int64,class std::allocator<unsigned __int64> > >::load_object_data",0.001000,0.001000,0.0,0.0,2995000,,,0.0,frankycpp_v1.8.exe,"boost::archive::detail::iserializer<class boost::archive::binary_iarchive,class std::vector<unsigned __int64,class std::allocator<unsigned __int64> > >::load_object_data(class boost::archive::detail::basic_iarchive &,void *,unsigned int)",iserializer.hpp,0x140290920
+boost::archive::version_type::{ctor},0.001000,0.001000,0.0,0.0,0,,,0.0,frankycpp_v1.8.exe,boost::archive::version_type::{ctor},basic_archive.hpp,0x140290a60
+"boost::serialization::load<class boost::archive::binary_iarchive,int>",0.001000,0.001000,0.0,0.0,0,100.0,100.0,,frankycpp_v1.8.exe,"boost::serialization::load<class boost::archive::binary_iarchive,int>(class boost::archive::binary_iarchive &,class boost::serialization::nvp<int> &,unsigned int)",nvp.hpp,0x14028ee30
+"boost::serialization::singleton<class boost::archive::detail::iserializer<class boost::archive::binary_iarchive,class std::vector<class chess::Move,class std::allocator<class chess::Move> > > >::get_instance",0.001000,0.001000,0.0,0.0,2995000,33.3,33.3,1.000000,frankycpp_v1.8.exe,"boost::serialization::singleton<class boost::archive::detail::iserializer<class boost::archive::binary_iarchive,class std::vector<class chess::Move,class std::allocator<class chess::Move> > > >::get_instance(void)",singleton.hpp,0x140290ac0
+"boost::serialization::singleton<class boost::archive::detail::iserializer<class boost::archive::binary_iarchive,class std::vector<unsigned __int64,class std::allocator<unsigned __int64> > > >::get_instance",0.001000,0.001000,0.0,0.0,2995000,0.0,0.0,0.0,frankycpp_v1.8.exe,"boost::serialization::singleton<class boost::archive::detail::iserializer<class boost::archive::binary_iarchive,class std::vector<unsigned __int64,class std::allocator<unsigned __int64> > > >::get_instance(void)",singleton.hpp,0x140291090
+"boost::serialization::smart_cast_reference<boost::archive::binary_iarchive &,boost::archive::detail::basic_iarchive>",0.001000,0.001000,0.0,0.0,8985000,50.0,50.0,0.333333,frankycpp_v1.8.exe,"boost::serialization::smart_cast_reference<boost::archive::binary_iarchive &,boost::archive::detail::basic_iarchive>(class boost::archive::detail::basic_iarchive & const)",smart_cast.hpp,0x140286660
+boost::serialization::typeid_system::extended_type_info_typeid_0::is_less_than,0.001000,0.001000,0.0,0.0,35940000,75.0,75.0,0.416667,frankycpp_v1.8.exe,boost::serialization::typeid_system::extended_type_info_typeid_0::is_less_than(class boost::serialization::extended_type_info const &),extended_type_info_typeid.cpp,0x1402b9360
+chess::Attacks::detail::sliding_attack,0.001000,0.001000,0.0,0.0,2995000,100.0,100.0,1.000000,frankycpp_v1.8.exe,"chess::Attacks::detail::sliding_attack(class chess::Direction const * const,class chess::Square,class chess::Bitboard)",attacks.cpp,0x14016c6d0
+chess::Bitboard::operator bool,0.001000,0.001000,0.0,0.0,14975000,33.3,33.3,0.0,frankycpp_v1.8.exe,chess::Bitboard::operator bool,bitboard.h,0x14026a100
+chess::Bitboard::operator bool,0.001000,0.001000,0.0,0.0,5990000,0.0,0.0,0.0,frankycpp_v1.8.exe,chess::Bitboard::operator bool,bitboard.h,0x1402638c6
+chess::Bitboard::operator bool,0.001000,0.001000,0.0,0.0,2995000,0.0,0.0,0.0,frankycpp_v1.8.exe,chess::Bitboard::operator bool,bitboard.h,0x14026ab69
+chess::Bitboard::operator bool,0.001000,0.001000,0.0,0.0,20965000,41.2,41.2,0.428571,frankycpp_v1.8.exe,chess::Bitboard::operator bool,bitboard.h,0x14026abbf
+chess::Bitboard::operator bool,0.001000,0.001000,0.0,0.0,32945000,43.3,43.3,0.636364,frankycpp_v1.8.exe,chess::Bitboard::operator bool,bitboard.h,0x14026b3dc
+chess::Bitboard::operator bool,0.001000,0.001000,0.0,0.0,2995000,100.0,100.0,1.000000,frankycpp_v1.8.exe,chess::Bitboard::operator bool,bitboard.h,0x14026a4ec
+chess::Bitboard::operator bool,0.001000,0.001000,0.0,0.0,32945000,38.9,38.9,0.454545,frankycpp_v1.8.exe,chess::Bitboard::operator bool,bitboard.h,0x140264054
+chess::Bitboard::operator bool,0.001000,0.001000,0.0,0.0,8985000,0.0,0.0,0.0,frankycpp_v1.8.exe,chess::Bitboard::operator bool,bitboard.h,0x140263470
+chess::Bitboard::operator^=,0.001000,0.001000,0.0,0.0,77870000,42.9,42.9,0.192308,frankycpp_v1.8.exe,chess::Bitboard::operator^=,bitboard.h,0x14029e81d
+chess::Bitboard::operator^=,0.001000,0.001000,0.0,0.0,11980000,100.0,100.0,0.500000,frankycpp_v1.8.exe,chess::Bitboard::operator^=,bitboard.h,0x14029e7ec
+chess::Bitboard::operator|=,0.001000,0.001000,0.0,0.0,5990000,,,1.500000,frankycpp_v1.8.exe,chess::Bitboard::operator|=,bitboard.h,0x14026a021
+chess::Bitboard::operator~,0.001000,0.001000,0.0,0.0,0,33.3,33.3,,frankycpp_v1.8.exe,chess::Bitboard::operator~,bitboard.h,0x140263cb4
+chess::Bitboard::popLSB,0.001000,0.001000,0.0,0.0,2995000,25.0,25.0,0.0,frankycpp_v1.8.exe,chess::Bitboard::popLSB,bitboard.h,0x1402632a5
+chess::Bitboard::popLSB,0.001000,0.001000,0.0,0.0,2995000,0.0,0.0,1.000000,frankycpp_v1.8.exe,chess::Bitboard::popLSB,bitboard.h,0x1402633f3
+chess::Bitboard::popLSB,0.001000,0.001000,0.0,0.0,0,100.0,100.0,0.0,frankycpp_v1.8.exe,chess::Bitboard::popLSB,bitboard.h,0x140263703
+chess::Bitboard::popLSB,0.001000,0.001000,0.0,0.0,26955000,33.3,33.3,0.888889,frankycpp_v1.8.exe,chess::Bitboard::popLSB,bitboard.h,0x140263c05
+chess::Bitboard::popLSB,0.001000,0.001000,0.0,0.0,8985000,11.1,11.1,1.000000,frankycpp_v1.8.exe,chess::Bitboard::popLSB,bitboard.h,0x140263e50
+chess::Bitboard::popLSB,0.001000,0.001000,0.0,0.0,5990000,66.7,66.7,0.0,frankycpp_v1.8.exe,chess::Bitboard::popLSB,bitboard.h,0x14026a110
+chess::Bitboard::shifted,0.001000,0.001000,0.0,0.0,20965000,6.7,6.7,0.428571,frankycpp_v1.8.exe,chess::Bitboard::shifted,bitboard.h,0x140263537
+chess::Direction::operator int,0.001000,0.001000,0.0,0.0,0,0.0,0.0,0.0,frankycpp_v1.8.exe,chess::Direction::operator int,direction.h,0x140263537
+chess::Direction::pawnPush,0.001000,0.001000,0.0,0.0,77870000,59.1,59.1,0.192308,frankycpp_v1.8.exe,chess::Direction::pawnPush,direction.h,0x1402636a0
+chess::Direction::pawnPush,0.001000,0.001000,0.0,0.0,5990000,100.0,100.0,0.500000,frankycpp_v1.8.exe,chess::Direction::pawnPush,direction.h,0x1402636f8
+chess::Direction::pawnPush,0.001000,0.001000,0.0,0.0,8985000,16.7,16.7,0.0,frankycpp_v1.8.exe,chess::Direction::pawnPush,direction.h,0x140269f9d
+chess::Move::encode,0.001000,0.001000,0.0,0.0,2995000,16.7,16.7,1.000000,frankycpp_v1.8.exe,chess::Move::encode,move.h,0x1402632b2
+chess::Move::encode,0.001000,0.001000,0.0,0.0,38935000,50.0,50.0,0.307692,frankycpp_v1.8.exe,chess::Move::encode,move.h,0x1402639db
+chess::Move::encode,0.001000,0.001000,0.0,0.0,23960000,35.0,35.0,0.375000,frankycpp_v1.8.exe,chess::Move::encode,move.h,0x140263928
+chess::Move::from,0.001000,0.001000,0.0,0.0,0,14.3,14.3,,frankycpp_v1.8.exe,chess::Move::from,move.h,0x14025b9bf
+chess::Move::operator==,0.001000,0.001000,0.0,0.0,5990000,50.0,50.0,1.000000,frankycpp_v1.8.exe,chess::Move::operator==,PVTable.h,0x1402211e0
+chess::Move::operator==,0.001000,0.001000,0.0,0.0,2995000,,,1.000000,frankycpp_v1.8.exe,chess::Move::operator==,PVTable.h,0x14022099d
+chess::Move::setValue,0.001000,0.001000,0.0,0.0,29950000,41.7,41.7,0.400000,frankycpp_v1.8.exe,chess::Move::setValue,move.h,0x140262ef1
+chess::Move::setValue,0.001000,0.001000,0.0,0.0,20965000,30.0,30.0,0.428571,frankycpp_v1.8.exe,chess::Move::setValue,move.h,0x140262f10
+chess::Move::stripped,0.001000,0.001000,0.0,0.0,5990000,0.0,0.0,1.000000,frankycpp_v1.8.exe,chess::Move::stripped,move.h,0x140260fb0
+chess::Move::to,0.001000,0.001000,0.0,0.0,8985000,9.1,9.1,0.0,frankycpp_v1.8.exe,chess::Move::to,move.h,0x14022053a
+chess::Move::to,0.001000,0.001000,0.0,0.0,17970000,0.0,0.0,1.000000,frankycpp_v1.8.exe,chess::Move::to,move.h,0x14025bfc9
+chess::Move::type,0.001000,0.001000,0.0,0.0,2995000,16.7,16.7,1.000000,frankycpp_v1.8.exe,chess::Move::type,move.h,0x14025c542
+chess::Move::type,0.001000,0.001000,0.0,0.0,2995000,66.7,66.7,1.000000,frankycpp_v1.8.exe,chess::Move::type,move.h,0x1402215f7
+chess::Move::type,0.001000,0.001000,0.0,0.0,53910000,58.8,58.8,0.444444,frankycpp_v1.8.exe,chess::Move::type,move.h,0x14029e63d
+chess::Move::value,0.001000,0.001000,0.0,0.0,14975000,37.5,37.5,0.400000,frankycpp_v1.8.exe,chess::Move::value,move.h,0x140262fc8
+chess::Move::{ctor},0.001000,0.001000,0.0,0.0,11980000,27.3,27.3,0.500000,frankycpp_v1.8.exe,chess::Move::{ctor},move.h,0x140263f84
+chess::Move::{ctor},0.001000,0.001000,0.0,0.0,0,25.0,25.0,0.0,frankycpp_v1.8.exe,chess::Move::{ctor},move.h,0x140263914
+chess::MoveGenerator::generateCastling,0.001000,0.001000,0.0,0.0,17970000,36.4,36.4,0.333333,frankycpp_v1.8.exe,"chess::MoveGenerator::generateCastling(class chess::Position const &,class chess::StaticMoveList<256> *,enum chess::GenMode)",MoveGenerator.cpp,0x140264080
+chess::MoveGenerator::storeKiller,0.001000,0.001000,0.0,0.0,5990000,20.0,20.0,0.0,frankycpp_v1.8.exe,chess::MoveGenerator::storeKiller(class chess::Move),MoveGenerator.cpp,0x140260fc0
+chess::MoveGenerator::validateMove,0.001000,0.001000,0.0,0.0,0,0.0,0.0,0.0,frankycpp_v1.8.exe,"chess::MoveGenerator::validateMove(class chess::Position const &,class chess::Move)",MoveGenerator.cpp,0x140260ff0
+chess::Position::clearEnPassant,0.001000,0.001000,0.0,0.0,2995000,100.0,100.0,0.0,frankycpp_v1.8.exe,chess::Position::clearEnPassant,Position.cpp,0x14025bb5f
+chess::Position::getEnPassantSquare,0.001000,0.001000,0.0,0.0,2995000,25.0,25.0,0.0,frankycpp_v1.8.exe,chess::Position::getEnPassantSquare,Position.h,0x14029e9a4
+chess::Position::getPieceBb,0.001000,0.001000,0.0,0.0,29950000,18.2,18.2,0.700000,frankycpp_v1.8.exe,chess::Position::getPieceBb,Position.h,0x1402630d1
+chess::Position::getPieceBb,0.001000,0.001000,0.0,0.0,5990000,50.0,50.0,0.500000,frankycpp_v1.8.exe,chess::Position::getPieceBb,Position.h,0x14029ea1d
+chess::Position::getPieceBb,0.001000,0.001000,0.0,0.0,20965000,37.5,37.5,0.0,frankycpp_v1.8.exe,chess::Position::getPieceBb,Position.h,0x14026aa81
+chess::Position::getPieceBb,0.001000,0.001000,0.0,0.0,62895000,44.2,44.2,0.285714,frankycpp_v1.8.exe,chess::Position::getPieceBb,Position.h,0x14029ea5c
+chess::Square::file,0.001000,0.001000,0.0,0.0,50915000,31.2,31.2,0.411765,frankycpp_v1.8.exe,chess::Square::file,square.h,0x14026af35
+chess::Square::rank,0.001000,0.001000,0.0,0.0,5990000,11.1,11.1,0.500000,frankycpp_v1.8.exe,chess::Square::rank,square.h,0x14026a1e2
+chess::StaticMoveList<256>::push_back,0.001000,0.001000,0.0,0.0,38935000,47.4,47.4,0.230769,frankycpp_v1.8.exe,chess::StaticMoveList<256>::push_back,staticmovelist.h,0x14026390d
+chess::StaticMoveList<256>::push_back,0.001000,0.001000,0.0,0.0,2995000,0.0,0.0,0.0,frankycpp_v1.8.exe,chess::StaticMoveList<256>::push_back,staticmovelist.h,0x140263748
+chess::Value::operator int,0.001000,0.001000,0.0,0.0,0,0.0,0.0,0.0,frankycpp_v1.8.exe,chess::Value::operator int,value.h,0x14021f4f7
+chess::Value::{ctor},0.001000,0.001000,0.0,0.0,14975000,13.6,13.6,0.200000,frankycpp_v1.8.exe,chess::Value::{ctor},value.h,0x14021fa6f
+chess::Value::{ctor},0.001000,0.001000,0.0,0.0,8985000,66.7,66.7,1.000000,frankycpp_v1.8.exe,chess::Value::{ctor},value.h,0x14029e8c0
+chess::moveValueGreaterComparator::operator(),0.001000,0.001000,0.0,0.0,0,0.0,0.0,0.0,frankycpp_v1.8.exe,chess::moveValueGreaterComparator::operator(),move.h,0x14026512b
+chess::operator!=,0.001000,0.001000,0.0,0.0,0,0.0,0.0,,frankycpp_v1.8.exe,chess::operator!=,color.h,0x14026a283
+chess::operator&,0.001000,0.001000,0.0,0.0,11980000,60.0,60.0,0.500000,frankycpp_v1.8.exe,chess::operator&,bitboard.h,0x14026a028
+chess::operator&,0.001000,0.001000,0.0,0.0,5990000,33.3,33.3,1.000000,frankycpp_v1.8.exe,chess::operator&,bitboard.h,0x14026ab45
+chess::operator&,0.001000,0.001000,0.0,0.0,38935000,16.1,16.1,0.384615,frankycpp_v1.8.exe,chess::operator&,bitboard.h,0x14026b188
+chess::operator&,0.001000,0.001000,0.0,0.0,35940000,41.2,41.2,0.583333,frankycpp_v1.8.exe,chess::operator&,bitboard.h,0x14029e94e
+chess::operator&,0.001000,0.001000,0.0,0.0,23960000,100.0,100.0,0.125000,frankycpp_v1.8.exe,chess::operator&,bitboard.h,0x14026a498
+chess::operator&,0.001000,0.001000,0.0,0.0,11980000,0.0,0.0,0.250000,frankycpp_v1.8.exe,chess::operator&,bitboard.h,0x14026ab9c
+chess::operator&,0.001000,0.001000,0.0,0.0,14975000,,,0.200000,frankycpp_v1.8.exe,chess::operator&,bitboard.h,0x140263e2b
+chess::operator&,0.001000,0.001000,0.0,0.0,0,0.0,0.0,,frankycpp_v1.8.exe,chess::operator&,bitboard.h,0x14026383b
+chess::operator&,0.001000,0.001000,0.0,0.0,2995000,0.0,0.0,0.0,frankycpp_v1.8.exe,chess::operator&,bitboard.h,0x14025c2d3
+chess::operator&,0.001000,0.001000,0.0,0.0,14975000,18.8,18.8,0.200000,frankycpp_v1.8.exe,chess::operator&,bitboard.h,0x14026139a
+chess::operator&,0.001000,0.001000,0.0,0.0,5990000,100.0,100.0,0.500000,frankycpp_v1.8.exe,chess::operator&,bitboard.h,0x14026a40f
+chess::operator&,0.001000,0.001000,0.0,0.0,32945000,94.4,94.4,0.363636,frankycpp_v1.8.exe,chess::operator&,bitboard.h,0x14026a720
+chess::operator+,0.001000,0.001000,0.0,0.0,2995000,100.0,100.0,0.0,frankycpp_v1.8.exe,chess::operator+,direction.h,0x14025c323
+chess::operator+,0.001000,0.001000,0.0,0.0,23960000,100.0,100.0,0.625000,frankycpp_v1.8.exe,chess::operator+,direction.h,0x14026a07c
+chess::operator+,0.001000,0.001000,0.0,0.0,11980000,0.0,0.0,0.0,frankycpp_v1.8.exe,chess::operator+,value.h,0x1402699c1
+chess::operator+,0.001000,0.001000,0.0,0.0,23960000,33.3,33.3,0.125000,frankycpp_v1.8.exe,chess::operator+,direction.h,0x14025c2e5
+chess::operator+,0.001000,0.001000,0.0,0.0,0,0.0,0.0,0.0,frankycpp_v1.8.exe,chess::operator+,depth.h,0x140220693
+chess::operator++,0.001000,0.001000,0.0,0.0,0,0.0,0.0,0.0,frankycpp_v1.8.exe,chess::operator++,depth.h,0x14021fc78
+chess::operator+=,0.001000,0.001000,0.0,0.0,8985000,30.8,30.8,0.333333,frankycpp_v1.8.exe,chess::operator+=,value.h,0x14026a836
+chess::operator+=,0.001000,0.001000,0.0,0.0,2995000,20.0,20.0,1.000000,frankycpp_v1.8.exe,chess::operator+=,value.h,0x14026a257
+chess::operator+=,0.001000,0.001000,0.0,0.0,23960000,,,0.625000,frankycpp_v1.8.exe,chess::operator+=,value.h,0x140269d74
+chess::operator+=,0.001000,0.001000,0.0,0.0,17970000,42.9,42.9,0.0,frankycpp_v1.8.exe,chess::operator+=,value.h,0x14026a773
+chess::operator+=,0.001000,0.001000,0.0,0.0,8985000,100.0,100.0,0.666667,frankycpp_v1.8.exe,chess::operator+=,value.h,0x14026a59d
+chess::operator+=,0.001000,0.001000,0.0,0.0,2995000,0.0,0.0,0.0,frankycpp_v1.8.exe,chess::operator+=,value.h,0x14026b1c7
+chess::operator+=,0.001000,0.001000,0.0,0.0,0,0.0,0.0,0.0,frankycpp_v1.8.exe,chess::operator+=,value.h,0x14026a2ed
+chess::operator-,0.001000,0.001000,0.0,0.0,0,20.0,20.0,,frankycpp_v1.8.exe,chess::operator-,value.h,0x1402207e3
+chess::operator-,0.001000,0.001000,0.0,0.0,2995000,0.0,0.0,1.000000,frankycpp_v1.8.exe,chess::operator-,value.h,0x140262fcc
+chess::operator-,0.001000,0.001000,0.0,0.0,0,50.0,50.0,,frankycpp_v1.8.exe,chess::operator-,value.h,0x14021fb4a
+chess::operator-,0.001000,0.001000,0.0,0.0,5990000,20.0,20.0,0.0,frankycpp_v1.8.exe,chess::operator-,value.h,0x14021fa54
+chess::operator-,0.001000,0.001000,0.0,0.0,14975000,0.0,0.0,0.0,frankycpp_v1.8.exe,chess::operator-,value.h,0x140264032
+chess::operator-,0.001000,0.001000,0.0,0.0,2995000,20.0,20.0,3.000000,frankycpp_v1.8.exe,chess::operator-,value.h,0x14021f385
+chess::operator-,0.001000,0.001000,0.0,0.0,2995000,45.5,45.5,4.000000,frankycpp_v1.8.exe,chess::operator-,value.h,0x14021fcd7
+chess::operator-=,0.001000,0.001000,0.0,0.0,17970000,40.0,40.0,0.333333,frankycpp_v1.8.exe,chess::operator-=,depth.h,0x14022047a
+chess::operator-=,0.001000,0.001000,0.0,0.0,2995000,33.3,33.3,0.0,frankycpp_v1.8.exe,chess::operator-=,depth.h,0x1402204a4
+chess::operator>=,0.001000,0.001000,0.0,0.0,26955000,16.7,16.7,0.222222,frankycpp_v1.8.exe,chess::operator>=,value.h,0x14022162d
+chess::operator|,0.001000,0.001000,0.0,0.0,17970000,14.3,14.3,0.500000,frankycpp_v1.8.exe,chess::operator|,bitboard.h,0x14026b224
+chess::operator|,0.001000,0.001000,0.0,0.0,26955000,45.0,45.0,0.777778,frankycpp_v1.8.exe,chess::operator|,bitboard.h,0x14025c410
+chess::operator|,0.001000,0.001000,0.0,0.0,5990000,50.0,50.0,1.000000,frankycpp_v1.8.exe,chess::operator|,bitboard.h,0x1402637a8
+chess::operator|,0.001000,0.001000,0.0,0.0,5990000,33.3,33.3,0.0,frankycpp_v1.8.exe,chess::operator|,bitboard.h,0x14026a040
+chess::operator|,0.001000,0.001000,0.0,0.0,104825000,52.4,52.4,0.342857,frankycpp_v1.8.exe,chess::operator|,bitboard.h,0x14029ea08
+chess::operator|,0.001000,0.001000,0.0,0.0,8985000,12.5,12.5,0.333333,frankycpp_v1.8.exe,chess::operator|,bitboard.h,0x140261102
+chess::operator|,0.001000,0.001000,0.0,0.0,14975000,63.6,63.6,0.200000,frankycpp_v1.8.exe,chess::operator|,bitboard.h,0x14029eb41
+chess::operator|,0.001000,0.001000,0.0,0.0,11980000,71.4,71.4,1.750000,frankycpp_v1.8.exe,chess::operator|,bitboard.h,0x14026a3b9
+chess::operator|,0.001000,0.001000,0.0,0.0,2995000,100.0,100.0,0.0,frankycpp_v1.8.exe,chess::operator|,bitboard.h,0x140263f4c
+chess::operator|,0.001000,0.001000,0.0,0.0,68885000,26.7,26.7,0.260870,frankycpp_v1.8.exe,chess::operator|,bitboard.h,0x14025c5cd
+chess::operator~,0.001000,0.001000,0.0,0.0,32945000,100.0,100.0,0.363636,frankycpp_v1.8.exe,chess::operator~,color.h,0x14026a65f
+chess::operator~,0.001000,0.001000,0.0,0.0,2995000,50.0,50.0,0.0,frankycpp_v1.8.exe,chess::operator~,color.h,0x140220a13
+chess::operator~,0.001000,0.001000,0.0,0.0,20965000,40.0,40.0,0.285714,frankycpp_v1.8.exe,chess::operator~,color.h,0x14026302d
+chess::operator~,0.001000,0.001000,0.0,0.0,2995000,40.0,40.0,5.000000,frankycpp_v1.8.exe,chess::operator~,color.h,0x140263e7d
+chess::typeOf,0.001000,0.001000,0.0,0.0,17970000,33.3,33.3,0.666667,frankycpp_v1.8.exe,chess::typeOf,piece.h,0x14025d61a
+chess::typeOf,0.001000,0.001000,0.0,0.0,8985000,58.3,58.3,0.333333,frankycpp_v1.8.exe,chess::typeOf,piece.h,0x14029e776
+chess::typeOf,0.001000,0.001000,0.0,0.0,20965000,66.7,66.7,0.285714,frankycpp_v1.8.exe,chess::typeOf,piece.h,0x14026305b
+chess::typeOf,0.001000,0.001000,0.0,0.0,5990000,50.0,50.0,0.0,frankycpp_v1.8.exe,chess::typeOf,piece.h,0x140263e6d
+engine::PVTable::clear,0.001000,0.001000,0.0,0.0,20965000,22.2,22.2,0.714286,frankycpp_v1.8.exe,engine::PVTable::clear,PVTable.h,0x14021f2b6
+engine::PVTable::clear,0.001000,0.001000,0.0,0.0,14975000,80.0,80.0,0.200000,frankycpp_v1.8.exe,engine::PVTable::clear,PVTable.h,0x140220cf9
+engine::Search::iterativeDeepening,0.001000,0.001000,0.0,0.0,0,0.0,0.0,0.0,frankycpp_v1.8.exe,engine::Search::iterativeDeepening(class chess::Position &),Search.cpp,0x14021bfc0
+engine::Search::rootSearch,0.001000,0.001000,0.0,0.0,5990000,0.0,0.0,0.0,frankycpp_v1.8.exe,"engine::Search::rootSearch(class chess::Position &,enum chess::Depth,class chess::Value,class chess::Value,int)",Search.cpp,0x14021ee80
+engine::Search::sendAspirationResearchInfo,0.001000,0.001000,0.0,0.0,0,0.0,0.0,0.0,frankycpp_v1.8.exe,"engine::Search::sendAspirationResearchInfo(class std::basic_string<char,struct std::char_traits<char>,class std::allocator<char> > const &)",Search.cpp,0x14022ad70
+engine::Search::sendMultiPvResultsToUci,0.001000,0.001000,0.0,0.0,0,0.0,0.0,0.0,frankycpp_v1.8.exe,"engine::Search::sendMultiPvResultsToUci(class std::vector<struct engine::Search::MultiPvResult,class std::allocator<struct engine::Search::MultiPvResult> > const &,enum chess::Depth)",Search.cpp,0x14022a060
+engine::Search::thread,0.001000,0.001000,0.0,0.0,0,0.0,0.0,0.0,frankycpp_v1.8.exe,engine::Search::thread,Search.h,0x14021fa66
+engine::TT::getClusterIndex,0.001000,0.001000,0.0,0.0,14975000,36.4,36.4,0.200000,frankycpp_v1.8.exe,engine::TT::getClusterIndex,TT.h,0x14026d3a1
+engine::TT::resize,0.001000,0.001000,0.0,0.0,5990000,50.0,50.0,0.500000,frankycpp_v1.8.exe,engine::TT::resize(unsigned __int64),TT.cpp,0x14026c8d0
+func@0x140001ea0,0.001000,0.001000,0.0,0.0,0,0.0,0.0,,intelppm.sys,func@0x140001ea0,[Unknown],0x140001ea0
+func@0x140002700,0.001000,0.001000,0.0,0.0,0,0.0,0.0,,intelppm.sys,func@0x140002700,[Unknown],0x140002700
+func@0x140009630,0.001000,0.001000,0.0,0.0,0,0.0,0.0,0.0,executioncontext.sys,func@0x140009630,[Unknown],0x140009630
+func@0x14000db30,0.001000,0.001000,0.0,0.0,0,0.0,0.0,0.0,netio.sys,func@0x14000db30,[Unknown],0x14000db30
+func@0x140015d90,0.001000,0.001000,0.0,0.0,0,0.0,0.0,,dxgmms2.sys,func@0x140015d90,[Unknown],0x140015d90
+func@0x1400258c0,0.001000,0.001000,0.0,0.0,0,0.0,0.0,0.0,wdf01000.sys,func@0x1400258c0,[Unknown],0x1400258c0
+func@0x14002706b,0.001000,0.001000,0.0,0.0,0,0.0,0.0,0.0,dxgmms2.sys,func@0x14002706b,[Unknown],0x14002706b
+func@0x14004647c,0.001000,0.001000,0.0,0.0,0,0.0,0.0,0.0,rtusba64.sys,func@0x14004647c,[Unknown],0x14004647c
+func@0x140107680,0.001000,0.001000,0.0,0.0,0,0.0,0.0,0.0,nvlddmkm.sys,func@0x140107680,[Unknown],0x140107680
+func@0x140200e20,0.001000,0.001000,0.0,0.0,0,0.0,0.0,0.0,ntoskrnl.exe,func@0x140200e20,[Unknown],0x140200e20
+func@0x140202060,0.001000,0.001000,0.0,0.0,8985000,42.9,42.9,1.000000,ntoskrnl.exe,func@0x140202060,[Unknown],0x140202060
+func@0x140202192,0.001000,0.001000,0.0,0.0,0,0.0,0.0,,ntoskrnl.exe,func@0x140202192,[Unknown],0x140202192
+func@0x14020ce50,0.001000,0.001000,0.0,0.0,0,0.0,0.0,0.0,ntoskrnl.exe,func@0x14020ce50,[Unknown],0x14020ce50
+func@0x1402176a0,0.001000,0.001000,0.0,0.0,0,0.0,0.0,0.0,ntoskrnl.exe,func@0x1402176a0,[Unknown],0x1402176a0
+func@0x1402213e0,0.001000,0.001000,0.0,0.0,0,0.0,0.0,,ntoskrnl.exe,func@0x1402213e0,[Unknown],0x1402213e0
+func@0x1402238b0,0.001000,0.001000,0.0,0.0,0,0.0,0.0,,ntoskrnl.exe,func@0x1402238b0,[Unknown],0x1402238b0
+func@0x140231af0,0.001000,0.001000,0.0,0.0,2995000,66.7,66.7,0.0,ntoskrnl.exe,func@0x140231af0,[Unknown],0x140231af0
+func@0x140254d90,0.001000,0.001000,0.0,0.0,0,0.0,0.0,0.0,ntoskrnl.exe,func@0x140254d90,[Unknown],0x140254d90
+func@0x140255440,0.001000,0.001000,0.0,0.0,0,0.0,0.0,,ntoskrnl.exe,func@0x140255440,[Unknown],0x140255440
+func@0x140255c9d,0.001000,0.001000,0.0,0.0,0,,,0.0,ntoskrnl.exe,func@0x140255c9d,[Unknown],0x140255c9d
+func@0x140256400,0.001000,0.001000,0.0,0.0,8985000,6.7,6.7,1.333333,ntoskrnl.exe,func@0x140256400,[Unknown],0x140256400
+func@0x1402578c0,0.001000,0.001000,0.0,0.0,0,100.0,100.0,0.0,ntoskrnl.exe,func@0x1402578c0,[Unknown],0x1402578c0
+func@0x14025a6d0,0.001000,0.001000,0.0,0.0,0,0.0,0.0,0.0,ntoskrnl.exe,func@0x14025a6d0,[Unknown],0x14025a6d0
+func@0x14025e120,0.001000,0.001000,0.0,0.0,0,0.0,0.0,0.0,nvlddmkm.sys,func@0x14025e120,[Unknown],0x14025e120
+func@0x140273340,0.001000,0.001000,0.0,0.0,2995000,25.0,25.0,2.000000,ntoskrnl.exe,func@0x140273340,[Unknown],0x140273340
+func@0x140273826,0.001000,0.001000,0.0,0.0,0,0.0,0.0,0.0,ntoskrnl.exe,func@0x140273826,[Unknown],0x140273826
+func@0x1402900b0,0.001000,0.001000,0.0,0.0,0,0.0,0.0,0.0,ntoskrnl.exe,func@0x1402900b0,[Unknown],0x1402900b0
+func@0x140296b30,0.001000,0.001000,0.0,0.0,0,10.0,10.0,,ntoskrnl.exe,func@0x140296b30,[Unknown],0x140296b30
+func@0x14029759c,0.001000,0.001000,0.0,0.0,0,0.0,0.0,0.0,ntoskrnl.exe,func@0x14029759c,[Unknown],0x14029759c
+func@0x14029c7cc,0.001000,0.001000,0.0,0.0,2995000,33.3,33.3,0.0,ntoskrnl.exe,func@0x14029c7cc,[Unknown],0x14029c7cc
+func@0x14029c8f0,0.001000,0.001000,0.0,0.0,8985000,42.9,42.9,1.000000,ntoskrnl.exe,func@0x14029c8f0,[Unknown],0x14029c8f0
+func@0x14029d1e0,0.001000,0.001000,0.0,0.0,5990000,33.3,33.3,0.0,ntoskrnl.exe,func@0x14029d1e0,[Unknown],0x14029d1e0
+func@0x14029e348,0.001000,0.001000,0.0,0.0,0,0.0,0.0,0.0,ntoskrnl.exe,func@0x14029e348,[Unknown],0x14029e348
+func@0x1402b8cfd,0.001000,0.001000,0.0,0.0,0,0.0,0.0,0.0,ntoskrnl.exe,func@0x1402b8cfd,[Unknown],0x1402b8cfd
+func@0x1402c6b15,0.001000,0.001000,0.0,0.0,2995000,12.5,12.5,2.000000,ntoskrnl.exe,func@0x1402c6b15,[Unknown],0x1402c6b15
+func@0x1402e4940,0.001000,0.001000,0.0,0.0,0,0.0,0.0,,ntoskrnl.exe,func@0x1402e4940,[Unknown],0x1402e4940
+func@0x1402e8030,0.001000,0.001000,0.0,0.0,0,0.0,0.0,0.0,ntoskrnl.exe,func@0x1402e8030,[Unknown],0x1402e8030
+func@0x1402ea260,0.001000,0.001000,0.0,0.0,2995000,0.0,0.0,2.000000,ntoskrnl.exe,func@0x1402ea260,[Unknown],0x1402ea260
+func@0x1402ec11d,0.001000,0.001000,0.0,0.0,0,10.0,10.0,,ntoskrnl.exe,func@0x1402ec11d,[Unknown],0x1402ec11d
+func@0x1402edbc0,0.001000,0.001000,0.0,0.0,0,0.0,0.0,,ntoskrnl.exe,func@0x1402edbc0,[Unknown],0x1402edbc0
+func@0x1402f1231,0.001000,0.001000,0.0,0.0,0,33.3,33.3,,ntoskrnl.exe,func@0x1402f1231,[Unknown],0x1402f1231
+func@0x1402f3230,0.001000,0.001000,0.0,0.0,0,0.0,0.0,0.0,ntoskrnl.exe,func@0x1402f3230,[Unknown],0x1402f3230
+func@0x140309bb0,0.001000,0.001000,0.0,0.0,2995000,0.0,0.0,1.000000,nvlddmkm.sys,func@0x140309bb0,[Unknown],0x140309bb0
+func@0x140317160,0.001000,0.001000,0.0,0.0,0,0.0,0.0,,ntoskrnl.exe,func@0x140317160,[Unknown],0x140317160
+func@0x140319000,0.001000,0.001000,0.0,0.0,8985000,9.5,9.5,2.333333,ntoskrnl.exe,func@0x140319000,[Unknown],0x140319000
+func@0x14031ebb0,0.001000,0.001000,0.0,0.0,0,0.0,0.0,0.0,ntoskrnl.exe,func@0x14031ebb0,[Unknown],0x14031ebb0
+func@0x14031ede0,0.001000,0.001000,0.0,0.0,0,0.0,0.0,0.0,ntoskrnl.exe,func@0x14031ede0,[Unknown],0x14031ede0
+func@0x1403220b0,0.001000,0.001000,0.0,0.0,5990000,0.0,0.0,1.500000,ntoskrnl.exe,func@0x1403220b0,[Unknown],0x1403220b0
+func@0x140327b30,0.001000,0.001000,0.0,0.0,0,0.0,0.0,,ntoskrnl.exe,func@0x140327b30,[Unknown],0x140327b30
+func@0x14033d9d0,0.001000,0.001000,0.0,0.0,0,0.0,0.0,,ntoskrnl.exe,func@0x14033d9d0,[Unknown],0x14033d9d0
+func@0x140340ba8,0.001000,0.001000,0.0,0.0,2995000,0.0,0.0,0.0,ntoskrnl.exe,func@0x140340ba8,[Unknown],0x140340ba8
+func@0x1403b7894,0.001000,0.001000,0.0,0.0,0,0.0,0.0,0.0,ntoskrnl.exe,func@0x1403b7894,[Unknown],0x1403b7894
+func@0x1403c7560,0.001000,0.001000,0.0,0.0,0,0.0,0.0,0.0,ntoskrnl.exe,func@0x1403c7560,[Unknown],0x1403c7560
+func@0x1403dc420,0.001000,0.001000,0.0,0.0,0,0.0,0.0,0.0,ntoskrnl.exe,func@0x1403dc420,[Unknown],0x1403dc420
+func@0x1403e44db,0.001000,0.001000,0.0,0.0,0,0.0,0.0,0.0,ntoskrnl.exe,func@0x1403e44db,[Unknown],0x1403e44db
+func@0x1403f2040,0.001000,0.001000,0.0,0.0,0,0.0,0.0,0.0,ntoskrnl.exe,func@0x1403f2040,[Unknown],0x1403f2040
+func@0x1403f5655,0.001000,0.001000,0.0,0.0,0,0.0,0.0,0.0,ntoskrnl.exe,func@0x1403f5655,[Unknown],0x1403f5655
+func@0x14040f5c0,0.001000,0.001000,0.0,0.0,0,0.0,0.0,0.0,ntoskrnl.exe,func@0x14040f5c0,[Unknown],0x14040f5c0
+func@0x14040f6d0,0.001000,0.001000,0.0,0.0,8985000,7.1,7.1,2.000000,ntoskrnl.exe,func@0x14040f6d0,[Unknown],0x14040f6d0
+func@0x140415102,0.001000,0.001000,0.0,0.0,2995000,0.0,0.0,0.0,ntoskrnl.exe,func@0x140415102,[Unknown],0x140415102
+func@0x140438770,0.001000,0.001000,0.0,0.0,5990000,66.7,66.7,0.0,ntoskrnl.exe,func@0x140438770,[Unknown],0x140438770
+func@0x14044473c,0.001000,0.001000,0.0,0.0,0,0.0,0.0,0.0,ntoskrnl.exe,func@0x14044473c,[Unknown],0x14044473c
+func@0x1404e76a0,0.001000,0.001000,0.0,0.0,0,,,,ntoskrnl.exe,func@0x1404e76a0,[Unknown],0x1404e76a0
+func@0x1404e78e0,0.001000,0.001000,0.0,0.0,0,0.0,0.0,0.0,ntoskrnl.exe,func@0x1404e78e0,[Unknown],0x1404e78e0
+func@0x1406ac1e0,0.001000,0.001000,0.0,0.0,0,0.0,0.0,,ntoskrnl.exe,func@0x1406ac1e0,[Unknown],0x1406ac1e0
+func@0x1406b1eb0,0.001000,0.001000,0.0,0.0,0,0.0,0.0,,ntoskrnl.exe,func@0x1406b1eb0,[Unknown],0x1406b1eb0
+func@0x1406b1f90,0.001000,0.001000,0.0,0.0,0,0.0,0.0,0.0,ntoskrnl.exe,func@0x1406b1f90,[Unknown],0x1406b1f90
+func@0x1406bfe40,0.001000,0.001000,0.0,0.0,8985000,50.0,50.0,1.333333,ntoskrnl.exe,func@0x1406bfe40,[Unknown],0x1406bfe40
+func@0x14073cbd0,0.001000,0.001000,0.0,0.0,0,0.0,0.0,0.0,nvlddmkm.sys,func@0x14073cbd0,[Unknown],0x14073cbd0
+func@0x140846c70,0.001000,0.001000,0.0,0.0,0,0.0,0.0,0.0,ntoskrnl.exe,func@0x140846c70,[Unknown],0x140846c70
+func@0x1408bb0a2,0.001000,0.001000,0.0,0.0,0,0.0,0.0,0.0,ntoskrnl.exe,func@0x1408bb0a2,[Unknown],0x1408bb0a2
+func@0x140abde80,0.001000,0.001000,0.0,0.0,0,0.0,0.0,,ntoskrnl.exe,func@0x140abde80,[Unknown],0x140abde80
+func@0x140cbc720,0.001000,0.001000,0.0,0.0,0,0.0,0.0,,nvlddmkm.sys,func@0x140cbc720,[Unknown],0x140cbc720
+func@0x140ce0a50,0.001000,0.001000,0.0,0.0,0,0.0,0.0,,nvlddmkm.sys,func@0x140ce0a50,[Unknown],0x140ce0a50
+func@0x140d0ec20,0.001000,0.001000,0.0,0.0,0,0.0,0.0,0.0,nvlddmkm.sys,func@0x140d0ec20,[Unknown],0x140d0ec20
+func@0x18001112d,0.001000,0.001000,0.0,0.0,0,0.0,0.0,0.0,bcrypt.dll,func@0x18001112d,[Unknown],0x18001112d
+func@0x18001d9e4,0.001000,0.001000,0.0,0.0,0,0.0,0.0,0.0,msvcrt.dll,func@0x18001d9e4,[Unknown],0x18001d9e4
+func@0x180021ff0,0.001000,0.001000,0.0,0.0,0,0.0,0.0,0.0,ntdll.dll,func@0x180021ff0,[Unknown],0x180021ff0
+func@0x18005d3a0,0.001000,0.001000,0.0,0.0,0,0.0,0.0,0.0,fltmgr.sys,func@0x18005d3a0,[Unknown],0x18005d3a0
+func@0x180074470,0.001000,0.001000,0.0,0.0,0,0.0,0.0,,ntdll.dll,func@0x180074470,[Unknown],0x180074470
+func@0x180074d60,0.001000,0.001000,0.0,0.0,0,0.0,0.0,0.0,ntdll.dll,func@0x180074d60,[Unknown],0x180074d60
+func@0x1800752b0,0.001000,0.001000,0.0,0.0,0,0.0,0.0,0.0,ntdll.dll,func@0x1800752b0,[Unknown],0x1800752b0
+func@0x180075a80,0.001000,0.001000,0.0,0.0,0,0.0,0.0,,ntdll.dll,func@0x180075a80,[Unknown],0x180075a80
+func@0x180078da1,0.001000,0.001000,0.0,0.0,38935000,71.4,71.4,0.076923,ntdll.dll,func@0x180078da1,[Unknown],0x180078da1
+func@0x18007dd00,0.001000,0.001000,0.0,0.0,0,0.0,0.0,0.0,oleaut32.dll,func@0x18007dd00,[Unknown],0x18007dd00
+func@0x18009bfbf,0.001000,0.001000,0.0,0.0,0,0.0,0.0,0.0,ntdll.dll,func@0x18009bfbf,[Unknown],0x18009bfbf
+func@0x1c00026b0,0.001000,0.001000,0.0,0.0,0,0.0,0.0,0.0,fileinfo.sys,func@0x1c00026b0,[Unknown],0x1c00026b0
+malloc,0.001000,0.001000,0.0,0.0,0,100.0,100.0,0.0,ucrtbase.dll,malloc,[Unknown],0x180015e00
+"nps<class std::chrono::duration<__int64,struct std::ratio<1,1000000000> > >",0.001000,0.001000,0.0,0.0,0,0.0,0.0,0.0,frankycpp_v1.8.exe,"nps<class std::chrono::duration<__int64,struct std::ratio<1,1000000000> > >(unsigned __int64,class std::chrono::duration<__int64,struct std::ratio<1,1000000000> >)",timeunits.h,0x1401a15f0
+round,0.001000,0.001000,0.0,0.0,5990000,0.0,0.0,0.0,ucrtbase.dll,round,[Unknown],0x1800ab260
+"std::_Atomic_storage<unsigned __int64,8>::store",0.001000,0.001000,0.0,0.0,2995000,33.3,33.3,0.0,frankycpp_v1.8.exe,"std::_Atomic_storage<unsigned __int64,8>::store",atomic,0x1402674d4
+std::_Deallocate,0.001000,0.001000,0.0,0.0,0,,,0.0,frankycpp_v1.8.exe,std::_Deallocate,xmemory,0x14023312c
+"std::_Hash<class std::_Umap_traits<unsigned __int64,class book::BookEntry,class std::_Uhash_compare<unsigned __int64,struct std::hash<unsigned __int64>,struct std::equal_to<unsigned __int64> >,class std::allocator<struct std::pair<unsigned __int64 const ,class book::BookEntry> >,0> >::emplace<struct std::pair<unsigned __int64 const ,class book::BookEntry> >",0.001000,0.001000,0.0,0.0,0,100.0,100.0,,frankycpp_v1.8.exe,"std::_Hash<class std::_Umap_traits<unsigned __int64,class book::BookEntry,class std::_Uhash_compare<unsigned __int64,struct std::hash<unsigned __int64>,struct std::equal_to<unsigned __int64> >,class std::allocator<struct std::pair<unsigned __int64 const ,class book::BookEntry> >,0> >::emplace<struct std::pair<unsigned __int64 const ,class book::BookEntry> >(struct std::pair<unsigned __int64 const ,class book::BookEntry> &&)",xhash,0x140288050
+std::_Rng_abort,0.001000,0.001000,0.0,0.0,0,0.0,0.0,0.0,msvcp140.dll,std::_Rng_abort(char const * __ptr64),[Unknown],0x180012330
+std::_Static_partition_team<__int64>::_Get_next_key,0.001000,0.001000,0.0,0.0,2995000,7.4,7.4,4.000000,frankycpp_v1.8.exe,std::_Static_partition_team<__int64>::_Get_next_key,execution,0x14026ecc0
+"std::_Static_partitioned_for_each2<engine::TT::TTCluster *,__int64,`engine::TT::ageEntries'::`2'::<lambda_1> >::_Process_chunk",0.001000,0.001000,0.0,0.0,0,0.0,0.0,0.0,frankycpp_v1.8.exe,"std::_Static_partitioned_for_each2<engine::TT::TTCluster *,__int64,`engine::TT::ageEntries'::`2'::<lambda_1> >::_Process_chunk",execution,0x14026ecc0
+"std::array<chess::Bitboard,64>::operator[]",0.001000,0.001000,0.0,0.0,29950000,14.3,14.3,0.400000,frankycpp_v1.8.exe,"std::array<chess::Bitboard,64>::operator[]",array,0x14025c63e
+"std::array<chess::Bitboard,64>::operator[]",0.001000,0.001000,0.0,0.0,32945000,33.3,33.3,0.181818,frankycpp_v1.8.exe,"std::array<chess::Bitboard,64>::operator[]",array,0x14026a871
+"std::array<chess::Bitboard,64>::operator[]",0.001000,0.001000,0.0,0.0,11980000,23.1,23.1,0.0,frankycpp_v1.8.exe,"std::array<chess::Bitboard,64>::operator[]",array,0x14026a024
+"std::array<chess::Bitboard,8>::operator[]",0.001000,0.001000,0.0,0.0,8985000,44.4,44.4,1.000000,frankycpp_v1.8.exe,"std::array<chess::Bitboard,8>::operator[]",array,0x1402637bb
+"std::array<chess::Bitboard,8>::operator[]",0.001000,0.001000,0.0,0.0,5990000,25.0,25.0,1.000000,frankycpp_v1.8.exe,"std::array<chess::Bitboard,8>::operator[]",array,0x140263971
+"std::array<chess::Move,64>::operator[]",0.001000,0.001000,0.0,0.0,20965000,0.0,0.0,0.142857,frankycpp_v1.8.exe,"std::array<chess::Move,64>::operator[]",array,0x140220aac
+"std::array<chess::Value,25>::operator[]",0.001000,0.001000,0.0,0.0,5990000,0.0,0.0,0.0,frankycpp_v1.8.exe,"std::array<chess::Value,25>::operator[]",array,0x14026391a
+"std::array<int,64>::operator[]",0.001000,0.001000,0.0,0.0,2995000,0.0,0.0,0.0,frankycpp_v1.8.exe,"std::array<int,64>::operator[]",array,0x14026b03d
+"std::array<int,64>::operator[]",0.001000,0.001000,0.0,0.0,14975000,20.0,20.0,1.400000,frankycpp_v1.8.exe,"std::array<int,64>::operator[]",array,0x140220419
+"std::array<std::array<chess::Bitboard,64>,2>::operator[]",0.001000,0.001000,0.0,0.0,122795000,59.7,59.7,0.170732,frankycpp_v1.8.exe,"std::array<std::array<chess::Bitboard,64>,2>::operator[]",array,0x14026a7bb
+"std::array<std::array<chess::Bitboard,64>,2>::operator[]",0.001000,0.001000,0.0,0.0,20965000,30.0,30.0,0.571429,frankycpp_v1.8.exe,"std::array<std::array<chess::Bitboard,64>,2>::operator[]",array,0x14026a7e0
+"std::array<std::array<chess::Move,64>,64>::operator[]",0.001000,0.001000,0.0,0.0,2995000,100.0,100.0,0.0,frankycpp_v1.8.exe,"std::array<std::array<chess::Move,64>,64>::operator[]",array,0x140220ab6
+"std::array<std::array<int,64>,64>::operator[]",0.001000,0.001000,0.0,0.0,17970000,31.6,31.6,0.500000,frankycpp_v1.8.exe,"std::array<std::array<int,64>,64>::operator[]",array,0x14025bd5f
+"std::array<std::array<unsigned __int64,64>,16>::operator[]",0.001000,0.001000,0.0,0.0,17970000,45.5,45.5,0.666667,frankycpp_v1.8.exe,"std::array<std::array<unsigned __int64,64>,16>::operator[]",array,0x14025d676
+std::atomic<unsigned __int64>::{ctor},0.001000,0.001000,0.0,0.0,5990000,10.0,10.0,2.000000,frankycpp_v1.8.exe,std::atomic<unsigned __int64>::{ctor},atomic,0x14026d60f
+"std::basic_filebuf<char,struct std::char_traits<char> >::xsgetn",0.001000,0.001000,0.0,0.0,41930000,50.8,50.8,0.285714,frankycpp_v1.8.exe,"std::basic_filebuf<char,struct std::char_traits<char> >::xsgetn(char * __ptr64,__int64)",__msvc_filebuf.hpp,0x14011a550
+"std::basic_streambuf<char,std::char_traits<char> >::gbump",0.001000,0.001000,0.0,0.0,14975000,80.0,80.0,0.0,frankycpp_v1.8.exe,"std::basic_streambuf<char,std::char_traits<char> >::gbump",streambuf,0x14011a5de
+std::countr_zero,0.001000,0.001000,0.0,0.0,5990000,0.0,0.0,2.500000,frankycpp_v1.8.exe,std::countr_zero,bit,0x140263900
+std::countr_zero,0.001000,0.001000,0.0,0.0,41930000,25.0,25.0,0.642857,frankycpp_v1.8.exe,std::countr_zero,bit,0x14026a5b0
+std::countr_zero,0.001000,0.001000,0.0,0.0,20965000,50.0,50.0,0.0,frankycpp_v1.8.exe,std::countr_zero,bit,0x140263e50
+std::countr_zero,0.001000,0.001000,0.0,0.0,20965000,45.5,45.5,0.142857,frankycpp_v1.8.exe,std::countr_zero,bit,0x140263f70
+std::equal_to<unsigned __int64>::operator(),0.001000,0.001000,0.0,0.0,0,0.0,0.0,0.0,frankycpp_v1.8.exe,std::equal_to<unsigned __int64>::operator(),xutility,0x1402880a4
+"std::pair<std::_List_iterator<std::_List_val<std::_List_simple_types<std::pair<unsigned __int64 const ,book::BookEntry> > > >,bool>::{ctor}",0.001000,0.001000,0.0,0.0,0,0.0,0.0,0.0,frankycpp_v1.8.exe,"std::pair<std::_List_iterator<std::_List_val<std::_List_simple_types<std::pair<unsigned __int64 const ,book::BookEntry> > > >,bool>::{ctor}",utility,0x140288271
+std::popcount,0.001000,0.001000,0.0,0.0,17970000,66.7,66.7,0.333333,frankycpp_v1.8.exe,std::popcount,bit,0x14026a168
+std::popcount,0.001000,0.001000,0.0,0.0,2995000,100.0,100.0,1.000000,frankycpp_v1.8.exe,std::popcount,bit,0x14026b4bd
+std::popcount,0.001000,0.001000,0.0,0.0,2995000,0.0,0.0,1.000000,frankycpp_v1.8.exe,std::popcount,bit,0x14026303b
+"std::ranges::_Stable_sort_fn::_Stable_sort_common<chess::Move *,chess::moveValueGreaterComparator,std::identity>",0.001000,0.001000,0.0,0.0,0,0.0,0.0,0.0,frankycpp_v1.8.exe,"std::ranges::_Stable_sort_fn::_Stable_sort_common<chess::Move *,chess::moveValueGreaterComparator,std::identity>(class chess::Move *, class chess::Move *, const __int64, struct chess::moveValueGreaterComparator, struct std::identity)",algorithm,0x140233b30
+std::ranges::_Swap::_Cpo::operator(),0.001000,0.001000,0.0,0.0,2995000,20.0,20.0,1.000000,frankycpp_v1.8.exe,std::ranges::_Swap::_Cpo::operator(),concepts,0x14026445e
+std::ranges::_Swap::_Cpo::operator(),0.001000,0.001000,0.0,0.0,0,0.0,0.0,0.0,frankycpp_v1.8.exe,std::ranges::_Swap::_Cpo::operator(),concepts,0x14026451b
+"std::vector<boost::archive::detail::basic_iarchive_impl::cobject_id,std::allocator<boost::archive::detail::basic_iarchive_impl::cobject_id> >::operator[]",0.001000,0.001000,0.0,0.0,17970000,50.0,50.0,0.333333,frankycpp_v1.8.exe,"std::vector<boost::archive::detail::basic_iarchive_impl::cobject_id,std::allocator<boost::archive::detail::basic_iarchive_impl::cobject_id> >::operator[]",vector,0x1402aef70
+"std::vector<chess::Move,std::allocator<chess::Move> >::reserve",0.001000,0.001000,0.0,0.0,2995000,,,0.0,frankycpp_v1.8.exe,"std::vector<chess::Move,std::allocator<chess::Move> >::reserve",vector,0x1402902bf
+"std::vector<unsigned __int64,std::allocator<unsigned __int64> >::_Tidy",0.001000,0.001000,0.0,0.0,0,40.0,40.0,,frankycpp_v1.8.exe,"std::vector<unsigned __int64,std::allocator<unsigned __int64> >::_Tidy",vector,0x1402330a9
+"std::vector<unsigned __int64,std::allocator<unsigned __int64> >::resize",0.001000,0.001000,0.0,0.0,8985000,100.0,100.0,0.666667,frankycpp_v1.8.exe,"std::vector<unsigned __int64,std::allocator<unsigned __int64> >::resize",vector,0x1402929ac
+CcCopyReadEx,0.0,0.0,0.0,0.0,2995000,0.0,0.0,0.0,ntoskrnl.exe,CcCopyReadEx,[Unknown],0x1404d9b10
+ExAcquireCacheAwarePushLockSharedEx,0.0,0.0,0.0,0.0,2995000,0.0,0.0,0.0,ntoskrnl.exe,ExAcquireCacheAwarePushLockSharedEx,[Unknown],0x1402f09e0
+ExAcquireRundownProtectionCacheAwareEx,0.0,0.0,0.0,0.0,5990000,33.3,33.3,0.0,ntoskrnl.exe,ExAcquireRundownProtectionCacheAwareEx,[Unknown],0x140404ce0
+ExReleaseResourceLite,0.0,0.0,0.0,0.0,2995000,100.0,100.0,1.000000,ntoskrnl.exe,ExReleaseResourceLite,[Unknown],0x14025b580
+ExReleaseRundownProtectionCacheAwareEx,0.0,0.0,0.0,0.0,2995000,50.0,50.0,0.0,ntoskrnl.exe,ExReleaseRundownProtectionCacheAwareEx,[Unknown],0x14025a730
+ExpInterlockedPushEntrySList,0.0,0.0,0.0,0.0,2995000,0.0,0.0,1.000000,ntoskrnl.exe,ExpInterlockedPushEntrySList,[Unknown],0x1406b2e00
+KeAcquireSpinLockRaiseToDpc,0.0,0.0,0.0,0.0,2995000,100.0,100.0,0.0,ntoskrnl.exe,KeAcquireSpinLockRaiseToDpc,[Unknown],0x140255c50
+KeAddProcessorAffinityEx,0.0,0.0,0.0,0.0,8985000,0.0,0.0,0.333333,ntoskrnl.exe,KeAddProcessorAffinityEx,[Unknown],0x140258260
+KeEnumerateNextProcessor,0.0,0.0,0.0,0.0,14975000,40.0,40.0,0.200000,ntoskrnl.exe,KeEnumerateNextProcessor,[Unknown],0x140405530
+KeLowerIrql,0.0,0.0,0.0,0.0,0,25.0,25.0,0.0,ntoskrnl.exe,KeLowerIrql,[Unknown],0x1403f5490
+KeReleaseInStackQueuedSpinLockFromDpcLevel,0.0,0.0,0.0,0.0,0,50.0,50.0,0.0,ntoskrnl.exe,KeReleaseInStackQueuedSpinLockFromDpcLevel,[Unknown],0x14031b620
+RtlAllocateHeap,0.0,0.0,0.0,0.0,5990000,57.1,57.1,1.000000,ntdll.dll,RtlAllocateHeap,[Unknown],0x18001c240
+[Import thunk memset],0.0,0.0,0.0,0.0,2995000,0.0,0.0,0.0,frankycpp_v1.8.exe,[Import thunk memset],[Unknown],0x14061b8d4
+__builtin_array_init_helper<class chess::Value>,0.0,0.0,0.0,0.0,20965000,55.6,55.6,0.142857,frankycpp_v1.8.exe,"__builtin_array_init_helper<class chess::Value>(class chess::Value *,unsigned __int64)",[Unknown],0x14029eb80
+__builtin_array_init_helper<struct chess::HistoryState>,0.0,0.0,0.0,0.0,2995000,0.0,0.0,0.0,frankycpp_v1.8.exe,"__builtin_array_init_helper<struct chess::HistoryState>(struct chess::HistoryState *,unsigned __int64)",[Unknown],0x14025e970
+book::BookEntry::serialize,0.0,0.0,0.0,0.0,5990000,50.0,50.0,0.0,frankycpp_v1.8.exe,book::BookEntry::serialize,bookentry.h,0x14028d01b
+boost::archive::basic_binary_iarchive<boost::archive::binary_iarchive>::load_override,0.0,0.0,0.0,0.0,2995000,0.0,0.0,0.0,frankycpp_v1.8.exe,boost::archive::basic_binary_iarchive<boost::archive::binary_iarchive>::load_override,basic_binary_iarchive.hpp,0x140288c8f
+boost::archive::basic_binary_iarchive<boost::archive::binary_iarchive>::load_override,0.0,0.0,0.0,0.0,14975000,100.0,100.0,0.0,frankycpp_v1.8.exe,boost::archive::basic_binary_iarchive<boost::archive::binary_iarchive>::load_override,basic_binary_iarchive.hpp,0x140288d9f
+"boost::archive::basic_binary_iprimitive<boost::archive::binary_iarchive,char,std::char_traits<char> >::load_binary",0.0,0.0,0.0,0.0,11980000,14.3,14.3,0.0,frankycpp_v1.8.exe,"boost::archive::basic_binary_iprimitive<boost::archive::binary_iarchive,char,std::char_traits<char> >::load_binary",basic_binary_iprimitive.hpp,0x140281724
+"boost::archive::basic_binary_iprimitive<boost::archive::binary_iarchive,char,std::char_traits<char> >::load_binary",0.0,0.0,0.0,0.0,2995000,0.0,0.0,0.0,frankycpp_v1.8.exe,"boost::archive::basic_binary_iprimitive<boost::archive::binary_iarchive,char,std::char_traits<char> >::load_binary",basic_binary_iprimitive.hpp,0x140288dca
+"boost::archive::basic_binary_iprimitive<boost::archive::binary_iarchive,char,std::char_traits<char> >::load_binary",0.0,0.0,0.0,0.0,2995000,100.0,100.0,1.000000,frankycpp_v1.8.exe,"boost::archive::basic_binary_iprimitive<boost::archive::binary_iarchive,char,std::char_traits<char> >::load_binary",basic_binary_iprimitive.hpp,0x14028ee64
+boost::archive::detail::basic_iarchive_impl::load_preamble,0.0,0.0,0.0,0.0,26955000,31.8,31.8,0.666667,frankycpp_v1.8.exe,"boost::archive::detail::basic_iarchive_impl::load_preamble(class boost::archive::detail::basic_iarchive &,class boost::archive::detail::basic_iarchive_impl::cobject_id &)",basic_iarchive.cpp,0x1402af580
+boost::archive::detail::common_iarchive<boost::archive::binary_iarchive>::load_override,0.0,0.0,0.0,0.0,0,100.0,100.0,0.0,frankycpp_v1.8.exe,boost::archive::detail::common_iarchive<boost::archive::binary_iarchive>::load_override,common_iarchive.hpp,0x14028edf2
+boost::archive::detail::common_iarchive<boost::archive::binary_iarchive>::load_override,0.0,0.0,0.0,0.0,2995000,0.0,0.0,0.0,frankycpp_v1.8.exe,boost::archive::detail::common_iarchive<boost::archive::binary_iarchive>::load_override,common_iarchive.hpp,0x14028170b
+boost::archive::detail::common_iarchive<boost::archive::binary_iarchive>::load_override,0.0,0.0,0.0,0.0,8985000,0.0,0.0,0.0,frankycpp_v1.8.exe,boost::archive::detail::common_iarchive<boost::archive::binary_iarchive>::load_override,common_iarchive.hpp,0x14028c062
+boost::archive::detail::common_iarchive<boost::archive::binary_iarchive>::load_override,0.0,0.0,0.0,0.0,2995000,0.0,0.0,0.0,frankycpp_v1.8.exe,boost::archive::detail::common_iarchive<boost::archive::binary_iarchive>::load_override,common_iarchive.hpp,0x14028ee50
+boost::archive::detail::common_iarchive<boost::archive::binary_iarchive>::load_override,0.0,0.0,0.0,0.0,2995000,0.0,0.0,0.0,frankycpp_v1.8.exe,boost::archive::detail::common_iarchive<boost::archive::binary_iarchive>::load_override,common_iarchive.hpp,0x1402893c2
+boost::archive::detail::common_iarchive<boost::archive::binary_iarchive>::load_override,0.0,0.0,0.0,0.0,2995000,,,0.0,frankycpp_v1.8.exe,boost::archive::detail::common_iarchive<boost::archive::binary_iarchive>::load_override,common_iarchive.hpp,0x14028eda2
+boost::archive::detail::interface_iarchive<boost::archive::binary_iarchive>::This,0.0,0.0,0.0,0.0,2995000,0.0,0.0,1.000000,frankycpp_v1.8.exe,boost::archive::detail::interface_iarchive<boost::archive::binary_iarchive>::This,interface_iarchive.hpp,0x140288cbb
+boost::archive::detail::interface_iarchive<boost::archive::binary_iarchive>::operator&,0.0,0.0,0.0,0.0,2995000,100.0,100.0,0.0,frankycpp_v1.8.exe,boost::archive::detail::interface_iarchive<boost::archive::binary_iarchive>::operator&,interface_iarchive.hpp,0x140294d6c
+boost::archive::detail::interface_iarchive<class boost::archive::binary_iarchive>::operator>><unsigned int>,0.0,0.0,0.0,0.0,2995000,0.0,0.0,0.0,frankycpp_v1.8.exe,boost::archive::detail::interface_iarchive<class boost::archive::binary_iarchive>::operator>><unsigned int>(unsigned int &),interface_iarchive.hpp,0x1402816f0
+"boost::archive::detail::iserializer<class boost::archive::binary_iarchive,class book::BookEntry>::load_object_data",0.0,0.0,0.0,0.0,8985000,100.0,100.0,0.333333,frankycpp_v1.8.exe,"boost::archive::detail::iserializer<class boost::archive::binary_iarchive,class book::BookEntry>::load_object_data(class boost::archive::detail::basic_iarchive &,void *,unsigned int)",iserializer.hpp,0x14028cfd0
+"boost::archive::detail::iserializer<class boost::archive::binary_iarchive,class chess::Move>::load_object_data",0.0,0.0,0.0,0.0,8985000,100.0,100.0,0.333333,frankycpp_v1.8.exe,"boost::archive::detail::iserializer<class boost::archive::binary_iarchive,class chess::Move>::load_object_data(class boost::archive::detail::basic_iarchive &,void *,unsigned int)",iserializer.hpp,0x140294590
+"boost::archive::detail::iserializer<class boost::archive::binary_iarchive,class std::vector<class chess::Move,class std::allocator<class chess::Move> > >::load_object_data",0.0,0.0,0.0,0.0,2995000,0.0,0.0,1.000000,frankycpp_v1.8.exe,"boost::archive::detail::iserializer<class boost::archive::binary_iarchive,class std::vector<class chess::Move,class std::allocator<class chess::Move> > >::load_object_data(class boost::archive::detail::basic_iarchive &,void *,unsigned int)",iserializer.hpp,0x1402901e0
+"boost::archive::detail::iserializer<class boost::archive::binary_iarchive,struct std::pair<unsigned __int64 const ,class book::BookEntry> >::load_object_data",0.0,0.0,0.0,0.0,14975000,50.0,50.0,0.200000,frankycpp_v1.8.exe,"boost::archive::detail::iserializer<class boost::archive::binary_iarchive,struct std::pair<unsigned __int64 const ,class book::BookEntry> >::load_object_data(class boost::archive::detail::basic_iarchive &,void *,unsigned int)",iserializer.hpp,0x14028ace0
+boost::archive::detail::load_non_pointer_type<boost::archive::binary_iarchive>::load_standard::invoke,0.0,0.0,0.0,0.0,0,50.0,50.0,0.0,frankycpp_v1.8.exe,boost::archive::detail::load_non_pointer_type<boost::archive::binary_iarchive>::load_standard::invoke,iserializer.hpp,0x140294036
+boost::archive::detail::load_non_pointer_type<boost::archive::binary_iarchive>::load_standard::invoke,0.0,0.0,0.0,0.0,0,100.0,100.0,0.0,frankycpp_v1.8.exe,boost::archive::detail::load_non_pointer_type<boost::archive::binary_iarchive>::load_standard::invoke,iserializer.hpp,0x14028edb6
+boost::archive::object_id_type::operator=,0.0,0.0,0.0,0.0,8985000,,,0.333333,frankycpp_v1.8.exe,boost::archive::object_id_type::operator=,basic_archive.hpp,0x1402af057
+boost::archive::object_id_type::operator=,0.0,0.0,0.0,0.0,11980000,50.0,50.0,0.500000,frankycpp_v1.8.exe,boost::archive::object_id_type::operator=,basic_archive.hpp,0x1402aeee0
+boost::archive::version_type::{ctor},0.0,0.0,0.0,0.0,2995000,50.0,50.0,1.000000,frankycpp_v1.8.exe,boost::archive::version_type::{ctor},basic_archive.hpp,0x14028d150
+boost::archive::version_type::{ctor},0.0,0.0,0.0,0.0,8985000,50.0,50.0,0.0,frankycpp_v1.8.exe,boost::archive::version_type::{ctor},basic_archive.hpp,0x14028ae10
+boost::serialization::extended_type_info::operator<,0.0,0.0,0.0,0.0,23960000,80.0,80.0,0.375000,frankycpp_v1.8.exe,boost::serialization::extended_type_info::operator<(class boost::serialization::extended_type_info const &),extended_type_info.cpp,0x1402ba150
+"boost::serialization::free_loader<boost::archive::binary_iarchive,boost::serialization::nvp<book::BookEntry> >::invoke",0.0,0.0,0.0,0.0,2995000,0.0,0.0,0.0,frankycpp_v1.8.exe,"boost::serialization::free_loader<boost::archive::binary_iarchive,boost::serialization::nvp<book::BookEntry> >::invoke",split_free.hpp,0x14028ad72
+"boost::serialization::free_loader<boost::archive::binary_iarchive,boost::serialization::nvp<boost::serialization::collection_size_type> >::invoke",0.0,0.0,0.0,0.0,5990000,0.0,0.0,0.0,frankycpp_v1.8.exe,"boost::serialization::free_loader<boost::archive::binary_iarchive,boost::serialization::nvp<boost::serialization::collection_size_type> >::invoke",split_free.hpp,0x140290269
+"boost::serialization::free_loader<boost::archive::binary_iarchive,boost::serialization::nvp<boost::serialization::collection_size_type> >::invoke",0.0,0.0,0.0,0.0,2995000,,,0.0,frankycpp_v1.8.exe,"boost::serialization::free_loader<boost::archive::binary_iarchive,boost::serialization::nvp<boost::serialization::collection_size_type> >::invoke",split_free.hpp,0x1402929a3
+"boost::serialization::free_loader<boost::archive::binary_iarchive,chess::Move>::invoke",0.0,0.0,0.0,0.0,5990000,0.0,0.0,0.0,frankycpp_v1.8.exe,"boost::serialization::free_loader<boost::archive::binary_iarchive,chess::Move>::invoke",split_free.hpp,0x140294920
+boost::serialization::load,0.0,0.0,0.0,0.0,5990000,50.0,50.0,0.0,frankycpp_v1.8.exe,boost::serialization::load,vector.hpp,0x14029022a
+"boost::serialization::load<class boost::archive::binary_iarchive,class book::BookEntry>",0.0,0.0,0.0,0.0,2995000,100.0,100.0,0.0,frankycpp_v1.8.exe,"boost::serialization::load<class boost::archive::binary_iarchive,class book::BookEntry>(class boost::archive::binary_iarchive &,class boost::serialization::nvp<class book::BookEntry> &,unsigned int)",nvp.hpp,0x14028c050
+"boost::serialization::load<class boost::archive::binary_iarchive,class boost::serialization::collection_size_type>",0.0,0.0,0.0,0.0,14975000,80.0,80.0,0.0,frankycpp_v1.8.exe,"boost::serialization::load<class boost::archive::binary_iarchive,class boost::serialization::collection_size_type>(class boost::archive::binary_iarchive &,class boost::serialization::nvp<class boost::serialization::collection_size_type> &,unsigned int)",nvp.hpp,0x140288d70
+"boost::serialization::load<class boost::archive::binary_iarchive,class boost::serialization::item_version_type>",0.0,0.0,0.0,0.0,5990000,33.3,33.3,0.500000,frankycpp_v1.8.exe,"boost::serialization::load<class boost::archive::binary_iarchive,class boost::serialization::item_version_type>(class boost::archive::binary_iarchive &,class boost::serialization::nvp<class boost::serialization::item_version_type> &,unsigned int)",nvp.hpp,0x140288c60
+"boost::serialization::load<class boost::archive::binary_iarchive,class std::vector<unsigned __int64,class std::allocator<unsigned __int64> > >",0.0,0.0,0.0,0.0,0,100.0,100.0,0.0,frankycpp_v1.8.exe,"boost::serialization::load<class boost::archive::binary_iarchive,class std::vector<unsigned __int64,class std::allocator<unsigned __int64> > >(class boost::archive::binary_iarchive &,class boost::serialization::nvp<class std::vector<unsigned __int64,class std::allocator<unsigned __int64> > > &,unsigned int)",nvp.hpp,0x14028ed90
+"boost::serialization::load<class boost::archive::binary_iarchive,unsigned __int64,class std::allocator<unsigned __int64> >",0.0,0.0,0.0,0.0,20965000,50.0,50.0,0.0,frankycpp_v1.8.exe,"boost::serialization::load<class boost::archive::binary_iarchive,unsigned __int64,class std::allocator<unsigned __int64> >(class boost::archive::binary_iarchive &,class std::vector<unsigned __int64,class std::allocator<unsigned __int64> > &,unsigned int,struct boost::mpl::bool_<1>)",vector.hpp,0x140292940
+"boost::serialization::load<class boost::archive::binary_iarchive,unsigned __int64>",0.0,0.0,0.0,0.0,8985000,0.0,0.0,0.0,frankycpp_v1.8.exe,"boost::serialization::load<class boost::archive::binary_iarchive,unsigned __int64>(class boost::archive::binary_iarchive &,class boost::serialization::nvp<unsigned __int64> &,unsigned int)",nvp.hpp,0x14028c0a0
+"boost::serialization::load<class boost::archive::binary_iarchive,unsigned int>",0.0,0.0,0.0,0.0,2995000,50.0,50.0,0.0,frankycpp_v1.8.exe,"boost::serialization::load<class boost::archive::binary_iarchive,unsigned int>(class boost::archive::binary_iarchive &,class boost::serialization::nvp<unsigned int> &,unsigned int)",nvp.hpp,0x140294000
+boost::serialization::nvp<boost::serialization::collection_size_type>::{ctor},0.0,0.0,0.0,0.0,2995000,0.0,0.0,0.0,frankycpp_v1.8.exe,boost::serialization::nvp<boost::serialization::collection_size_type>::{ctor},nvp.hpp,0x14029297c
+boost::serialization::nvp<boost::serialization::item_version_type>::{ctor},0.0,0.0,0.0,0.0,2995000,0.0,0.0,0.0,frankycpp_v1.8.exe,boost::serialization::nvp<boost::serialization::item_version_type>::{ctor},nvp.hpp,0x140290286
+"boost::serialization::singleton<boost::archive::detail::iserializer<boost::archive::binary_iarchive,std::vector<unsigned __int64,std::allocator<unsigned __int64> > > >::get_const_instance",0.0,0.0,0.0,0.0,2995000,0.0,0.0,0.0,frankycpp_v1.8.exe,"boost::serialization::singleton<boost::archive::detail::iserializer<boost::archive::binary_iarchive,std::vector<unsigned __int64,std::allocator<unsigned __int64> > > >::get_const_instance",singleton.hpp,0x14028edb6
+"boost::serialization::singleton<class boost::archive::detail::iserializer<class boost::archive::binary_iarchive,class book::BookEntry> >::get_instance",0.0,0.0,0.0,0.0,5990000,100.0,100.0,0.0,frankycpp_v1.8.exe,"boost::serialization::singleton<class boost::archive::detail::iserializer<class boost::archive::binary_iarchive,class book::BookEntry> >::get_instance(void)",singleton.hpp,0x14028d5c0
+"boost::serialization::singleton<class boost::archive::detail::iserializer<class boost::archive::binary_iarchive,class chess::Move> >::get_instance",0.0,0.0,0.0,0.0,5990000,0.0,0.0,0.500000,frankycpp_v1.8.exe,"boost::serialization::singleton<class boost::archive::detail::iserializer<class boost::archive::binary_iarchive,class chess::Move> >::get_instance(void)",singleton.hpp,0x140294890
+"boost::serialization::stl::collection_load_impl<class boost::archive::binary_iarchive,class std::vector<class chess::Move,class std::allocator<class chess::Move> > >",0.0,0.0,0.0,0.0,8985000,75.0,75.0,0.0,frankycpp_v1.8.exe,"boost::serialization::stl::collection_load_impl<class boost::archive::binary_iarchive,class std::vector<class chess::Move,class std::allocator<class chess::Move> > >(class boost::archive::binary_iarchive &,class std::vector<class chess::Move,class std::allocator<class chess::Move> > &,class boost::serialization::collection_size_type,class boost::serialization::item_version_type)",collections_load_imp.hpp,0x140292740
+"boost::serialization::stl::load_unordered_collection<class boost::archive::binary_iarchive,class std::unordered_map<unsigned __int64,class book::BookEntry,struct std::hash<unsigned __int64>,struct std::equal_to<unsigned __int64>,class std::allocator<struct std::pair<unsigned __int64 const ,class book::BookEntry> > >,struct boost::serialization::stl::archive_input_unordered_map<class boost::archive::binary_iarchive,class std::unordered_map<unsigned __int64,class book::BookEntry,struct std::hash<unsigned __int64>,struct std::equal_to<unsigned __int64>,class std::allocator<struct std::pair<unsigned __int64 const ,class book::BookEntry> > > > >",0.0,0.0,0.0,0.0,0,33.3,33.3,0.0,frankycpp_v1.8.exe,"boost::serialization::stl::load_unordered_collection<class boost::archive::binary_iarchive,class std::unordered_map<unsigned __int64,class book::BookEntry,struct std::hash<unsigned __int64>,struct std::equal_to<unsigned __int64>,class std::allocator<struct std::pair<unsigned __int64 const ,class book::BookEntry> > >,struct boost::serialization::stl::archive_input_unordered_map<class boost::archive::binary_iarchive,class std::unordered_map<unsigned __int64,class book::BookEntry,struct std::hash<unsigned __int64>,struct std::equal_to<unsigned __int64>,class std::allocator<struct std::pair<unsigned __int64 const ,class book::BookEntry> > > > >(class boost::archive::binary_iarchive &,class std::unordered_map<unsigned __int64,class book::BookEntry,struct std::hash<unsigned __int64>,struct std::equal_to<unsigned __int64>,class std::allocator<struct std::pair<unsigned __int64 const ,class book::BookEntry> > > &)",unordered_collections_load_imp.hpp,0x140287420
+chess::Attacks::detail::Magic::index,0.0,0.0,0.0,0.0,2995000,,,0.0,frankycpp_v1.8.exe,chess::Attacks::detail::Magic::index,attacks.h,0x14016c964
+chess::Bitboard::lsb,0.0,0.0,0.0,0.0,2995000,0.0,0.0,2.000000,frankycpp_v1.8.exe,chess::Bitboard::lsb,bitboard.h,0x14026304a
+chess::Bitboard::operator bool,0.0,0.0,0.0,0.0,2995000,100.0,100.0,1.000000,frankycpp_v1.8.exe,chess::Bitboard::operator bool,bitboard.h,0x140269a25
+chess::Bitboard::operator bool,0.0,0.0,0.0,0.0,5990000,,,1.500000,frankycpp_v1.8.exe,chess::Bitboard::operator bool,bitboard.h,0x140269a64
+chess::Bitboard::operator bool,0.0,0.0,0.0,0.0,32945000,50.0,50.0,0.181818,frankycpp_v1.8.exe,chess::Bitboard::operator bool,bitboard.h,0x140263a12
+chess::Bitboard::operator bool,0.0,0.0,0.0,0.0,26955000,54.5,54.5,0.555556,frankycpp_v1.8.exe,chess::Bitboard::operator bool,bitboard.h,0x140269f78
+chess::Bitboard::operator bool,0.0,0.0,0.0,0.0,14975000,16.0,16.0,1.000000,frankycpp_v1.8.exe,chess::Bitboard::operator bool,bitboard.h,0x14026a217
+chess::Bitboard::operator|=,0.0,0.0,0.0,0.0,14975000,27.3,27.3,0.0,frankycpp_v1.8.exe,chess::Bitboard::operator|=,bitboard.h,0x140269a55
+chess::Bitboard::operator|=,0.0,0.0,0.0,0.0,50915000,64.7,64.7,0.235294,frankycpp_v1.8.exe,chess::Bitboard::operator|=,bitboard.h,0x14029e823
+chess::Bitboard::operator|=,0.0,0.0,0.0,0.0,14975000,0.0,0.0,0.400000,frankycpp_v1.8.exe,chess::Bitboard::operator|=,bitboard.h,0x14026a0a8
+chess::Bitboard::operator|=,0.0,0.0,0.0,0.0,5990000,0.0,0.0,0.500000,frankycpp_v1.8.exe,chess::Bitboard::operator|=,bitboard.h,0x140263066
+chess::Bitboard::popLSB,0.0,0.0,0.0,0.0,2995000,100.0,100.0,0.0,frankycpp_v1.8.exe,chess::Bitboard::popLSB,bitboard.h,0x14026b030
+chess::Bitboard::popLSB,0.0,0.0,0.0,0.0,17970000,14.3,14.3,0.0,frankycpp_v1.8.exe,chess::Bitboard::popLSB,bitboard.h,0x140263dda
+chess::Bitboard::popLSB,0.0,0.0,0.0,0.0,2995000,0.0,0.0,0.0,frankycpp_v1.8.exe,chess::Bitboard::popLSB,bitboard.h,0x14026b080
+chess::Bitboard::popLSB,0.0,0.0,0.0,0.0,0,57.1,57.1,,frankycpp_v1.8.exe,chess::Bitboard::popLSB,bitboard.h,0x14026ab97
+chess::Bitboard::popLSB,0.0,0.0,0.0,0.0,5990000,0.0,0.0,0.500000,frankycpp_v1.8.exe,chess::Bitboard::popLSB,bitboard.h,0x14026a3b1
+chess::Bitboard::popLSB,0.0,0.0,0.0,0.0,11980000,62.5,62.5,1.000000,frankycpp_v1.8.exe,chess::Bitboard::popLSB,bitboard.h,0x140263f70
+chess::Bitboard::popLSB,0.0,0.0,0.0,0.0,2995000,0.0,0.0,0.0,frankycpp_v1.8.exe,chess::Bitboard::popLSB,bitboard.h,0x140269a30
+chess::Bitboard::{ctor},0.0,0.0,0.0,0.0,26955000,56.5,56.5,0.555556,frankycpp_v1.8.exe,chess::Bitboard::{ctor},bitboard.h,0x14025c462
+chess::Bitboard::{ctor},0.0,0.0,0.0,0.0,0,16.7,16.7,,frankycpp_v1.8.exe,chess::Bitboard::{ctor},bitboard.h,0x1402637ef
+chess::Bitboard::{ctor},0.0,0.0,0.0,0.0,20965000,47.6,47.6,0.571429,frankycpp_v1.8.exe,chess::Bitboard::{ctor},bitboard.h,0x14026ab03
+chess::Bitboard::{ctor},0.0,0.0,0.0,0.0,14975000,17.4,17.4,0.200000,frankycpp_v1.8.exe,chess::Bitboard::{ctor},bitboard.h,0x14029ea8c
+chess::CastlingRights::isEmpty,0.0,0.0,0.0,0.0,2995000,,,1.000000,frankycpp_v1.8.exe,chess::CastlingRights::isEmpty,castlingrights.h,0x14025bc37
+chess::CastlingRights::isEmpty,0.0,0.0,0.0,0.0,0,50.0,50.0,,frankycpp_v1.8.exe,chess::CastlingRights::isEmpty,castlingrights.h,0x14025bcd3
+chess::CastlingRights::operator-=,0.0,0.0,0.0,0.0,0,50.0,50.0,0.0,frankycpp_v1.8.exe,chess::CastlingRights::operator-=,castlingrights.h,0x14025bc66
+chess::Color::iterator::{ctor},0.0,0.0,0.0,0.0,0,100.0,100.0,0.0,frankycpp_v1.8.exe,chess::Color::iterator::{ctor},color.h,0x140269f21
+chess::Direction::operator int,0.0,0.0,0.0,0.0,5990000,10.0,10.0,1.000000,frankycpp_v1.8.exe,chess::Direction::operator int,direction.h,0x14026319d
+chess::Direction::pawnPush,0.0,0.0,0.0,0.0,2995000,0.0,0.0,1.000000,frankycpp_v1.8.exe,chess::Direction::pawnPush,direction.h,0x140263793
+chess::Direction::pawnPush,0.0,0.0,0.0,0.0,2995000,0.0,0.0,0.0,frankycpp_v1.8.exe,chess::Direction::pawnPush,direction.h,0x1402634f8
+chess::Direction::pawnPush,0.0,0.0,0.0,0.0,8985000,16.7,16.7,0.666667,frankycpp_v1.8.exe,chess::Direction::pawnPush,direction.h,0x140263144
+chess::Move::encode,0.0,0.0,0.0,0.0,11980000,15.0,15.0,1.000000,frankycpp_v1.8.exe,chess::Move::encode,move.h,0x140263fa1
+chess::Move::encode,0.0,0.0,0.0,0.0,2995000,,,0.0,frankycpp_v1.8.exe,chess::Move::encode,move.h,0x14026336a
+chess::Move::operator==,0.0,0.0,0.0,0.0,2995000,0.0,0.0,1.000000,frankycpp_v1.8.exe,chess::Move::operator==,PVTable.h,0x140220503
+chess::Move::operator==,0.0,0.0,0.0,0.0,26955000,41.7,41.7,0.222222,frankycpp_v1.8.exe,chess::Move::operator==,PVTable.h,0x140220508
+chess::Move::operator==,0.0,0.0,0.0,0.0,32945000,,,0.454545,frankycpp_v1.8.exe,chess::Move::operator==,PVTable.h,0x140262ee9
+chess::Move::operator==,0.0,0.0,0.0,0.0,2995000,0.0,0.0,0.0,frankycpp_v1.8.exe,chess::Move::operator==,PVTable.h,0x140260fc3
+chess::Move::stripped,0.0,0.0,0.0,0.0,5990000,0.0,0.0,0.0,frankycpp_v1.8.exe,chess::Move::stripped,move.h,0x140260fc0
+chess::Move::to,0.0,0.0,0.0,0.0,2995000,100.0,100.0,0.0,frankycpp_v1.8.exe,chess::Move::to,move.h,0x1402209d0
+chess::Move::to,0.0,0.0,0.0,0.0,5990000,0.0,0.0,0.0,frankycpp_v1.8.exe,chess::Move::to,move.h,0x1402208df
+chess::Move::to,0.0,0.0,0.0,0.0,23960000,28.6,28.6,0.375000,frankycpp_v1.8.exe,chess::Move::to,move.h,0x14029e6bf
+chess::Move::to,0.0,0.0,0.0,0.0,11980000,18.2,18.2,0.500000,frankycpp_v1.8.exe,chess::Move::to,move.h,0x1402610a2
+chess::Move::type,0.0,0.0,0.0,0.0,0,50.0,50.0,,frankycpp_v1.8.exe,chess::Move::type,move.h,0x1402209e9
+chess::Move::type,0.0,0.0,0.0,0.0,14975000,100.0,100.0,0.400000,frankycpp_v1.8.exe,chess::Move::type,move.h,0x1402208fc
+chess::Move::type,0.0,0.0,0.0,0.0,2995000,0.0,0.0,3.000000,frankycpp_v1.8.exe,chess::Move::type,move.h,0x140261113
+chess::Move::type,0.0,0.0,0.0,0.0,41930000,33.3,33.3,0.285714,frankycpp_v1.8.exe,chess::Move::type,move.h,0x140220250
+chess::Move::{ctor},0.0,0.0,0.0,0.0,2995000,100.0,100.0,1.000000,frankycpp_v1.8.exe,chess::Move::{ctor},move.h,0x1402639c3
+chess::Move::{ctor},0.0,0.0,0.0,0.0,0,100.0,100.0,0.0,frankycpp_v1.8.exe,chess::Move::{ctor},move.h,0x14026370d
+chess::Move::{ctor},0.0,0.0,0.0,0.0,2995000,,,0.0,frankycpp_v1.8.exe,chess::Move::{ctor},move.h,0x1401a06b0
+chess::MoveGenerator::generateLegalMoves,0.0,0.0,0.0,0.0,2995000,,,0.0,frankycpp_v1.8.exe,"chess::MoveGenerator::generateLegalMoves(class chess::Position const &,enum chess::GenMode)",MoveGenerator.cpp,0x140260d40
+chess::Position::clearEnPassant,0.0,0.0,0.0,0.0,5990000,0.0,0.0,0.500000,frankycpp_v1.8.exe,chess::Position::clearEnPassant,Position.cpp,0x14025bc83
+chess::Position::getEnPassantSquare,0.0,0.0,0.0,0.0,2995000,0.0,0.0,0.0,frankycpp_v1.8.exe,chess::Position::getEnPassantSquare,Position.h,0x1402634d2
+chess::Position::getKingSquare,0.0,0.0,0.0,0.0,2995000,100.0,100.0,0.0,frankycpp_v1.8.exe,chess::Position::getKingSquare,Position.h,0x14026a666
+chess::Position::getKingSquare,0.0,0.0,0.0,0.0,41930000,71.4,71.4,0.571429,frankycpp_v1.8.exe,chess::Position::getKingSquare,Position.h,0x14026a48f
+chess::Position::getLastMove,0.0,0.0,0.0,0.0,2995000,25.0,25.0,1.000000,frankycpp_v1.8.exe,chess::Position::getLastMove,Position.h,0x140220a8f
+chess::Position::getNextPlayer,0.0,0.0,0.0,0.0,5990000,50.0,50.0,1.500000,frankycpp_v1.8.exe,chess::Position::getNextPlayer,Position.h,0x1402630c3
+chess::Position::getNextPlayer,0.0,0.0,0.0,0.0,2995000,100.0,100.0,0.0,frankycpp_v1.8.exe,chess::Position::getNextPlayer,Position.h,0x140263af9
+chess::Position::getOccupiedBb,0.0,0.0,0.0,0.0,38935000,11.1,11.1,0.384615,frankycpp_v1.8.exe,chess::Position::getOccupiedBb,Position.h,0x14026b3e5
+chess::Position::getPiece,0.0,0.0,0.0,0.0,2995000,,,0.0,frankycpp_v1.8.exe,chess::Position::getPiece,Position.h,0x14025d72a
+chess::Position::getPiece,0.0,0.0,0.0,0.0,2995000,0.0,0.0,0.0,frankycpp_v1.8.exe,chess::Position::getPiece,Position.h,0x140263058
+chess::Position::getPiece,0.0,0.0,0.0,0.0,5990000,100.0,100.0,0.500000,frankycpp_v1.8.exe,chess::Position::getPiece,Position.h,0x14029e6ba
+chess::Position::getPieceBb,0.0,0.0,0.0,0.0,2995000,100.0,100.0,0.0,frankycpp_v1.8.exe,chess::Position::getPieceBb,Position.h,0x140269a5d
+chess::Position::getPieceBb,0.0,0.0,0.0,0.0,5990000,40.0,40.0,1.500000,frankycpp_v1.8.exe,chess::Position::getPieceBb,Position.h,0x14026aa7d
+chess::Position::getPieceBb,0.0,0.0,0.0,0.0,14975000,20.0,20.0,0.400000,frankycpp_v1.8.exe,chess::Position::getPieceBb,Position.h,0x14026adae
+chess::Position::getPieceBb,0.0,0.0,0.0,0.0,5990000,100.0,100.0,0.0,frankycpp_v1.8.exe,chess::Position::getPieceBb,Position.h,0x1402699f5
+chess::Position::getPieceBb,0.0,0.0,0.0,0.0,11980000,0.0,0.0,0.250000,frankycpp_v1.8.exe,chess::Position::getPieceBb,Position.h,0x14026a7e7
+chess::Position::getPieceBb,0.0,0.0,0.0,0.0,5990000,0.0,0.0,0.0,frankycpp_v1.8.exe,chess::Position::getPieceBb,Position.h,0x140269f50
+chess::Position::isCapturingMove,0.0,0.0,0.0,0.0,2995000,0.0,0.0,1.000000,frankycpp_v1.8.exe,chess::Position::isCapturingMove,Position.h,0x1402215c2
+chess::Position::isCapturingMove,0.0,0.0,0.0,0.0,2995000,60.0,60.0,0.0,frankycpp_v1.8.exe,chess::Position::isCapturingMove,Position.h,0x1402208d0
+chess::Rank::operator int,0.0,0.0,0.0,0.0,2995000,0.0,0.0,0.0,frankycpp_v1.8.exe,chess::Rank::operator int,rank.h,0x1402612fa
+chess::Rank::operator int,0.0,0.0,0.0,0.0,0,50.0,50.0,0.0,frankycpp_v1.8.exe,chess::Rank::operator int,rank.h,0x14026123c
+chess::Square::file,0.0,0.0,0.0,0.0,8985000,100.0,100.0,1.000000,frankycpp_v1.8.exe,chess::Square::file,square.h,0x14025bd25
+chess::Square::file,0.0,0.0,0.0,0.0,2995000,20.0,20.0,2.000000,frankycpp_v1.8.exe,chess::Square::file,square.h,0x14025bd93
+chess::Square::isValid,0.0,0.0,0.0,0.0,0,100.0,100.0,0.0,frankycpp_v1.8.exe,chess::Square::isValid,square.h,0x14016c6e1
+chess::Square::pawnPush,0.0,0.0,0.0,0.0,2995000,0.0,0.0,0.0,frankycpp_v1.8.exe,chess::Square::pawnPush,square.h,0x14025bbc1
+chess::Square::rank,0.0,0.0,0.0,0.0,8985000,100.0,100.0,0.333333,frankycpp_v1.8.exe,chess::Square::rank,square.h,0x14026a797
+chess::Square::rank,0.0,0.0,0.0,0.0,20965000,33.3,33.3,1.428571,frankycpp_v1.8.exe,chess::Square::rank,square.h,0x14026aac5
+chess::StaticMoveList<128>::pop_back,0.0,0.0,0.0,0.0,2995000,0.0,0.0,0.0,frankycpp_v1.8.exe,chess::StaticMoveList<128>::pop_back,staticmovelist.h,0x14021f0cc
+chess::StaticMoveList<256>::push_back,0.0,0.0,0.0,0.0,5990000,100.0,100.0,1.000000,frankycpp_v1.8.exe,chess::StaticMoveList<256>::push_back,staticmovelist.h,0x1402632cf
+chess::StaticMoveList<256>::push_back,0.0,0.0,0.0,0.0,2995000,50.0,50.0,0.0,frankycpp_v1.8.exe,chess::StaticMoveList<256>::push_back,staticmovelist.h,0x1402640d3
+chess::StaticMoveList<256>::push_back,0.0,0.0,0.0,0.0,2995000,0.0,0.0,0.0,frankycpp_v1.8.exe,chess::StaticMoveList<256>::push_back,staticmovelist.h,0x140263718
+chess::StaticMoveList<256>::push_back,0.0,0.0,0.0,0.0,2995000,0.0,0.0,0.0,frankycpp_v1.8.exe,chess::StaticMoveList<256>::push_back,staticmovelist.h,0x140263327
+chess::StaticMoveList<256>::push_back,0.0,0.0,0.0,0.0,0,100.0,100.0,,frankycpp_v1.8.exe,chess::StaticMoveList<256>::push_back,staticmovelist.h,0x140264132
+chess::Value::isValid,0.0,0.0,0.0,0.0,5990000,0.0,0.0,0.500000,frankycpp_v1.8.exe,chess::Value::isValid,value.h,0x140220edc
+chess::Value::isValid,0.0,0.0,0.0,0.0,0,100.0,100.0,0.0,frankycpp_v1.8.exe,chess::Value::isValid,value.h,0x14021f4f7
+chess::Value::operator int,0.0,0.0,0.0,0.0,2995000,12.5,12.5,0.0,frankycpp_v1.8.exe,chess::Value::operator int,value.h,0x140220edc
+chess::Value::operator int,0.0,0.0,0.0,0.0,2995000,0.0,0.0,0.0,frankycpp_v1.8.exe,chess::Value::operator int,value.h,0x140220115
+chess::Value::operator int,0.0,0.0,0.0,0.0,44925000,45.5,45.5,0.200000,frankycpp_v1.8.exe,chess::Value::operator int,value.h,0x14025d6d5
+chess::Value::operator int,0.0,0.0,0.0,0.0,14975000,25.0,25.0,0.200000,frankycpp_v1.8.exe,chess::Value::operator int,value.h,0x14025d7d5
+chess::Value::{ctor},0.0,0.0,0.0,0.0,2995000,0.0,0.0,0.0,frankycpp_v1.8.exe,chess::Value::{ctor},value.h,0x140220b1f
+chess::operator&,0.0,0.0,0.0,0.0,2995000,0.0,0.0,0.0,frankycpp_v1.8.exe,chess::operator&,bitboard.h,0x1402209d7
+chess::operator&,0.0,0.0,0.0,0.0,2995000,0.0,0.0,0.0,frankycpp_v1.8.exe,chess::operator&,bitboard.h,0x1402640ab
+chess::operator&,0.0,0.0,0.0,0.0,8985000,45.5,45.5,0.666667,frankycpp_v1.8.exe,chess::operator&,bitboard.h,0x1402215e5
+chess::operator&,0.0,0.0,0.0,0.0,2995000,50.0,50.0,0.0,frankycpp_v1.8.exe,chess::operator&,bitboard.h,0x14026a057
+chess::operator&,0.0,0.0,0.0,0.0,2995000,0.0,0.0,0.0,frankycpp_v1.8.exe,chess::operator&,bitboard.h,0x14026b24c
+chess::operator&,0.0,0.0,0.0,0.0,8985000,100.0,100.0,0.333333,frankycpp_v1.8.exe,chess::operator&,bitboard.h,0x14026a66c
+chess::operator&,0.0,0.0,0.0,0.0,38935000,100.0,100.0,0.0,frankycpp_v1.8.exe,chess::operator&,bitboard.h,0x14029e936
+chess::operator&,0.0,0.0,0.0,0.0,47920000,39.5,39.5,0.375000,frankycpp_v1.8.exe,chess::operator&,bitboard.h,0x14026a088
+chess::operator&,0.0,0.0,0.0,0.0,2995000,0.0,0.0,1.000000,frankycpp_v1.8.exe,chess::operator&,bitboard.h,0x140262c04
+chess::operator&,0.0,0.0,0.0,0.0,38935000,54.5,54.5,0.384615,frankycpp_v1.8.exe,chess::operator&,bitboard.h,0x14029ea59
+chess::operator&,0.0,0.0,0.0,0.0,2995000,0.0,0.0,1.000000,frankycpp_v1.8.exe,chess::operator&,bitboard.h,0x14025c6a1
+chess::operator&,0.0,0.0,0.0,0.0,2995000,0.0,0.0,1.000000,frankycpp_v1.8.exe,chess::operator&,bitboard.h,0x14029ea80
+chess::operator&,0.0,0.0,0.0,0.0,2995000,0.0,0.0,0.0,frankycpp_v1.8.exe,chess::operator&,bitboard.h,0x140269fc9
+chess::operator&,0.0,0.0,0.0,0.0,2995000,0.0,0.0,1.000000,frankycpp_v1.8.exe,chess::operator&,bitboard.h,0x140261370
+chess::operator&,0.0,0.0,0.0,0.0,5990000,25.0,25.0,0.500000,frankycpp_v1.8.exe,chess::operator&,bitboard.h,0x14029ea9e
+chess::operator&,0.0,0.0,0.0,0.0,11980000,50.0,50.0,0.0,frankycpp_v1.8.exe,chess::operator&,bitboard.h,0x14026a7eb
+chess::operator&,0.0,0.0,0.0,0.0,11980000,80.0,80.0,0.250000,frankycpp_v1.8.exe,chess::operator&,bitboard.h,0x140263974
+chess::operator*,0.0,0.0,0.0,0.0,8985000,50.0,50.0,0.333333,frankycpp_v1.8.exe,chess::operator*,direction.h,0x1402638d8
+chess::operator+,0.0,0.0,0.0,0.0,5990000,,,0.0,frankycpp_v1.8.exe,chess::operator+,direction.h,0x14016c6f0
+chess::operator+,0.0,0.0,0.0,0.0,2995000,0.0,0.0,0.0,frankycpp_v1.8.exe,chess::operator+,direction.h,0x140263533
+chess::operator+,0.0,0.0,0.0,0.0,2995000,0.0,0.0,0.0,frankycpp_v1.8.exe,chess::operator+,value.h,0x14021fbd2
+chess::operator+,0.0,0.0,0.0,0.0,5990000,44.4,44.4,1.000000,frankycpp_v1.8.exe,chess::operator+,direction.h,0x14025c316
+chess::operator+,0.0,0.0,0.0,0.0,2995000,0.0,0.0,0.0,frankycpp_v1.8.exe,chess::operator+,depth.h,0x140221345
+chess::operator+=,0.0,0.0,0.0,0.0,0,100.0,100.0,0.0,frankycpp_v1.8.exe,chess::operator+=,value.h,0x14026a242
+chess::operator+=,0.0,0.0,0.0,0.0,14975000,71.4,71.4,0.200000,frankycpp_v1.8.exe,chess::operator+=,value.h,0x14026a64a
+chess::operator+=,0.0,0.0,0.0,0.0,0,83.3,83.3,0.0,frankycpp_v1.8.exe,chess::operator+=,value.h,0x140269956
+chess::operator+=,0.0,0.0,0.0,0.0,2995000,33.3,33.3,0.0,frankycpp_v1.8.exe,chess::operator+=,value.h,0x14026b35f
+chess::operator+=,0.0,0.0,0.0,0.0,11980000,33.3,33.3,0.0,frankycpp_v1.8.exe,chess::operator+=,value.h,0x14026a57e
+chess::operator+=,0.0,0.0,0.0,0.0,2995000,0.0,0.0,1.000000,frankycpp_v1.8.exe,chess::operator+=,depth.h,0x140220524
+chess::operator+=,0.0,0.0,0.0,0.0,2995000,100.0,100.0,0.0,frankycpp_v1.8.exe,chess::operator+=,value.h,0x14021fa4d
+chess::operator+=,0.0,0.0,0.0,0.0,2995000,100.0,100.0,0.0,frankycpp_v1.8.exe,chess::operator+=,value.h,0x14026a80e
+chess::operator+=,0.0,0.0,0.0,0.0,5990000,33.3,33.3,0.0,frankycpp_v1.8.exe,chess::operator+=,value.h,0x14026b50a
+chess::operator-,0.0,0.0,0.0,0.0,2995000,0.0,0.0,0.0,frankycpp_v1.8.exe,chess::operator-,direction.h,0x1402632bb
+chess::operator-,0.0,0.0,0.0,0.0,11980000,25.0,25.0,0.0,frankycpp_v1.8.exe,chess::operator-,value.h,0x140263fb5
+chess::operator-,0.0,0.0,0.0,0.0,0,100.0,100.0,,frankycpp_v1.8.exe,chess::operator-,value.h,0x14021fd23
+chess::operator-,0.0,0.0,0.0,0.0,41930000,58.8,58.8,0.500000,frankycpp_v1.8.exe,chess::operator-,value.h,0x14029e795
+chess::operator-,0.0,0.0,0.0,0.0,2995000,0.0,0.0,0.0,frankycpp_v1.8.exe,chess::operator-,value.h,0x1402206bd
+chess::operator-=,0.0,0.0,0.0,0.0,2995000,0.0,0.0,0.0,frankycpp_v1.8.exe,chess::operator-=,depth.h,0x14022044c
+chess::operator==,0.0,0.0,0.0,0.0,2995000,0.0,0.0,0.0,frankycpp_v1.8.exe,chess::operator==,castlingrights.h,0x1402640c9
+chess::operator>,0.0,0.0,0.0,0.0,20965000,55.6,55.6,0.142857,frankycpp_v1.8.exe,chess::operator>,value.h,0x14021faa1
+chess::operator|,0.0,0.0,0.0,0.0,38935000,31.2,31.2,0.153846,frankycpp_v1.8.exe,chess::operator|,bitboard.h,0x14025c3de
+chess::operator|,0.0,0.0,0.0,0.0,0,50.0,50.0,0.0,frankycpp_v1.8.exe,chess::operator|,bitboard.h,0x140263780
+chess::operator|,0.0,0.0,0.0,0.0,2995000,0.0,0.0,0.0,frankycpp_v1.8.exe,chess::operator|,bitboard.h,0x14025c1f8
+chess::operator|,0.0,0.0,0.0,0.0,2995000,0.0,0.0,0.0,frankycpp_v1.8.exe,chess::operator|,bitboard.h,0x14016ca06
+chess::operator~,0.0,0.0,0.0,0.0,11980000,30.8,30.8,0.500000,frankycpp_v1.8.exe,chess::operator~,color.h,0x1402215da
+chess::operator~,0.0,0.0,0.0,0.0,17970000,12.5,12.5,0.333333,frankycpp_v1.8.exe,chess::operator~,color.h,0x14025c52f
+chess::operator~,0.0,0.0,0.0,0.0,2995000,100.0,100.0,1.000000,frankycpp_v1.8.exe,chess::operator~,color.h,0x14025c15d
+chess::operator~,0.0,0.0,0.0,0.0,44925000,52.6,52.6,0.333333,frankycpp_v1.8.exe,chess::operator~,color.h,0x14026a78c
+chess::operator~,0.0,0.0,0.0,0.0,0,28.6,28.6,0.0,frankycpp_v1.8.exe,chess::operator~,color.h,0x14025c19d
+chess::operator~,0.0,0.0,0.0,0.0,2995000,0.0,0.0,2.000000,frankycpp_v1.8.exe,chess::operator~,color.h,0x14029ea88
+chess::operator~,0.0,0.0,0.0,0.0,2995000,22.2,22.2,4.000000,frankycpp_v1.8.exe,chess::operator~,color.h,0x14025c4df
+chess::operator~,0.0,0.0,0.0,0.0,23960000,20.0,20.0,0.125000,frankycpp_v1.8.exe,chess::operator~,color.h,0x14026b20a
+chess::operator~,0.0,0.0,0.0,0.0,2995000,100.0,100.0,1.000000,frankycpp_v1.8.exe,chess::operator~,color.h,0x1402209c8
+chess::operator~,0.0,0.0,0.0,0.0,29950000,54.5,54.5,0.400000,frankycpp_v1.8.exe,chess::operator~,color.h,0x1402208d0
+chess::typeOf,0.0,0.0,0.0,0.0,17970000,33.3,33.3,0.166667,frankycpp_v1.8.exe,chess::typeOf,piece.h,0x140263eb0
+chess::typeOf,0.0,0.0,0.0,0.0,5990000,12.5,12.5,0.0,frankycpp_v1.8.exe,chess::typeOf,piece.h,0x140261109
+chess::valueOf,0.0,0.0,0.0,0.0,2995000,100.0,100.0,0.0,frankycpp_v1.8.exe,chess::valueOf,value.h,0x14029e703
+engine::Evaluator::prefetch,0.0,0.0,0.0,0.0,5990000,0.0,0.0,0.0,frankycpp_v1.8.exe,engine::Evaluator::prefetch,Evaluator.h,0x1402212d4
+engine::PawnTT::Entry::{ctor},0.0,0.0,0.0,0.0,2995000,6.7,6.7,2.000000,frankycpp_v1.8.exe,engine::PawnTT::Entry::{ctor},PawnTT.h,0x1402677f0
+engine::PawnTT::getHash,0.0,0.0,0.0,0.0,5990000,0.0,0.0,1.000000,frankycpp_v1.8.exe,engine::PawnTT::getHash,PawnTT.h,0x14026a2bd
+engine::PawnTT::prefetch,0.0,0.0,0.0,0.0,0,20.0,20.0,,frankycpp_v1.8.exe,engine::PawnTT::prefetch,PawnTT.h,0x1402212e0
+engine::Search::evaluate,0.0,0.0,0.0,0.0,20965000,100.0,100.0,0.285714,frankycpp_v1.8.exe,engine::Search::evaluate,Search.cpp,0x14021f8aa
+engine::Search::thread,0.0,0.0,0.0,0.0,23960000,53.3,53.3,0.125000,frankycpp_v1.8.exe,engine::Search::thread,Search.h,0x14021f932
+engine::Search::thread,0.0,0.0,0.0,0.0,5990000,0.0,0.0,1.500000,frankycpp_v1.8.exe,engine::Search::thread,Search.h,0x140221133
+engine::Search::thread,0.0,0.0,0.0,0.0,2995000,0.0,0.0,0.0,frankycpp_v1.8.exe,engine::Search::thread,Search.h,0x14021fb5b
+engine::Search::thread,0.0,0.0,0.0,0.0,20965000,53.8,53.8,0.285714,frankycpp_v1.8.exe,engine::Search::thread,Search.h,0x14022095c
+engine::Search::thread,0.0,0.0,0.0,0.0,0,100.0,100.0,0.0,frankycpp_v1.8.exe,engine::Search::thread,Search.h,0x140221487
+engine::Search::thread,0.0,0.0,0.0,0.0,5990000,7.7,7.7,0.0,frankycpp_v1.8.exe,engine::Search::thread,Search.h,0x14021fca5
+engine::Search::thread,0.0,0.0,0.0,0.0,5990000,,,0.0,frankycpp_v1.8.exe,engine::Search::thread,Search.h,0x140220fc7
+engine::SearchThreadData::regenerateLmrTable,0.0,0.0,0.0,0.0,2995000,0.0,0.0,0.0,frankycpp_v1.8.exe,"engine::SearchThreadData::regenerateLmrTable(bool,double)",SearchThreadData.h,0x1402167f0
+fread,0.0,0.0,0.0,0.0,2995000,0.0,0.0,0.0,ucrtbase.dll,fread,[Unknown],0x180038720
+free_base,0.0,0.0,0.0,0.0,5990000,33.3,33.3,0.500000,ucrtbase.dll,free_base,[Unknown],0x18001e0e0
+func@0x140005940,0.0,0.0,0.0,0.0,2995000,0.0,0.0,0.0,gameflt.sys,func@0x140005940,[Unknown],0x140005940
+func@0x140016970,0.0,0.0,0.0,0.0,2995000,0.0,0.0,0.0,wdf01000.sys,func@0x140016970,[Unknown],0x140016970
+func@0x140021ef0,0.0,0.0,0.0,0.0,5990000,0.0,0.0,0.0,usbxhci.sys,func@0x140021ef0,[Unknown],0x140021ef0
+func@0x1400611e4,0.0,0.0,0.0,0.0,2995000,0.0,0.0,0.0,win32kbase.sys,func@0x1400611e4,[Unknown],0x1400611e4
+func@0x14009e620,0.0,0.0,0.0,0.0,2995000,0.0,0.0,0.0,nvlddmkm.sys,func@0x14009e620,[Unknown],0x14009e620
+func@0x1400e3530,0.0,0.0,0.0,0.0,0,16.7,16.7,,nvlddmkm.sys,func@0x1400e3530,[Unknown],0x1400e3530
+func@0x1400f9ec0,0.0,0.0,0.0,0.0,2995000,0.0,0.0,0.0,nvlddmkm.sys,func@0x1400f9ec0,[Unknown],0x1400f9ec0
+func@0x14011f200,0.0,0.0,0.0,0.0,0,100.0,100.0,0.0,nvlddmkm.sys,func@0x14011f200,[Unknown],0x14011f200
+func@0x140121960,0.0,0.0,0.0,0.0,2995000,0.0,0.0,0.0,nvlddmkm.sys,func@0x140121960,[Unknown],0x140121960
+func@0x140127050,0.0,0.0,0.0,0.0,2995000,0.0,0.0,0.0,nvlddmkm.sys,func@0x140127050,[Unknown],0x140127050
+func@0x140127260,0.0,0.0,0.0,0.0,2995000,0.0,0.0,0.0,nvlddmkm.sys,func@0x140127260,[Unknown],0x140127260
+func@0x1402011f0,0.0,0.0,0.0,0.0,2995000,0.0,0.0,0.0,ntoskrnl.exe,func@0x1402011f0,[Unknown],0x1402011f0
+func@0x1402019bc,0.0,0.0,0.0,0.0,8985000,0.0,0.0,0.0,ntoskrnl.exe,func@0x1402019bc,[Unknown],0x1402019bc
+func@0x140202565,0.0,0.0,0.0,0.0,2995000,0.0,0.0,0.0,ntoskrnl.exe,func@0x140202565,[Unknown],0x140202565
+func@0x140202640,0.0,0.0,0.0,0.0,2995000,0.0,0.0,0.0,ntoskrnl.exe,func@0x140202640,[Unknown],0x140202640
+func@0x140202680,0.0,0.0,0.0,0.0,2995000,0.0,0.0,0.0,ntoskrnl.exe,func@0x140202680,[Unknown],0x140202680
+func@0x140211cd0,0.0,0.0,0.0,0.0,5990000,33.3,33.3,0.0,ntoskrnl.exe,func@0x140211cd0,[Unknown],0x140211cd0
+func@0x1402142b0,0.0,0.0,0.0,0.0,2995000,0.0,0.0,0.0,ntoskrnl.exe,func@0x1402142b0,[Unknown],0x1402142b0
+func@0x140216290,0.0,0.0,0.0,0.0,2995000,0.0,0.0,0.0,ntoskrnl.exe,func@0x140216290,[Unknown],0x140216290
+func@0x14021d340,0.0,0.0,0.0,0.0,0,50.0,50.0,,ntoskrnl.exe,func@0x14021d340,[Unknown],0x14021d340
+func@0x14021fd17,0.0,0.0,0.0,0.0,5990000,0.0,0.0,0.0,ntoskrnl.exe,func@0x14021fd17,[Unknown],0x14021fd17
+func@0x1402227ca,0.0,0.0,0.0,0.0,5990000,20.0,20.0,0.500000,ntoskrnl.exe,func@0x1402227ca,[Unknown],0x1402227ca
+func@0x140243620,0.0,0.0,0.0,0.0,2995000,0.0,0.0,0.0,ntoskrnl.exe,func@0x140243620,[Unknown],0x140243620
+func@0x140244410,0.0,0.0,0.0,0.0,2995000,0.0,0.0,0.0,ntoskrnl.exe,func@0x140244410,[Unknown],0x140244410
+func@0x140244835,0.0,0.0,0.0,0.0,2995000,,,0.0,ntoskrnl.exe,func@0x140244835,[Unknown],0x140244835
+func@0x140256220,0.0,0.0,0.0,0.0,2995000,0.0,0.0,2.000000,ntoskrnl.exe,func@0x140256220,[Unknown],0x140256220
+func@0x14025ded0,0.0,0.0,0.0,0.0,2995000,50.0,50.0,0.0,ntoskrnl.exe,func@0x14025ded0,[Unknown],0x14025ded0
+func@0x14025f23d,0.0,0.0,0.0,0.0,2995000,0.0,0.0,0.0,ntoskrnl.exe,func@0x14025f23d,[Unknown],0x14025f23d
+func@0x14025f8ab,0.0,0.0,0.0,0.0,2995000,0.0,0.0,0.0,ntoskrnl.exe,func@0x14025f8ab,[Unknown],0x14025f8ab
+func@0x140273680,0.0,0.0,0.0,0.0,2995000,0.0,0.0,0.0,ntoskrnl.exe,func@0x140273680,[Unknown],0x140273680
+func@0x140276ff0,0.0,0.0,0.0,0.0,0,100.0,100.0,,ntoskrnl.exe,func@0x140276ff0,[Unknown],0x140276ff0
+func@0x140289ad0,0.0,0.0,0.0,0.0,8985000,22.2,22.2,0.333333,ntoskrnl.exe,func@0x140289ad0,[Unknown],0x140289ad0
+func@0x140294430,0.0,0.0,0.0,0.0,5990000,0.0,0.0,1.500000,ntoskrnl.exe,func@0x140294430,[Unknown],0x140294430
+func@0x140294da0,0.0,0.0,0.0,0.0,2995000,0.0,0.0,1.000000,ntoskrnl.exe,func@0x140294da0,[Unknown],0x140294da0
+func@0x140295af0,0.0,0.0,0.0,0.0,8985000,18.2,18.2,1.666667,ntoskrnl.exe,func@0x140295af0,[Unknown],0x140295af0
+func@0x140295e18,0.0,0.0,0.0,0.0,0,100.0,100.0,0.0,ntoskrnl.exe,func@0x140295e18,[Unknown],0x140295e18
+func@0x14029a67b,0.0,0.0,0.0,0.0,5990000,0.0,0.0,1.500000,ntoskrnl.exe,func@0x14029a67b,[Unknown],0x14029a67b
+func@0x14029b580,0.0,0.0,0.0,0.0,5990000,34.3,34.3,1.500000,ntoskrnl.exe,func@0x14029b580,[Unknown],0x14029b580
+func@0x14029bb80,0.0,0.0,0.0,0.0,2995000,0.0,0.0,0.0,ntoskrnl.exe,func@0x14029bb80,[Unknown],0x14029bb80
+func@0x14029bd64,0.0,0.0,0.0,0.0,8985000,42.9,42.9,0.333333,ntoskrnl.exe,func@0x14029bd64,[Unknown],0x14029bd64
+func@0x14029c140,0.0,0.0,0.0,0.0,20965000,14.3,14.3,0.571429,ntoskrnl.exe,func@0x14029c140,[Unknown],0x14029c140
+func@0x14029c48c,0.0,0.0,0.0,0.0,5990000,25.0,25.0,0.500000,ntoskrnl.exe,func@0x14029c48c,[Unknown],0x14029c48c
+func@0x14029d629,0.0,0.0,0.0,0.0,2995000,0.0,0.0,0.0,ntoskrnl.exe,func@0x14029d629,[Unknown],0x14029d629
+func@0x14029dc10,0.0,0.0,0.0,0.0,0,100.0,100.0,0.0,ntoskrnl.exe,func@0x14029dc10,[Unknown],0x14029dc10
+func@0x14029ea20,0.0,0.0,0.0,0.0,0,20.0,20.0,,ntoskrnl.exe,func@0x14029ea20,[Unknown],0x14029ea20
+func@0x1402b2840,0.0,0.0,0.0,0.0,0,50.0,50.0,,ntoskrnl.exe,func@0x1402b2840,[Unknown],0x1402b2840
+func@0x1402b4ee0,0.0,0.0,0.0,0.0,5990000,0.0,0.0,0.0,ntoskrnl.exe,func@0x1402b4ee0,[Unknown],0x1402b4ee0
+func@0x1402b9b70,0.0,0.0,0.0,0.0,2995000,0.0,0.0,1.000000,ntoskrnl.exe,func@0x1402b9b70,[Unknown],0x1402b9b70
+func@0x1402b9d50,0.0,0.0,0.0,0.0,0,33.3,33.3,0.0,ntoskrnl.exe,func@0x1402b9d50,[Unknown],0x1402b9d50
+func@0x1402ba0e0,0.0,0.0,0.0,0.0,11980000,100.0,100.0,0.500000,ntoskrnl.exe,func@0x1402ba0e0,[Unknown],0x1402ba0e0
+func@0x1402ba4de,0.0,0.0,0.0,0.0,0,33.3,33.3,0.0,ntoskrnl.exe,func@0x1402ba4de,[Unknown],0x1402ba4de
+func@0x1402beaf0,0.0,0.0,0.0,0.0,5990000,0.0,0.0,0.0,ntoskrnl.exe,func@0x1402beaf0,[Unknown],0x1402beaf0
+func@0x1402c69d0,0.0,0.0,0.0,0.0,2995000,100.0,100.0,0.0,ntoskrnl.exe,func@0x1402c69d0,[Unknown],0x1402c69d0
+func@0x1402c6e30,0.0,0.0,0.0,0.0,2995000,6.2,6.2,4.000000,ntoskrnl.exe,func@0x1402c6e30,[Unknown],0x1402c6e30
+func@0x1402cbed0,0.0,0.0,0.0,0.0,5990000,0.0,0.0,0.0,ntoskrnl.exe,func@0x1402cbed0,[Unknown],0x1402cbed0
+func@0x1402d5d60,0.0,0.0,0.0,0.0,2995000,0.0,0.0,0.0,ntoskrnl.exe,func@0x1402d5d60,[Unknown],0x1402d5d60
+func@0x1402d6520,0.0,0.0,0.0,0.0,2995000,0.0,0.0,0.0,ntoskrnl.exe,func@0x1402d6520,[Unknown],0x1402d6520
+func@0x1402d77d0,0.0,0.0,0.0,0.0,2995000,0.0,0.0,0.0,ntoskrnl.exe,func@0x1402d77d0,[Unknown],0x1402d77d0
+func@0x1402d7ba7,0.0,0.0,0.0,0.0,0,100.0,100.0,0.0,ntoskrnl.exe,func@0x1402d7ba7,[Unknown],0x1402d7ba7
+func@0x1402d81b0,0.0,0.0,0.0,0.0,2995000,0.0,0.0,0.0,ntoskrnl.exe,func@0x1402d81b0,[Unknown],0x1402d81b0
+func@0x1402d9b80,0.0,0.0,0.0,0.0,2995000,0.0,0.0,0.0,ntoskrnl.exe,func@0x1402d9b80,[Unknown],0x1402d9b80
+func@0x1402e1b20,0.0,0.0,0.0,0.0,2995000,8.3,8.3,1.000000,ntoskrnl.exe,func@0x1402e1b20,[Unknown],0x1402e1b20
+func@0x1402ebf80,0.0,0.0,0.0,0.0,2995000,0.0,0.0,4.000000,ntoskrnl.exe,func@0x1402ebf80,[Unknown],0x1402ebf80
+func@0x1402edd42,0.0,0.0,0.0,0.0,2995000,12.5,12.5,1.000000,ntoskrnl.exe,func@0x1402edd42,[Unknown],0x1402edd42
+func@0x1402f91f0,0.0,0.0,0.0,0.0,2995000,66.7,66.7,0.0,ntoskrnl.exe,func@0x1402f91f0,[Unknown],0x1402f91f0
+func@0x140309300,0.0,0.0,0.0,0.0,2995000,0.0,0.0,1.000000,nvlddmkm.sys,func@0x140309300,[Unknown],0x140309300
+func@0x14031a0a0,0.0,0.0,0.0,0.0,0,28.6,28.6,,ntoskrnl.exe,func@0x14031a0a0,[Unknown],0x14031a0a0
+func@0x1403231d0,0.0,0.0,0.0,0.0,2995000,0.0,0.0,0.0,ntoskrnl.exe,func@0x1403231d0,[Unknown],0x1403231d0
+func@0x14032df50,0.0,0.0,0.0,0.0,2995000,50.0,50.0,0.0,ntoskrnl.exe,func@0x14032df50,[Unknown],0x14032df50
+func@0x140339b80,0.0,0.0,0.0,0.0,5990000,0.0,0.0,2.000000,ntoskrnl.exe,func@0x140339b80,[Unknown],0x140339b80
+func@0x14033b990,0.0,0.0,0.0,0.0,2995000,40.0,40.0,0.0,ntoskrnl.exe,func@0x14033b990,[Unknown],0x14033b990
+func@0x14033bfe0,0.0,0.0,0.0,0.0,2995000,9.1,9.1,1.000000,ntoskrnl.exe,func@0x14033bfe0,[Unknown],0x14033bfe0
+func@0x14033c2e4,0.0,0.0,0.0,0.0,2995000,0.0,0.0,0.0,ntoskrnl.exe,func@0x14033c2e4,[Unknown],0x14033c2e4
+func@0x14033cf22,0.0,0.0,0.0,0.0,2995000,23.1,23.1,3.000000,ntoskrnl.exe,func@0x14033cf22,[Unknown],0x14033cf22
+func@0x14033eb20,0.0,0.0,0.0,0.0,2995000,0.0,0.0,1.000000,ntoskrnl.exe,func@0x14033eb20,[Unknown],0x14033eb20
+func@0x140340670,0.0,0.0,0.0,0.0,2995000,0.0,0.0,0.0,ntoskrnl.exe,func@0x140340670,[Unknown],0x140340670
+func@0x140341424,0.0,0.0,0.0,0.0,2995000,0.0,0.0,0.0,ntoskrnl.exe,func@0x140341424,[Unknown],0x140341424
+func@0x140343680,0.0,0.0,0.0,0.0,2995000,50.0,50.0,1.000000,ntoskrnl.exe,func@0x140343680,[Unknown],0x140343680
+func@0x1403b2b10,0.0,0.0,0.0,0.0,11980000,25.0,25.0,0.250000,ntoskrnl.exe,func@0x1403b2b10,[Unknown],0x1403b2b10
+func@0x1403c6195,0.0,0.0,0.0,0.0,0,100.0,100.0,0.0,ntoskrnl.exe,func@0x1403c6195,[Unknown],0x1403c6195
+func@0x1403e45d0,0.0,0.0,0.0,0.0,2995000,0.0,0.0,0.0,ntoskrnl.exe,func@0x1403e45d0,[Unknown],0x1403e45d0
+func@0x1403ea474,0.0,0.0,0.0,0.0,5990000,7.7,7.7,0.0,ntoskrnl.exe,func@0x1403ea474,[Unknown],0x1403ea474
+func@0x140401110,0.0,0.0,0.0,0.0,2995000,0.0,0.0,1.000000,ntoskrnl.exe,func@0x140401110,[Unknown],0x140401110
+func@0x140425a67,0.0,0.0,0.0,0.0,2995000,100.0,100.0,1.000000,ntoskrnl.exe,func@0x140425a67,[Unknown],0x140425a67
+func@0x140431790,0.0,0.0,0.0,0.0,2995000,0.0,0.0,0.0,ntoskrnl.exe,func@0x140431790,[Unknown],0x140431790
+func@0x14044fd9c,0.0,0.0,0.0,0.0,2995000,0.0,0.0,0.0,ntoskrnl.exe,func@0x14044fd9c,[Unknown],0x14044fd9c
+func@0x1404e8368,0.0,0.0,0.0,0.0,0,25.0,25.0,,ntoskrnl.exe,func@0x1404e8368,[Unknown],0x1404e8368
+func@0x1404f2aa0,0.0,0.0,0.0,0.0,0,14.3,14.3,,ntoskrnl.exe,func@0x1404f2aa0,[Unknown],0x1404f2aa0
+func@0x1405dfe10,0.0,0.0,0.0,0.0,0,100.0,100.0,0.0,ntoskrnl.exe,func@0x1405dfe10,[Unknown],0x1405dfe10
+func@0x1405e1574,0.0,0.0,0.0,0.0,2995000,0.0,0.0,0.0,ntoskrnl.exe,func@0x1405e1574,[Unknown],0x1405e1574
+func@0x1405e1fcb,0.0,0.0,0.0,0.0,5990000,,,0.0,ntoskrnl.exe,func@0x1405e1fcb,[Unknown],0x1405e1fcb
+func@0x1406a4e50,0.0,0.0,0.0,0.0,0,50.0,50.0,0.0,ntoskrnl.exe,func@0x1406a4e50,[Unknown],0x1406a4e50
+func@0x140852f47,0.0,0.0,0.0,0.0,2995000,0.0,0.0,0.0,ntoskrnl.exe,func@0x140852f47,[Unknown],0x140852f47
+func@0x1408754d0,0.0,0.0,0.0,0.0,0,100.0,100.0,0.0,ntoskrnl.exe,func@0x1408754d0,[Unknown],0x1408754d0
+func@0x1409acff0,0.0,0.0,0.0,0.0,2995000,0.0,0.0,0.0,ntoskrnl.exe,func@0x1409acff0,[Unknown],0x1409acff0
+func@0x140a1917c,0.0,0.0,0.0,0.0,2995000,0.0,0.0,0.0,ntoskrnl.exe,func@0x140a1917c,[Unknown],0x140a1917c
+func@0x140d01e7f,0.0,0.0,0.0,0.0,2995000,0.0,0.0,0.0,nvlddmkm.sys,func@0x140d01e7f,[Unknown],0x140d01e7f
+func@0x140d29b40,0.0,0.0,0.0,0.0,2995000,0.0,0.0,0.0,nvlddmkm.sys,func@0x140d29b40,[Unknown],0x140d29b40
+func@0x1800060f0,0.0,0.0,0.0,0.0,2995000,100.0,100.0,0.0,fltmgr.sys,func@0x1800060f0,[Unknown],0x1800060f0
+func@0x180008044,0.0,0.0,0.0,0.0,8985000,0.0,0.0,0.0,fltmgr.sys,func@0x180008044,[Unknown],0x180008044
+func@0x18000b520,0.0,0.0,0.0,0.0,0,50.0,50.0,0.0,fltmgr.sys,func@0x18000b520,[Unknown],0x18000b520
+func@0x18000bf37,0.0,0.0,0.0,0.0,0,100.0,100.0,0.0,ntdll.dll,func@0x18000bf37,[Unknown],0x18000bf37
+func@0x18001cd70,0.0,0.0,0.0,0.0,14975000,28.6,28.6,0.400000,ntdll.dll,func@0x18001cd70,[Unknown],0x18001cd70
+func@0x18001dc17,0.0,0.0,0.0,0.0,2995000,100.0,100.0,0.0,ntdll.dll,func@0x18001dc17,[Unknown],0x18001dc17
+func@0x1800509e0,0.0,0.0,0.0,0.0,2995000,66.7,66.7,0.0,ntdll.dll,func@0x1800509e0,[Unknown],0x1800509e0
+func@0x180053780,0.0,0.0,0.0,0.0,2995000,0.0,0.0,0.0,ntdll.dll,func@0x180053780,[Unknown],0x180053780
+func@0x18005dca0,0.0,0.0,0.0,0.0,2995000,0.0,0.0,0.0,ucrtbase.dll,func@0x18005dca0,[Unknown],0x18005dca0
+func@0x1800dcec7,0.0,0.0,0.0,0.0,2995000,0.0,0.0,0.0,ntdll.dll,func@0x1800dcec7,[Unknown],0x1800dcec7
+func@0x18012dfb9,0.0,0.0,0.0,0.0,2995000,0.0,0.0,0.0,ntdll.dll,func@0x18012dfb9,[Unknown],0x18012dfb9
+func@0x1801365a8,0.0,0.0,0.0,0.0,2995000,0.0,0.0,0.0,ntdll.dll,func@0x1801365a8,[Unknown],0x1801365a8
+"log<int,0>",0.0,0.0,0.0,0.0,0,100.0,100.0,0.0,frankycpp_v1.8.exe,"log<int,0>(int)",cmath,0x14022e8b0
+lround,0.0,0.0,0.0,0.0,5990000,0.0,0.0,0.0,ucrtbase.dll,lround,[Unknown],0x18002a0a0
+memmove,0.0,0.0,0.0,0.0,2995000,0.0,0.0,0.0,vcruntime140.dll,memmove,[Unknown],0x180012030
+memset,0.0,0.0,0.0,0.0,2995000,0.0,0.0,1.000000,vcruntime140.dll,memset,[Unknown],0x1800126e0
+operator delete,0.0,0.0,0.0,0.0,5990000,66.7,66.7,0.0,frankycpp_v1.8.exe,"operator delete(void *,unsigned __int64)",delete_scalar_size.cpp,0x14061a188
+operator new,0.0,0.0,0.0,0.0,0,100.0,100.0,0.0,frankycpp_v1.8.exe,operator new(unsigned __int64),new_scalar.cpp,0x140619d10
+setmbcp,0.0,0.0,0.0,0.0,2995000,0.0,0.0,0.0,msvcrt.dll,setmbcp,[Unknown],0x180024880
+"std::_Atomic_storage<unsigned __int64,8>::load",0.0,0.0,0.0,0.0,2995000,0.0,0.0,1.000000,frankycpp_v1.8.exe,"std::_Atomic_storage<unsigned __int64,8>::load",atomic,0x14026738b
+"std::_Char_traits<char,int>::copy",0.0,0.0,0.0,0.0,5990000,0.0,0.0,0.500000,frankycpp_v1.8.exe,"std::_Char_traits<char,int>::copy",__msvc_string_view.hpp,0x14011a5cf
+"std::_Hash<std::_Umap_traits<unsigned __int64,book::BookEntry,std::_Uhash_compare<unsigned __int64,std::hash<unsigned __int64>,std::equal_to<unsigned __int64> >,std::allocator<std::pair<unsigned __int64 const ,book::BookEntry> >,0> >::insert",0.0,0.0,0.0,0.0,5990000,,,0.500000,frankycpp_v1.8.exe,"std::_Hash<std::_Umap_traits<unsigned __int64,book::BookEntry,std::_Uhash_compare<unsigned __int64,std::hash<unsigned __int64>,std::equal_to<unsigned __int64> >,std::allocator<std::pair<unsigned __int64 const ,book::BookEntry> >,0> >::insert",xhash,0x1402875f0
+"std::_Uninitialized_backout<std::_List_unchecked_iterator<std::_List_val<std::_List_simple_types<std::pair<unsigned __int64 const ,book::BookEntry> > > > *>::_Emplace_back",0.0,0.0,0.0,0.0,2995000,0.0,0.0,1.000000,frankycpp_v1.8.exe,"std::_Uninitialized_backout<std::_List_unchecked_iterator<std::_List_val<std::_List_simple_types<std::pair<unsigned __int64 const ,book::BookEntry> > > > *>::_Emplace_back",xmemory,0x14027f4c0
+std::_Uninitialized_value_construct_n<class std::allocator<class chess::Move> >,0.0,0.0,0.0,0.0,5990000,0.0,0.0,0.500000,frankycpp_v1.8.exe,"std::_Uninitialized_value_construct_n<class std::allocator<class chess::Move> >(class chess::Move *,unsigned __int64,class std::allocator<class chess::Move> &)",xmemory,0x140293a60
+"std::array<chess::Bitboard,64>::operator[]",0.0,0.0,0.0,0.0,17970000,9.5,9.5,0.333333,frankycpp_v1.8.exe,"std::array<chess::Bitboard,64>::operator[]",array,0x14025d640
+"std::array<chess::Bitboard,64>::operator[]",0.0,0.0,0.0,0.0,5990000,,,0.0,frankycpp_v1.8.exe,"std::array<chess::Bitboard,64>::operator[]",array,0x14025c46a
+"std::array<chess::Bitboard,64>::operator[]",0.0,0.0,0.0,0.0,5990000,83.3,83.3,1.000000,frankycpp_v1.8.exe,"std::array<chess::Bitboard,64>::operator[]",array,0x14026a7c2
+"std::array<chess::Bitboard,64>::operator[]",0.0,0.0,0.0,0.0,8985000,100.0,100.0,0.0,frankycpp_v1.8.exe,"std::array<chess::Bitboard,64>::operator[]",array,0x14029ea94
+"std::array<chess::Bitboard,64>::operator[]",0.0,0.0,0.0,0.0,2995000,33.3,33.3,0.0,frankycpp_v1.8.exe,"std::array<chess::Bitboard,64>::operator[]",array,0x1402699e4
+"std::array<chess::Bitboard,8>::operator[]",0.0,0.0,0.0,0.0,14975000,50.0,50.0,0.600000,frankycpp_v1.8.exe,"std::array<chess::Bitboard,8>::operator[]",array,0x14026381e
+"std::array<chess::Bitboard,8>::operator[]",0.0,0.0,0.0,0.0,2995000,0.0,0.0,0.0,frankycpp_v1.8.exe,"std::array<chess::Bitboard,8>::operator[]",array,0x140263183
+"std::array<chess::HistoryState,1024>::operator[]",0.0,0.0,0.0,0.0,5990000,50.0,50.0,0.500000,frankycpp_v1.8.exe,"std::array<chess::HistoryState,1024>::operator[]",array,0x14025c0d7
+"std::array<chess::Move,256>::operator[]",0.0,0.0,0.0,0.0,2995000,0.0,0.0,0.0,frankycpp_v1.8.exe,"std::array<chess::Move,256>::operator[]",array,0x14021ef12
+"std::array<chess::Value,25>::operator[]",0.0,0.0,0.0,0.0,2995000,0.0,0.0,2.000000,frankycpp_v1.8.exe,"std::array<chess::Value,25>::operator[]",array,0x140263eb4
+"std::array<chess::Value,25>::operator[]",0.0,0.0,0.0,0.0,8985000,66.7,66.7,0.666667,frankycpp_v1.8.exe,"std::array<chess::Value,25>::operator[]",array,0x1402639c6
+"std::array<chess::Value,25>::operator[]",0.0,0.0,0.0,0.0,8985000,0.0,0.0,0.333333,frankycpp_v1.8.exe,"std::array<chess::Value,25>::operator[]",array,0x140264012
+"std::array<chess::Value,25>::operator[]",0.0,0.0,0.0,0.0,2995000,12.5,12.5,1.000000,frankycpp_v1.8.exe,"std::array<chess::Value,25>::operator[]",array,0x140263e71
+"std::array<chess::Value,25>::operator[]",0.0,0.0,0.0,0.0,14975000,50.0,50.0,0.0,frankycpp_v1.8.exe,"std::array<chess::Value,25>::operator[]",array,0x140263f90
+"std::array<engine::PlyInfo,128>::operator[]",0.0,0.0,0.0,0.0,5990000,25.0,25.0,0.500000,frankycpp_v1.8.exe,"std::array<engine::PlyInfo,128>::operator[]",array,0x14021f966
+"std::array<int,64>::operator[]",0.0,0.0,0.0,0.0,23960000,7.1,7.1,0.0,frankycpp_v1.8.exe,"std::array<int,64>::operator[]",array,0x14025bd63
+"std::array<int,64>::operator[]",0.0,0.0,0.0,0.0,0,20.0,20.0,,frankycpp_v1.8.exe,"std::array<int,64>::operator[]",array,0x14026b08d
+"std::array<int,64>::operator[]",0.0,0.0,0.0,0.0,5990000,20.0,20.0,0.500000,frankycpp_v1.8.exe,"std::array<int,64>::operator[]",array,0x140220a53
+"std::array<std::array<chess::Bitboard,64>,8>::operator[]",0.0,0.0,0.0,0.0,0,50.0,50.0,,frankycpp_v1.8.exe,"std::array<std::array<chess::Bitboard,64>,8>::operator[]",array,0x140269f81
+"std::array<std::array<int,64>,64>::operator[]",0.0,0.0,0.0,0.0,8985000,0.0,0.0,0.0,frankycpp_v1.8.exe,"std::array<std::array<int,64>,64>::operator[]",array,0x14016c70f
+"std::array<std::array<int,64>,64>::operator[]",0.0,0.0,0.0,0.0,2995000,33.3,33.3,0.0,frankycpp_v1.8.exe,"std::array<std::array<int,64>,64>::operator[]",array,0x14022090e
+"std::array<std::array<int,64>,64>::operator[]",0.0,0.0,0.0,0.0,8985000,0.0,0.0,0.333333,frankycpp_v1.8.exe,"std::array<std::array<int,64>,64>::operator[]",array,0x140220a42
+std::atomic<unsigned __int64>::{ctor},0.0,0.0,0.0,0.0,0,20.0,20.0,0.0,frankycpp_v1.8.exe,std::atomic<unsigned __int64>::{ctor},atomic,0x14026d6cb
+"std::basic_filebuf<char,std::char_traits<char> >::_Reset_back",0.0,0.0,0.0,0.0,2995000,,,0.0,frankycpp_v1.8.exe,"std::basic_filebuf<char,std::char_traits<char> >::_Reset_back",__msvc_filebuf.hpp,0x14011a607
+"std::basic_streambuf<char,std::char_traits<char> >::_Gnavail",0.0,0.0,0.0,0.0,11980000,33.3,33.3,0.0,frankycpp_v1.8.exe,"std::basic_streambuf<char,std::char_traits<char> >::_Gnavail",streambuf,0x14011a59f
+std::countr_zero,0.0,0.0,0.0,0.0,2995000,0.0,0.0,0.0,frankycpp_v1.8.exe,std::countr_zero,bit,0x1402632aa
+std::countr_zero,0.0,0.0,0.0,0.0,2995000,66.7,66.7,1.000000,frankycpp_v1.8.exe,std::countr_zero,bit,0x1402639b7
+std::countr_zero,0.0,0.0,0.0,0.0,5990000,50.0,50.0,0.0,frankycpp_v1.8.exe,std::countr_zero,bit,0x140263ce4
+std::countr_zero,0.0,0.0,0.0,0.0,17970000,11.1,11.1,0.0,frankycpp_v1.8.exe,std::countr_zero,bit,0x1402633f8
+std::countr_zero,0.0,0.0,0.0,0.0,8985000,50.0,50.0,0.333333,frankycpp_v1.8.exe,std::countr_zero,bit,0x14026b080
+std::countr_zero,0.0,0.0,0.0,0.0,11980000,57.1,57.1,0.500000,frankycpp_v1.8.exe,std::countr_zero,bit,0x140263c05
+std::countr_zero,0.0,0.0,0.0,0.0,2995000,0.0,0.0,1.000000,frankycpp_v1.8.exe,std::countr_zero,bit,0x14026ab97
+std::countr_zero,0.0,0.0,0.0,0.0,0,100.0,100.0,0.0,frankycpp_v1.8.exe,std::countr_zero,bit,0x14026a110
+std::countr_zero,0.0,0.0,0.0,0.0,2995000,0.0,0.0,2.000000,frankycpp_v1.8.exe,std::countr_zero,bit,0x14026b412
+std::ios_base::good,0.0,0.0,0.0,0.0,0,33.3,33.3,0.0,msvcp140.dll,std::ios_base::good(void),[Unknown],0x180008430
+std::locale::facet::_Decref,0.0,0.0,0.0,0.0,2995000,0.0,0.0,0.0,msvcp140.dll,std::locale::facet::_Decref(void),[Unknown],0x180005a00
+std::max,0.0,0.0,0.0,0.0,5990000,0.0,0.0,0.0,frankycpp_v1.8.exe,std::max,utility,0x14021f37c
+std::min,0.0,0.0,0.0,0.0,11980000,12.5,12.5,0.0,frankycpp_v1.8.exe,std::min,utility,0x14022041e
+std::min,0.0,0.0,0.0,0.0,5990000,,,0.500000,frankycpp_v1.8.exe,std::min,utility,0x14011a5c9
+std::min,0.0,0.0,0.0,0.0,2995000,0.0,0.0,0.0,frankycpp_v1.8.exe,std::min,utility,0x14021f38c
+std::min,0.0,0.0,0.0,0.0,0,100.0,100.0,0.0,frankycpp_v1.8.exe,std::min,utility,0x140220da0
+std::popcount,0.0,0.0,0.0,0.0,0,50.0,50.0,0.0,frankycpp_v1.8.exe,std::popcount,bit,0x14026aa43
+std::popcount,0.0,0.0,0.0,0.0,8985000,16.7,16.7,1.000000,frankycpp_v1.8.exe,std::popcount,bit,0x14026a160
+std::popcount,0.0,0.0,0.0,0.0,8985000,27.8,27.8,0.333333,frankycpp_v1.8.exe,std::popcount,bit,0x14026a172
+std::popcount,0.0,0.0,0.0,0.0,0,100.0,100.0,,frankycpp_v1.8.exe,std::popcount,bit,0x14026b283
+std::popcount,0.0,0.0,0.0,0.0,0,100.0,100.0,0.0,frankycpp_v1.8.exe,std::popcount,bit,0x14026b190
+std::popcount,0.0,0.0,0.0,0.0,8985000,0.0,0.0,0.333333,frankycpp_v1.8.exe,std::popcount,bit,0x14026a0c8
+std::popcount,0.0,0.0,0.0,0.0,5990000,0.0,0.0,0.0,frankycpp_v1.8.exe,std::popcount,bit,0x14025c9b9
+std::popcount,0.0,0.0,0.0,0.0,8985000,44.4,44.4,1.000000,frankycpp_v1.8.exe,std::popcount,bit,0x14026b121
+std::ranges::_Guess_median_common,0.0,0.0,0.0,0.0,5990000,100.0,100.0,0.0,frankycpp_v1.8.exe,std::ranges::_Guess_median_common,algorithm,0x140264343
+"std::ranges::_Med3_common<chess::Move *,chess::moveValueGreaterComparator,std::identity>",0.0,0.0,0.0,0.0,0,20.0,20.0,,frankycpp_v1.8.exe,"std::ranges::_Med3_common<chess::Move *,chess::moveValueGreaterComparator,std::identity>(class chess::Move *, class chess::Move *, class chess::Move *, struct chess::moveValueGreaterComparator, struct std::identity)",algorithm,0x140265100
+std::ranges::_Swap::_Cpo::operator(),0.0,0.0,0.0,0.0,0,100.0,100.0,0.0,frankycpp_v1.8.exe,std::ranges::_Swap::_Cpo::operator(),concepts,0x1402644a5
+std::ranges::_Swap::_Cpo::operator(),0.0,0.0,0.0,0.0,2995000,0.0,0.0,0.0,frankycpp_v1.8.exe,std::ranges::_Swap::_Cpo::operator(),concepts,0x1402644d2
+std::ranges::_Swap::_Cpo::operator(),0.0,0.0,0.0,0.0,0,100.0,100.0,0.0,frankycpp_v1.8.exe,std::ranges::_Swap::_Cpo::operator(),concepts,0x14026515e
+"std::unique_ptr<engine::TT::TTCluster [0],std::default_delete<engine::TT::TTCluster [0]> >::operator[]",0.0,0.0,0.0,0.0,0,16.7,16.7,,frankycpp_v1.8.exe,"std::unique_ptr<engine::TT::TTCluster [0],std::default_delete<engine::TT::TTCluster [0]> >::operator[]",memory,0x14026d3ad
+"std::vector<class chess::Move,class std::allocator<class chess::Move> >::_Change_array",0.0,0.0,0.0,0.0,0,100.0,100.0,0.0,frankycpp_v1.8.exe,"std::vector<class chess::Move,class std::allocator<class chess::Move> >::_Change_array(class chess::Move * const,unsigned __int64,unsigned __int64)",vector,0x1402807c0
+"std::vector<class chess::Move,class std::allocator<class chess::Move> >::~vector<class chess::Move,class std::allocator<class chess::Move> >",0.0,0.0,0.0,0.0,11980000,0.0,0.0,0.0,frankycpp_v1.8.exe,"std::vector<class chess::Move,class std::allocator<class chess::Move> >::~vector<class chess::Move,class std::allocator<class chess::Move> >(void)",vector,0x140233110
+"std::vector<unsigned __int64,class std::allocator<unsigned __int64> >::_Change_array",0.0,0.0,0.0,0.0,5990000,66.7,66.7,0.0,frankycpp_v1.8.exe,"std::vector<unsigned __int64,class std::allocator<unsigned __int64> >::_Change_array(unsigned __int64 * const,unsigned __int64,unsigned __int64)",vector,0x140280630
+"std::vector<unsigned __int64,class std::allocator<unsigned __int64> >::~vector<unsigned __int64,class std::allocator<unsigned __int64> >",0.0,0.0,0.0,0.0,5990000,0.0,0.0,0.0,frankycpp_v1.8.exe,"std::vector<unsigned __int64,class std::allocator<unsigned __int64> >::~vector<unsigned __int64,class std::allocator<unsigned __int64> >(void)",vector,0x1402330a0
+"std::vector<unsigned __int64,std::allocator<unsigned __int64> >::size",0.0,0.0,0.0,0.0,2995000,0.0,0.0,1.000000,frankycpp_v1.8.exe,"std::vector<unsigned __int64,std::allocator<unsigned __int64> >::size",vector,0x14029295e
+type_info::before,0.0,0.0,0.0,0.0,2995000,0.0,0.0,0.0,frankycpp_v1.8.exe,type_info::before,vcruntime_typeinfo.h,0x1402b9370

@@ -77,6 +77,8 @@
 #include "config/EvalConfigData.h"
 #include "types/types.h"
 
+#include <string>
+
 namespace config {
   struct SearchConfigData;
 }
@@ -84,11 +86,35 @@ namespace config {
 namespace engine {
   using namespace chess;
 
+  /// Evaluation breakdown for debug/trace purposes.
+  /// Each component stores midgame and endgame scores from white's perspective.
+  struct EvalTrace {
+    Score material{};                  ///< Material balance
+    Score positional{};                ///< Piece-square table values
+    Score pawn{};                      ///< Pawn structure (isolated, doubled, passed, etc.)
+    Score pieces{};                    ///< Piece mobility and placement (N, B, R, Q)
+    Score threats{};                   ///< Threat evaluation (pawn/minor attacks, hanging)
+    Score coordination{};              ///< Connected rooks, minor connectivity
+    Score kingSafety{};                ///< King safety (pawn shield, attackers, etc.)
+    Score tempo{};                     ///< Tempo bonus for side to move
+    double phase = 0.0;                ///< Game phase factor (1.0 = midgame, 0.0 = endgame)
+    Value totalWhite{};                ///< Final value from white's perspective
+    Value total{};                     ///< Final value from side-to-move perspective
+    bool lazyExit             = false; ///< True if lazy eval shortcut was taken
+    bool insufficientMaterial = false; ///< True if draw by insufficient material
+
+    /// Returns a formatted multi-line string of the eval breakdown.
+    [[nodiscard]] std::string str() const;
+  };
+
   class Evaluator {
 
     /// Pointer to shared PawnTT (owned by Search, shared across all threads)
     /// Set via setPawnTT() before evaluation. May be nullptr if pawn caching disabled.
     PawnTT* pawnCache = nullptr;
+
+    /// Thread index for per-thread PawnTT statistics (set via setPawnTT).
+    int threadIdx = 0;
 
     /// Thread-local scratch variables for evaluation
     Score score{};
@@ -96,8 +122,8 @@ namespace engine {
 
     /// King safety attack accumulators (indexed by king color under attack).
     /// Reset in evaluate(), incremented in piece evals, consumed in kingEval().
-    std::array<int,2> kingAttackCount{};   ///< Number of distinct pieces attacking king zone
-    std::array<int,2>  kingAttackWeight{};  ///< Weighted sum (N=2, B=2, R=3, Q=4)
+    std::array<int, 2> kingAttackCount{};  ///< Number of distinct pieces attacking king zone
+    std::array<int, 2> kingAttackWeight{}; ///< Weighted sum (N=2, B=2, R=3, Q=4)
 
     /// Per-color attack map: union of all squares attacked by a side's pieces.
     /// Reset in evaluate() (king + pawn attacks), accumulated in piece evals
@@ -121,16 +147,28 @@ namespace engine {
   public:
     Evaluator();
 
-    /// Sets the shared pawn cache. Must be called before evaluate() if pawn caching is enabled.
+    /// Sets the shared pawn cache and thread index. Must be called before evaluate()
+    /// if pawn caching is enabled.
     /// The PawnTT is owned by Search and shared across all Evaluator instances.
-    /// @param pawnTT  Pointer to shared PawnTT (may be nullptr to disable caching)
-    void setPawnTT(PawnTT* pawnTT) { pawnCache = pawnTT; }
+    /// @param pawnTT      Pointer to shared PawnTT (may be nullptr to disable caching)
+    /// @param threadIndex Thread index for per-thread PawnTT statistics (default 0)
+    void setPawnTT(PawnTT* pawnTT, const int threadIndex = 0) {
+      pawnCache = pawnTT;
+      threadIdx = threadIndex;
+    }
 
     /// Evaluates the position and returns a score from the side-to-move perspective.
     /// Combines material, positional, pawn structure, mobility, and king safety.
     /// @param p  The position to evaluate
     /// @return   Positive value = advantage for side to move
     Value evaluate(const Position& p);
+
+    /// Evaluates the position and returns a detailed breakdown of all evaluation
+    /// components. Used for UCI debug mode info strings.
+    /// Slightly slower than evaluate() due to per-component score tracking.
+    /// @param p  The position to evaluate
+    /// @return   EvalTrace with per-component scores and final value
+    EvalTrace evaluateTrace(const Position& p);
 
     /// Evaluates pawn structure (isolated, doubled, passed, connected pawns).
     /// Results are cached in PawnTT for efficiency.
@@ -212,6 +250,16 @@ namespace engine {
     /// @param us  Color whose coordination to evaluate (bonus for us)
     void coordinationEval(const Position& p, Score& s, Color us) const;
 
+  private:
+    /// Shared evaluation core used by both evaluate() and evaluateTrace().
+    /// Trace=true records per-component score deltas and returns EvalTrace.
+    /// Trace=false generates identical code to the original evaluate() — zero overhead.
+    /// @param p  The position to evaluate
+    /// @return   Value (Trace=false) or EvalTrace (Trace=true)
+    template<bool Trace>
+    std::conditional_t<Trace, EvalTrace, Value> evaluateCore(const Position& p);
+
+  public:
 #ifdef EVAL_ENABLE_PREFETCH
     /// Prefetches pawn cache entry for the given key into CPU cache.
     /// No-op if pawnCache is nullptr.
@@ -221,15 +269,6 @@ namespace engine {
       }
     }
 #endif
-
-    /// Resets the evaluator state for a new game.
-    /// Note: PawnTT is managed by Search, not Evaluator.
-    /// score and tmpScore don't need clearing - they are reset at the start
-    /// of evaluate() and pawnEval() respectively before each use.
-    // ReSharper disable once CppMemberFunctionMayBeStatic
-    void reset() {
-      // Nothing to reset - scratch variables are reset per-call
-    }
   };
 
 } // namespace engine

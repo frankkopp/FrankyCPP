@@ -76,6 +76,7 @@ protected:
 // =============================================================================
 
 TEST_F(TuningDatasetTest, loadFrankyCppFormat_BasicPositions) {
+  // ReSharper disable once CppVariableCanBeMadeConstexpr
   const std::string data =
     "rnbqkbnr/pppppppp/8/8/4P3/8/PPPP1PPP/RNBQKBNR b KQkq e3 0 1 [1.0]\n"
     "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1 [0.5]\n"
@@ -93,6 +94,7 @@ TEST_F(TuningDatasetTest, loadFrankyCppFormat_BasicPositions) {
 
 TEST_F(TuningDatasetTest, loadFrankyCppFormat_VerifyFenIntegrity) {
   // Verify that the stored FEN matches the original input
+  // ReSharper disable once CppVariableCanBeMadeConstexpr
   const std::string fen = "r1bqkb1r/pppppppp/2n2n2/8/4P3/5N2/PPPP1PPP/RNBQKB1R w KQkq - 2 3";
   const std::string data = fen + " [0.5]\n";
 
@@ -105,6 +107,7 @@ TEST_F(TuningDatasetTest, loadFrankyCppFormat_VerifyFenIntegrity) {
 }
 
 TEST_F(TuningDatasetTest, loadFrankyCppFormat_AllResultFormats) {
+  // ReSharper disable once CppVariableCanBeMadeConstexpr
   const std::string data =
     "rnbqkbnr/pppppppp/8/8/4P3/8/PPPP1PPP/RNBQKBNR b KQkq - 0 1 [1.0]\n"
     "rnbqkbnr/pppppppp/8/8/4P3/8/PPPP1PPP/RNBQKBNR b KQkq - 0 1 [0.5]\n"
@@ -125,6 +128,7 @@ TEST_F(TuningDatasetTest, loadFrankyCppFormat_AllResultFormats) {
 // =============================================================================
 
 TEST_F(TuningDatasetTest, loadEpdFormat_BasicPositions) {
+  // ReSharper disable once CppVariableCanBeMadeConstexpr
   const std::string data =
     "rnbqkbnr/pppppppp/8/8/4P3/8/PPPP1PPP/RNBQKBNR b KQkq - c9 \"1-0\";\n"
     "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - c9 \"1/2-1/2\";\n"
@@ -142,6 +146,7 @@ TEST_F(TuningDatasetTest, loadEpdFormat_BasicPositions) {
 
 TEST_F(TuningDatasetTest, loadEpdFormat_RealZurichessFormat) {
   // Exact lines from quiet-labeled.epd (Zurichess dataset)
+  // ReSharper disable once CppVariableCanBeMadeConstexpr
   const std::string data =
     "r2qkr2/p1pp1ppp/1pn1pn2/2P5/3Pb3/2N1P3/PP3PPP/R1B1KB1R b KQq - c9 \"0-1\";\n"
     "r4rk1/3bppb1/p3q1p1/1p1p3p/2pPn3/P1P1PN1P/1PB1QPPB/1R3RK1 b - - c9 \"1/2-1/2\";\n"
@@ -162,6 +167,7 @@ TEST_F(TuningDatasetTest, loadEpdFormat_RealZurichessFormat) {
 // =============================================================================
 
 TEST_F(TuningDatasetTest, loadMixedFormats) {
+  // ReSharper disable once CppVariableCanBeMadeConstexpr
   const std::string data =
     "rnbqkbnr/pppppppp/8/8/4P3/8/PPPP1PPP/RNBQKBNR b KQkq - 0 1 [1.0]\n"
     "rnbqkbnr/pppppppp/8/8/8/5N2/PPPPPPPP/RNBQKB1R b KQkq - c9 \"0-1\";\n";
@@ -180,6 +186,7 @@ TEST_F(TuningDatasetTest, loadMixedFormats) {
 // =============================================================================
 
 TEST_F(TuningDatasetTest, loadSkipsEmptyLines) {
+  // ReSharper disable once CppVariableCanBeMadeConstexpr
   const std::string data =
     "\n"
     "rnbqkbnr/pppppppp/8/8/4P3/8/PPPP1PPP/RNBQKBNR b KQkq - 0 1 [1.0]\n"
@@ -197,6 +204,7 @@ TEST_F(TuningDatasetTest, loadSkipsEmptyLines) {
 }
 
 TEST_F(TuningDatasetTest, loadSkipsCommentLines) {
+  // ReSharper disable once CppVariableCanBeMadeConstexpr
   const std::string data =
     "# This is a comment\n"
     "// This is also a comment\n"
@@ -212,6 +220,7 @@ TEST_F(TuningDatasetTest, loadSkipsCommentLines) {
 }
 
 TEST_F(TuningDatasetTest, loadSkipsMalformedLines) {
+  // ReSharper disable once CppVariableCanBeMadeConstexpr
   const std::string data =
     "rnbqkbnr/pppppppp/8/8/4P3/8/PPPP1PPP/RNBQKBNR b KQkq - 0 1 [1.0]\n"
     "this is not a valid FEN [0.5]\n"
@@ -228,6 +237,7 @@ TEST_F(TuningDatasetTest, loadSkipsMalformedLines) {
 }
 
 TEST_F(TuningDatasetTest, loadRejectsInvalidResult) {
+  // ReSharper disable once CppVariableCanBeMadeConstexpr
   const std::string data =
     "rnbqkbnr/pppppppp/8/8/4P3/8/PPPP1PPP/RNBQKBNR b KQkq - 0 1 [2.0]\n"
     "rnbqkbnr/pppppppp/8/8/4P3/8/PPPP1PPP/RNBQKBNR b KQkq - 0 1 [*]\n"
@@ -251,6 +261,7 @@ TEST_F(TuningDatasetTest, loadEmptyFile) {
 }
 
 TEST_F(TuningDatasetTest, loadSinglePosition) {
+  // ReSharper disable once CppVariableCanBeMadeConstexpr
   const std::string data =
     "rnbqkbnr/pppppppp/8/8/4P3/8/PPPP1PPP/RNBQKBNR b KQkq - 0 1 [1.0]\n";
 
@@ -278,6 +289,7 @@ TEST_F(TuningDatasetTest, tuningEntryDefaultHasAllGroupsActive) {
 }
 
 TEST_F(TuningDatasetTest, tuningEntryConstructedFromLoad) {
+  // ReSharper disable once CppVariableCanBeMadeConstexpr
   const std::string data =
     "rnbqkbnr/pppppppp/8/8/4P3/8/PPPP1PPP/RNBQKBNR b KQkq - 0 1 [0.5]\n";
 
@@ -331,6 +343,7 @@ TEST_F(TuningDatasetTest, splitCustomFraction) {
 
 TEST_F(TuningDatasetTest, splitPreservesOrder) {
   // Use different results to track ordering
+  // ReSharper disable once CppVariableCanBeMadeConstexpr
   const std::string data =
     "rnbqkbnr/pppppppp/8/8/4P3/8/PPPP1PPP/RNBQKBNR b KQkq - 0 1 [1.0]\n"
     "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1 [0.5]\n"
@@ -358,6 +371,7 @@ TEST_F(TuningDatasetTest, splitPreservesOrder) {
 }
 
 TEST_F(TuningDatasetTest, splitEdgeCases) {
+  // ReSharper disable once CppVariableCanBeMadeConstexpr
   const std::string data =
     "rnbqkbnr/pppppppp/8/8/4P3/8/PPPP1PPP/RNBQKBNR b KQkq - 0 1 [0.5]\n"
     "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1 [0.5]\n";
@@ -394,6 +408,7 @@ TEST_F(TuningDatasetTest, splitEmptyDataset) {
 // =============================================================================
 
 TEST_F(TuningDatasetTest, loadStatsAreAccurate) {
+  // ReSharper disable once CppVariableCanBeMadeConstexpr
   const std::string data =
     "# comment\n"
     "// another comment\n"
@@ -420,6 +435,7 @@ TEST_F(TuningDatasetTest, loadStatsAreAccurate) {
 // =============================================================================
 
 TEST_F(TuningDatasetTest, rangeBasedForLoop) {
+  // ReSharper disable once CppVariableCanBeMadeConstexpr
   const std::string data =
     "rnbqkbnr/pppppppp/8/8/4P3/8/PPPP1PPP/RNBQKBNR b KQkq - 0 1 [1.0]\n"
     "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1 [0.5]\n"
@@ -534,10 +550,12 @@ TEST_F(TuningDatasetTest, loadZurichessEpd) {
 // =============================================================================
 
 TEST_F(TuningDatasetTest, loadClearsPreviousData) {
+  // ReSharper disable once CppVariableCanBeMadeConstexpr
   const std::string data1 =
     "rnbqkbnr/pppppppp/8/8/4P3/8/PPPP1PPP/RNBQKBNR b KQkq - 0 1 [1.0]\n"
     "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1 [0.5]\n";
 
+  // ReSharper disable once CppVariableCanBeMadeConstexpr
   const std::string data2 =
     "rnbqkbnr/pppppppp/8/8/8/5N2/PPPPPPPP/RNBQKB1R b KQkq - 1 1 [0.0]\n";
 
@@ -560,6 +578,7 @@ TEST_F(TuningDatasetTest, loadClearsPreviousData) {
 TEST_F(TuningDatasetTest, loadDuplicateFens_AllAccepted) {
   // Duplicate FENs should be accepted — the tuner doesn't deduplicate.
   // This tests that the loader does not filter or reject duplicates.
+  // ReSharper disable once CppVariableCanBeMadeConstexpr
   const std::string data =
     "rnbqkbnr/pppppppp/8/8/4P3/8/PPPP1PPP/RNBQKBNR b KQkq - 0 1 [1.0]\n"
     "rnbqkbnr/pppppppp/8/8/4P3/8/PPPP1PPP/RNBQKBNR b KQkq - 0 1 [0.5]\n"
@@ -605,6 +624,7 @@ TEST_F(TuningDatasetTest, loadMaxEntries_ZeroMeansUnlimited) {
 
 TEST_F(TuningDatasetTest, loadRejectsOutOfRangeResults) {
   // Results outside [0.0, 1.0] should be rejected
+  // ReSharper disable once CppVariableCanBeMadeConstexpr
   const std::string data =
     "rnbqkbnr/pppppppp/8/8/4P3/8/PPPP1PPP/RNBQKBNR b KQkq - 0 1 [-0.5]\n"
     "rnbqkbnr/pppppppp/8/8/4P3/8/PPPP1PPP/RNBQKBNR b KQkq - 0 1 [1.5]\n"
@@ -619,6 +639,7 @@ TEST_F(TuningDatasetTest, loadRejectsOutOfRangeResults) {
 }
 
 TEST_F(TuningDatasetTest, loadOnlyComments_EmptyDataset) {
+  // ReSharper disable once CppVariableCanBeMadeConstexpr
   const std::string data =
     "# comment 1\n"
     "// comment 2\n"
@@ -634,6 +655,7 @@ TEST_F(TuningDatasetTest, loadOnlyComments_EmptyDataset) {
 
 TEST_F(TuningDatasetTest, splitSingleEntry) {
   // Splitting a single entry: should go to train with fraction >= 0.5
+  // ReSharper disable once CppVariableCanBeMadeConstexpr
   const std::string data =
     "rnbqkbnr/pppppppp/8/8/4P3/8/PPPP1PPP/RNBQKBNR b KQkq - 0 1 [0.5]\n";
 

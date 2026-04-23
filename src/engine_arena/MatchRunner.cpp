@@ -89,10 +89,6 @@ namespace arena {
     std::cout << "Batch Size:     " << batchSize << (matchConfig.batchSize == 0 ? " (auto)" : "") << std::endl;
     std::cout << "Output PGN:     " << matchConfig.outputPgn << std::endl;
 
-    // Rounds must be divisible by batch size for even distribution
-    if (matchConfig.rounds % batchSize != 0) {
-      throw std::runtime_error("Rounds (" + std::to_string(matchConfig.rounds) + ") must be divisible by batch size (" + std::to_string(batchSize) + ")");
-    }
 
     // Validate configuration first
     validateMatchConfig(matchConfig);
@@ -109,6 +105,10 @@ namespace arena {
     }
     const std::string engine2Name = getUciEngineName(matchConfig.engine2Path, matchConfig.engine2Options);
     std::cout << "  Engine 2: " << engine2Name << std::endl;
+
+    // Print the full cutechess-cli command for copy-paste reproduction
+    const std::string fullCommand = buildCutechessCommand(matchConfig, engine1Name, engine2Name, matchConfig.rounds);
+    std::cout << "\ncutechess-cli command (copy-paste ready):\n" << fullCommand << "\n" << std::endl;
 
     // Check for saved state (resumable match)
     const std::string stateFilePath = getStateFilePath(matchConfig);
@@ -183,12 +183,13 @@ namespace arena {
       return result;
     }
 
-    // Calculate batches
-    const int totalBatches     = matchConfig.rounds / batchSize;
+    // Calculate batches (last batch may be smaller if rounds not divisible by batchSize)
+    const int remainingRounds  = matchConfig.rounds - currentState.completedRounds;
+    const int totalBatches     = (matchConfig.rounds + batchSize - 1) / batchSize;
     const int completedBatches = currentState.completedRounds / batchSize;
-    const int remainingBatches = totalBatches - completedBatches;
+    const int remainingBatches = (remainingRounds + batchSize - 1) / batchSize;
 
-    std::cout << "\n  Running " << remainingBatches << " batches of " << batchSize << " games each..." << std::endl;
+    std::cout << "\n  Running " << remainingBatches << " batches of up to " << batchSize << " games each..." << std::endl;
     std::cout << std::endl;
 
     const auto matchStartTime = system_clock::now();
@@ -197,16 +198,23 @@ namespace arena {
     for (int batch = completedBatches; batch < totalBatches; ++batch) {
       const int batchNumber    = batch + 1;
       const int gamesCompleted = currentState.completedRounds;
+      const int gamesLeft      = matchConfig.rounds - gamesCompleted;
+      const int currentBatch   = std::min(batchSize, gamesLeft);
 
       std::cout << "------------------------------------------------------------------" << std::endl;
       std::cout << "Batch " << batchNumber << "/" << totalBatches
-                << " (games " << (gamesCompleted + 1) << "-" << (gamesCompleted + batchSize)
-                << " of " << matchConfig.rounds << ")" << std::endl;
+                << " (games " << (gamesCompleted + 1) << "-" << (gamesCompleted + currentBatch)
+                << " of " << matchConfig.rounds << ")"
+                << "  [" << matchConfig.name;
+      if (!matchConfig.tag.empty()) {
+        std::cout << " | " << matchConfig.tag;
+      }
+      std::cout << "]" << std::endl;
       std::cout << "  Current score: " << currentState.engine1Wins << " - "
                 << currentState.engine2Wins << " - " << currentState.draws << std::endl;
 
-      // Build command for this batch
-      const std::string command = buildCutechessCommand(matchConfig, engine1Name, engine2Name, batchSize);
+      // Build command for this batch (last batch may be smaller)
+      const std::string command = buildCutechessCommand(matchConfig, engine1Name, engine2Name, currentBatch);
 
       // Execute cutechess-cli for this batch
       std::string output;
@@ -221,7 +229,7 @@ namespace arena {
       MatchResult batchResult = parseOutput(output, matchConfig, engine1Name, engine2Name);
 
       // Update cumulative state
-      currentState.completedRounds += batchSize;
+      currentState.completedRounds += currentBatch;
       currentState.engine1Wins += batchResult.engine1Wins;
       currentState.engine2Wins += batchResult.engine2Wins;
       currentState.draws += batchResult.draws;
@@ -447,6 +455,7 @@ namespace arena {
 #ifdef _WIN32
     // Windows implementation using _popen
     // Wrap command in cmd.exe /c to properly handle paths with spaces
+    // ReSharper disable once CppVariableCanBeMadeConstexpr
     const std::string windowsCommand = "cmd.exe /c \"" + command + "\"";
     FILE* pipe                       = _popen(windowsCommand.c_str(), "r");
     if (!pipe) {

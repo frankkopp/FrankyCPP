@@ -216,6 +216,7 @@ namespace arena {
       return false;
     }
 
+    // ReSharper disable once CppVariableCanBeMadeConstexpr
     const std::string command = "position fen " + fen;
     sendCommand(command);
     return waitUntilReady();

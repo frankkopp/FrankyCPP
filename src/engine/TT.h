@@ -34,7 +34,7 @@
 //   - Number of clusters is always a power of two for efficient hash masking
 //   - Bucket design eliminates false sharing across CPU cores under SMP
 //   - 4-way associative: probe scans 4 entries per cluster for matches
-//   - Replacement policy: depth-preferred with age tiebreak
+//   - Replacement policy: depth-preferred with generation-staleness tiebreak
 //   - Struct with bitfields is 9% faster than manual bit manipulation
 //   - Thread-safe key field (std::atomic<ZobristKey>) for Lazy SMP
 //     On x86 acquire/release compiles to plain mov - zero overhead vs non-atomic
@@ -46,7 +46,7 @@
 //   - eval:       16-bit static evaluation
 //   - value:      16-bit search value
 //   - depth:      7-bit search depth (0-127)
-//   - age:        3-bit generation counter (0-7)
+//   - gen:        3-bit generation tag (0-7), stamped from TT::generation on write
 //   - type:       2-bit value type (NONE, EXACT, ALPHA, BETA)
 //   - mateThreat: 1-bit flag
 //
@@ -66,14 +66,20 @@
 //         as tests from Stockfish have shown.
 //
 //   put()  : writes non-key fields first, then key XOR'd with dataHash (release)
+//            Entries are stamped with the current TT generation counter.
 //   probe(): loads key (acquire), copies entry, verifies XOR, returns if valid
 //            The copy may still contain torn data, but XOR verification ensures
 //            it's "self-consistent" - all fields from the same write operation.
-//   age-- in probe(): safe in single-thread mode (default). Skipped under SMP
-//   (numSmpThreads > 1) because it is a read-modify-write on a packed bitfield
-//   byte shared with depth/type - a data race. Behavioral impact is minimal:
-//   same-depth replacement tiebreak slightly more aggressive, deep entries
-//   marginally more vulnerable to eviction. No impact on single-thread behavior.
+//            probe() is fully read-only — no writes to entries (SMP-safe).
+//
+//   Generation counter (replaces the old age increment/decrement system):
+//     A TT-level generation counter (3 bits, 0-7) is incremented once per search.
+//     New entries are stamped with the current generation in put().
+//     Replacement score uses staleness = (generation - entry.gen) & 7:
+//     stale entries are cheaper to replace than fresh ones.
+//     This works identically in single-thread and SMP modes — no per-entry
+//     writes at search start (eliminates the expensive ageEntries() scan) and
+//     no writes in probe() (eliminates the age-- data race under SMP).
 //
 // Usage:
 //   TT tt(64);  // 64 MB table
@@ -84,7 +90,6 @@
 
 #include <array>
 #include <atomic>
-#include <cstring>
 #include <iosfwd>
 #include <mutex>
 #include <optional>
@@ -120,7 +125,7 @@
  * The bucket design provides:
  * - Cache-line alignment eliminates false sharing under SMP
  * - 4-way associativity reduces collision evictions
- * - Depth-preferred + age tiebreak replacement policy
+ * - Depth-preferred + generation-staleness tiebreak replacement policy
  * - Single prefetch loads the entire bucket (4 entries)
  */
 // Forward-declare test classes at global scope so FRIEND_TEST inside namespace engine works
@@ -144,7 +149,7 @@ namespace engine {
     //  Value eval    = VALUE_NONE;// 16 bit signed
     //  Value value   = VALUE_NONE;// 16 bit signed
     //  Depth depth : 7;           // 0-127
-    //  uint8_t age : 3;           // 0-7
+    //  uint8_t gen : 3;           // 0-7 (generation tag, stamped from TT::generation)
     //  ValueType type : 2;        // 4 values
     //  bool mateThreat : 1;       // 1-bit bool
     struct Entry {
@@ -164,7 +169,7 @@ namespace engine {
       Value eval    = VALUE_NONE;     // 16-bit signed
       Value value   = VALUE_NONE;     // 16-bit signed
       uint8_t depth : 7 {};           // 0-127
-      uint8_t age : 3 {};             // 0-7
+      uint8_t gen : 3 {};             // 0-7 (generation tag from TT::generation)
       ValueType type : 2 {};          // 4 values
       bool mateThreat : 1 {};         // 1-bit bool
 
@@ -235,14 +240,66 @@ namespace engine {
                   "TTCluster must be cache-line aligned. Guarantees aligned heap allocation via C++17.");
     static constexpr uint64_t CLUSTER_BYTE_SIZE = sizeof(TTCluster);
 
+    /// R6 research instrumentation: tracks TT entry quality metrics under SMP.
+    /// When false, all instrumentation code is compiled out via if constexpr (zero cost).
+    /// Set to true, rebuild, and run bench at different thread counts to collect data.
+    /// See docs/specs/PLAN_SMP_Thread_Scaling.md § R6 for background.
+    static constexpr bool TT_INSTRUMENTATION = false;
+
+    /// Depth threshold for "deep entry" tracking in R6 instrumentation.
+    /// Entries with depth >= these are considered valuable; evictions of these are concerning.
+    static constexpr int DEEP_ENTRY_THRESHOLD = 4;
+
+    /// R6 instrumentation counters for TT entry quality analysis.
+    /// Tracked per-thread to avoid false sharing, aggregated on demand.
+    /// NOT cleared by clear() — persists across searches for cumulative measurement.
+#ifdef _MSC_VER
+#pragma warning(push)
+#pragma warning(disable : 4324) // structure was padded due to alignment specifier (intentional)
+#endif
+    struct alignas(CacheLineSize) InstrumentationStats {
+      // Victim replacement depth quality (put() overwrite path only)
+      uint64_t replaceDepthDown     = 0; ///< Replacements where new depth < victim depth (harmful eviction)
+      uint64_t replaceDepthUp       = 0; ///< Replacements where new depth > victim depth (beneficial)
+      uint64_t replaceDepthEqual    = 0; ///< Replacements where new depth == victim depth
+      int64_t  replaceDepthDeltaSum = 0; ///< Cumulative (newDepth - victimDepth) across all replacements
+      uint64_t replaceVictimDepthSum = 0; ///< Sum of victim.depth for all replacements (for avg)
+
+      // Deep entry eviction tracking (victim.depth >= DEEP_ENTRY_THRESHOLD)
+      uint64_t replaceDeepTotal     = 0; ///< Total replacements where victim was a deep entry
+      uint64_t replaceDeepDown      = 0; ///< Deep entries replaced by shallower entries (harmful)
+
+      // Probe counters (persist across clear(), unlike Stats)
+      uint64_t probes      = 0; ///< Total probes (mirrors Stats::numberOfProbes but not cleared)
+      uint64_t hits        = 0; ///< Total probe hits (mirrors Stats::numberOfHits but not cleared)
+
+      // Hit depth tracking
+      uint64_t hitDepthSum = 0; ///< Sum of entry.depth for all probe hits (avg = hitDepthSum / hits)
+      uint64_t hitsDepth0  = 0; ///< Probe hits on depth-0 entries (qsearch results)
+    };
+
+    static_assert(sizeof(InstrumentationStats) <= 2 * CacheLineSize,
+                  "InstrumentationStats must fit in two cache lines max");
+#ifdef _MSC_VER
+#pragma warning(pop)
+#endif
+
   private:
     // threads for clearing hash
     unsigned int noOfThreads = 1;
 
     // Number of active SMP search threads. 1 = single-thread mode (default).
-    // When > 1: probe() skips age-- to avoid a data race on the packed bitfield byte.
+    // Used by aggregateStats() to know how many per-thread slots to sum.
     // Set by Search before each search via setSmpThreads().
     int numSmpThreads = 1;
+
+    // Generation counter for entry aging (3 bits, wraps 0-7).
+    // Incremented once per search via newGeneration(). Entries are stamped with the
+    // current generation in put(). Replacement score computes staleness as
+    // (generation - entry.gen) & 7: stale entries from old searches are cheaper to replace.
+    // This replaces the old ageEntries() full-table scan + age-- in probe() approach.
+    // Thread-safe: written once before search starts, read-only during search.
+    uint8_t generation = 0;
 
     // TT_USE_MUTEX: Optional mutex for debugging TT race conditions.
     // Set to 1 to enable synchronized access (significantly slower).
@@ -255,23 +312,78 @@ namespace engine {
     mutable std::mutex ttMutex{};
 #endif
 
-    // size and fill info
+    // size and fill info — read-only after resize(), shares cache line with _data pointer.
     uint64_t sizeInByte             = 0;
     std::size_t maxNumberOfClusters = 0;
     std::size_t clusterMask         = 0;
-    std::size_t numberOfEntries     = 0;
-
-    // statistics
-    mutable uint64_t numberOfPuts       = 0;
-    mutable uint64_t numberOfCollisions = 0;
-    mutable uint64_t numberOfOverwrites = 0;
-    mutable uint64_t numberOfUpdates    = 0;
-    mutable uint64_t numberOfProbes     = 0;
-    mutable uint64_t numberOfHits       = 0; // entries with identical key found
-    mutable uint64_t numberOfMisses     = 0; // no entry with key found
 
     // this array holds the actual clusters for the transposition table
     std::unique_ptr<TTCluster[]> _data = std::make_unique<TTCluster[]>(maxNumberOfClusters); // NOLINT(*-avoid-c-arrays)
+
+    // Statistics counters — per-thread slots, each on its own cache line.
+    // probe()/put() index into statsSlots[threadIdx] so each thread writes
+    // exclusively to its own cache line. This eliminates both false sharing
+    // (fixed by prior alignas(64) padding) and true sharing (all threads
+    // contending on a single Stats cache line).
+    // Aggregation methods sum across active slots on demand (cold path only).
+    // Measured impact: 5.7x → ~13x scaling at 16 threads.
+
+    struct alignas(CacheLineSize) Stats {
+      std::size_t numberOfEntries     = 0;
+      uint64_t numberOfPuts           = 0;
+      uint64_t numberOfCollisions     = 0;
+      uint64_t numberOfOverwrites     = 0;
+      uint64_t numberOfUpdates        = 0;
+      uint64_t numberOfProbes         = 0;
+      uint64_t numberOfHits           = 0; // entries with identical key found
+      uint64_t numberOfMisses         = 0; // no entry with key found
+    };
+
+    mutable std::array<Stats, MAX_SEARCH_THREADS> statsSlots{};
+
+    // R6 instrumentation slots — per-thread, NOT cleared by clear().
+    mutable std::array<InstrumentationStats, MAX_SEARCH_THREADS> instrSlots{};
+
+    /// Aggregates statistics across all active thread slots.
+    /// Called only on cold paths (str(), hashFull(), getters).
+    [[nodiscard]] Stats aggregateStats() const {
+      Stats total{};
+      const int count = numSmpThreads > 0 ? numSmpThreads : 1;
+      for (int i = 0; i < count; ++i) {
+        total.numberOfEntries    += statsSlots[i].numberOfEntries;
+        total.numberOfPuts       += statsSlots[i].numberOfPuts;
+        total.numberOfCollisions += statsSlots[i].numberOfCollisions;
+        total.numberOfOverwrites += statsSlots[i].numberOfOverwrites;
+        total.numberOfUpdates    += statsSlots[i].numberOfUpdates;
+        total.numberOfProbes     += statsSlots[i].numberOfProbes;
+        total.numberOfHits       += statsSlots[i].numberOfHits;
+        total.numberOfMisses     += statsSlots[i].numberOfMisses;
+      }
+      return total;
+    }
+
+    /// Aggregates R6 instrumentation stats across all active thread slots.
+    /// Called only on cold paths (reporting).
+    [[nodiscard]] InstrumentationStats aggregateInstrumentationStats() const {
+      InstrumentationStats total{};
+      if constexpr (!TT_INSTRUMENTATION) return total;
+      // ReSharper disable once CppDFAUnreachableCode
+      const int count = numSmpThreads > 0 ? numSmpThreads : 1;
+      for (int i = 0; i < count; ++i) {
+        total.replaceDepthDown      += instrSlots[i].replaceDepthDown;
+        total.replaceDepthUp        += instrSlots[i].replaceDepthUp;
+        total.replaceDepthEqual     += instrSlots[i].replaceDepthEqual;
+        total.replaceDepthDeltaSum  += instrSlots[i].replaceDepthDeltaSum;
+        total.replaceVictimDepthSum += instrSlots[i].replaceVictimDepthSum;
+        total.replaceDeepTotal      += instrSlots[i].replaceDeepTotal;
+        total.replaceDeepDown       += instrSlots[i].replaceDeepDown;
+        total.probes                += instrSlots[i].probes;
+        total.hits                  += instrSlots[i].hits;
+        total.hitDepthSum           += instrSlots[i].hitDepthSum;
+        total.hitsDepth0            += instrSlots[i].hitsDepth0;
+      }
+      return total;
+    }
 
   public:
     /// Creates a TT with default size (2 MB).
@@ -303,13 +415,14 @@ namespace engine {
     /// The move will be stripped of any sort value before storing, as value
     /// is stored separately. This avoids surprising behavior where MOVE_NONE
     /// might appear to have a value.
-    /// @param key    Position key (usually Zobrist key)
-    /// @param depth  Search depth (0 to DEPTH_MAX, usually 127)
-    /// @param move   Best move of the node (for BETA: best move until cutoff)
-    /// @param value  Search value between VALUE_MIN and VALUE_MAX
-    /// @param type   Value bound type: EXACT, ALPHA, or BETA
-    /// @param eval   Static evaluation of the position
-    void put(ZobristKey key, Depth depth, Move move, Value value, ValueType type, Value eval);
+    /// @param key        Position key (usually Zobrist key)
+    /// @param depth      Search depth (0 to DEPTH_MAX, usually 127)
+    /// @param move       Best move of the node (for BETA: best move until cutoff)
+    /// @param value      Search value between VALUE_MIN and VALUE_MAX
+    /// @param type       Value bound type: EXACT, ALPHA, or BETA
+    /// @param eval       Static evaluation of the position
+    /// @param threadIdx  Thread index for per-thread statistics (default 0)
+    void put(ZobristKey key, Depth depth, Move move, Value value, ValueType type, Value eval, int threadIdx = 0);
 
     /// Retrieves an entry matching the given key without updating statistics.
     /// Scans all entries in the cluster for a match using XOR verification.
@@ -331,24 +444,27 @@ namespace engine {
     }
 
     /// Probes the TT for an entry matching the key.
-    /// Updates hit/miss statistics. Decreases age of found entry (single-thread mode only;
-    /// skipped under SMP to avoid a data race on the packed bitfield byte).
+    /// Updates hit/miss statistics. Read-only with respect to TT entries (no writes).
     /// Returns a copy of the entry to ensure thread-safety (caller can safely read
     /// the returned data even if another thread overwrites the original entry).
-    /// @param key  Position key (usually Zobrist key)
-    /// @return     Copy of matching entry, or nullopt if not found
-    std::optional<Entry> probe(const ZobristKey& key);
+    /// @param key        Position key (usually Zobrist key)
+    /// @param threadIdx  Thread index for per-thread statistics (default 0)
+    /// @return           Copy of matching entry, or nullopt if not found
+    std::optional<Entry> probe(const ZobristKey& key, int threadIdx = 0);
 
-    /// Ages all entries by incrementing their age counter.
-    /// Called at the start of each new search to help with replacement.
-    void ageEntries();
+    /// Advances the generation counter (0-7, wraps).
+    /// Called once at the start of each new search. Entries written by put()
+    /// are stamped with the current generation; the replacement policy computes
+    /// staleness as (generation - entry.gen) & 7, making old entries cheaper to
+    /// replace. O(1) — replaces the expensive full-table ageEntries() scan.
+    void newGeneration() { generation = generation + 1 & 7; }
 
     /// Returns how full the transposition table is in permill (0-1000).
     /// Used for UCI "hashfull" info output.
     /// @return  Fill level in permill
     [[nodiscard]] int hashFull() const {
       const std::size_t maxEntries = maxNumberOfClusters * CLUSTER_SIZE;
-      return static_cast<int>((1000 * numberOfEntries) / maxEntries);
+      return static_cast<int>((1000 * aggregateStats().numberOfEntries) / maxEntries);
     };
 
     /// Prefetches the TT cluster for the given key into the CPU cache.
@@ -376,6 +492,16 @@ namespace engine {
     /// Returns a string representation of the TT instance for debugging.
     /// @return  Debug string with size and statistics
     std::string str() const;
+
+    /// Resets R6 instrumentation counters to zero.
+    /// Call before a measurement session (e.g., before a bench run).
+    // ReSharper disable once CppMemberFunctionMayBeConst
+    void resetInstrumentationStats() { instrSlots = {}; }
+
+    /// Returns a formatted R6 instrumentation report.
+    /// Includes replacement quality, hit rate, and depth metrics.
+    /// If TT_INSTRUMENTATION is false, returns a "disabled" message.
+    [[nodiscard]] std::string instrumentationStr() const;
 
   private:
     /// Returns the cluster index from the position key using bitmask.
@@ -412,28 +538,28 @@ namespace engine {
     std::size_t getMaxNumberOfClusters() const { return maxNumberOfClusters; }
 
     /// Returns the current number of entries stored.
-    std::size_t getNumberOfEntries() const { return numberOfEntries; }
+    std::size_t getNumberOfEntries() const { return aggregateStats().numberOfEntries; }
 
     /// Returns the total number of put() calls.
-    uint64_t getNumberOfPuts() const { return numberOfPuts; }
+    uint64_t getNumberOfPuts() const { return aggregateStats().numberOfPuts; }
 
     /// Returns the number of hash collisions (different position, same slot).
-    uint64_t getNumberOfCollisions() const { return numberOfCollisions; }
+    uint64_t getNumberOfCollisions() const { return aggregateStats().numberOfCollisions; }
 
     /// Returns the number of overwrites (replaced existing entry).
-    uint64_t getNumberOfOverwrites() const { return numberOfOverwrites; }
+    uint64_t getNumberOfOverwrites() const { return aggregateStats().numberOfOverwrites; }
 
     /// Returns the number of updates (same position, updated entry).
-    uint64_t getNumberOfUpdates() const { return numberOfUpdates; }
+    uint64_t getNumberOfUpdates() const { return aggregateStats().numberOfUpdates; }
 
     /// Returns the total number of probe() calls.
-    uint64_t getNumberOfProbes() const { return numberOfProbes; }
+    uint64_t getNumberOfProbes() const { return aggregateStats().numberOfProbes; }
 
     /// Returns the number of successful probes (entry with matching key found).
-    uint64_t getNumberOfHits() const { return numberOfHits; }
+    uint64_t getNumberOfHits() const { return aggregateStats().numberOfHits; }
 
     /// Returns the number of failed probes (no matching entry found).
-    uint64_t getNumberOfMisses() const { return numberOfMisses; }
+    uint64_t getNumberOfMisses() const { return aggregateStats().numberOfMisses; }
 
     /// Returns the number of threads used for clearing.
     unsigned int getThreads() const { return noOfThreads; }
@@ -443,9 +569,9 @@ namespace engine {
     void setThreads(const int threads) { noOfThreads = threads > 0 ? static_cast<unsigned int>(threads) : 1U; }
 
     /// Sets the number of active SMP search threads.
-    /// When > 1, probe() skips age-- to avoid a data race on the packed bitfield byte.
+    /// Used by aggregateStats() to determine how many per-thread slots to sum.
     /// Call before each search when thread count changes.
-    /// @param threads  Total search threads (1 = single-thread mode, full original behavior)
+    /// @param threads  Total search threads (1 = single-thread mode)
     void setSmpThreads(const int threads) { numSmpThreads = threads > 0 ? threads : 1; }
 
     /// Returns the current SMP thread count setting.

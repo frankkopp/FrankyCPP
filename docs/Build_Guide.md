@@ -135,16 +135,16 @@ cmake --build cmake-build-win-release-production --config Release
 ```
 
 ### Build Output
-- Executables: `cmake-build-win-release\src\FrankyCPP_v1.6.exe`
-- Tests: `cmake-build-win-release\test\FrankyCPP_v1.6_Test.exe`
+- Executables: `cmake-build-win-release\src\FrankyCPP_v1.8.exe`
+- Tests: `cmake-build-win-release\test\FrankyCPP_v1.8_Test.exe`
 
 ### Running Tests
 ```powershell
 # Run all tests (excluding slow tests)
-.\cmake-build-win-release\test\FrankyCPP_v1.6_Test.exe --gtest_filter=-*SpeedTests.*:-*TimingTests.*
+.\cmake-build-win-release\test\FrankyCPP_v1.8_Test.exe --gtest_filter=-*SpeedTests.*:-*TimingTests.*
 
 # Run specific test
-.\cmake-build-win-release\test\FrankyCPP_v1.6_Test.exe --gtest_filter=PositionTest.*
+.\cmake-build-win-release\test\FrankyCPP_v1.8_Test.exe --gtest_filter=PositionTest.*
 ```
 
 ---
@@ -189,16 +189,16 @@ cmake --build cmake-build-wsl-release-production
 ```
 
 ### Build Output
-- Executables: `cmake-build-wsl-release/src/FrankyCPP_v1.6`
-- Tests: `cmake-build-wsl-release/test/FrankyCPP_v1.6_Test`
+- Executables: `cmake-build-wsl-release/src/FrankyCPP_v1.8`
+- Tests: `cmake-build-wsl-release/test/FrankyCPP_v1.8_Test`
 
 ### Running Tests
 ```bash
 # Run all tests (excluding slow tests)
-./cmake-build-wsl-release/test/FrankyCPP_v1.6_Test --gtest_filter=-*SpeedTests.*:*TimingTests.*
+./cmake-build-wsl-release/test/FrankyCPP_v1.8_Test --gtest_filter=-*SpeedTests.*:*TimingTests.*
 
 # Run specific test suite
-./cmake-build-wsl-release/test/FrankyCPP_v1.6_Test --gtest_filter=PositionTest.*
+./cmake-build-wsl-release/test/FrankyCPP_v1.8_Test --gtest_filter=PositionTest.*
 ```
 
 ---
@@ -249,8 +249,8 @@ We upgraded from Clang 15 to Clang 18 because:
 - ✅ More complete C++20 support
 
 ### Build Output
-- Executables: `cmake-build-wsl-clang-release/src/FrankyCPP_v1.6`
-- Tests: `cmake-build-wsl-clang-release/test/FrankyCPP_v1.6_Test`
+- Executables: `cmake-build-wsl-clang-release/src/FrankyCPP_v1.8`
+- Tests: `cmake-build-wsl-clang-release/test/FrankyCPP_v1.8_Test`
 
 ### Testing Workflow
 
@@ -568,7 +568,7 @@ automated GitHub Release workflow.
 ```powershell
 # Ensure dev branch is up to date and all tests pass
 git checkout master
-git merge dev_v1.6
+git merge dev_v1.8
 git push origin master
 ```
 
@@ -579,10 +579,10 @@ Use an **annotated tag** with a short summary. Tag names follow the pattern `v<m
 
 ```powershell
 # Create annotated tag
-git tag -a v1.6.0 -m "v1.6.0 - Evaluation Enrichment & Search Hardening (+81 ELO vs v1.5)"
+git tag -a v1.8.0 -m "v1.8.0 - <summary>"
 
 # Push the tag to GitHub
-git push origin v1.6.0
+git push origin v1.8.0
 ```
 
 > **Naming convention:** Existing tags use both `v1.5.0` and `v1.4` styles.
@@ -595,10 +595,10 @@ Pushing a `v*` tag automatically triggers the **release job** in `.github/workfl
 1. CI builds all matrix configurations (Windows MSVC + Linux GCC, Standard + Stripped)
 2. The `release` job downloads all build artifacts
 3. Creates platform-specific archives:
-   - `FrankyCPP-v1.6.0-Windows-MSVC.zip`
-   - `FrankyCPP-v1.6.0-Windows-MSVC-stripped.zip`
-   - `FrankyCPP-v1.6.0-Linux-GCC13.tar.gz`
-   - `FrankyCPP-v1.6.0-Linux-GCC13-stripped.tar.gz`
+   - `FrankyCPP-v1.8.0-Windows-MSVC.zip`
+   - `FrankyCPP-v1.8.0-Windows-MSVC-stripped.zip`
+   - `FrankyCPP-v1.8.0-Linux-GCC13.tar.gz`
+   - `FrankyCPP-v1.8.0-Linux-GCC13-stripped.tar.gz`
 4. Uploads all archives to a **GitHub Release** associated with the tag
 
 > The release is created automatically by the `softprops/action-gh-release` action.
@@ -608,10 +608,10 @@ Pushing a `v*` tag automatically triggers the **release job** in `.github/workfl
 
 After CI completes, navigate to the GitHub Releases page to add release notes:
 
-1. Go to **Releases** → click the newly created `v1.6.0` release
+1. Go to **Releases** → click the newly created `v1.8.0` release
 2. Click **Edit release**
 3. Add the PR message or changelog as the release description
-4. Optionally attach the local `Release/FrankyCPP_v1.6.zip` (the CMake-packaged ZIP with
+4. Optionally attach the local `Release/FrankyCPP_v1.8.zip` (the CMake-packaged ZIP with
    opening books and config files — CI artifacts contain only executables)
 5. Click **Update release**
 
@@ -619,8 +619,8 @@ After CI completes, navigate to the GitHub Releases page to add release notes:
 
 ```powershell
 # Verify tag exists locally and remotely
-git --no-pager tag -l "v1.6*"
-git --no-pager ls-remote --tags origin "refs/tags/v1.6*"
+git --no-pager tag -l "v1.8*"
+git --no-pager ls-remote --tags origin "refs/tags/v1.8*"
 ```
 
 Check the GitHub Actions tab to confirm the CI release job succeeded.
@@ -631,11 +631,11 @@ Check the GitHub Actions tab to confirm the CI release job succeeded.
 1. All tests pass on dev branch
 2. Build release package:     cmake --install cmake-build-win-release --config Release
 3. Test the release ZIP
-4. Commit the ZIP:            git add Release/FrankyCPP_v1.6.zip
-5. Merge to master:           git checkout master && git merge dev_v1.6
+4. Commit the ZIP:            git add Release/FrankyCPP_v1.8.zip
+5. Merge to master:           git checkout master && git merge dev_v1.8
 6. Push master:               git push origin master
-7. Tag:                       git tag -a v1.6.0 -m "v1.6.0 - <summary>"
-8. Push tag:                  git push origin v1.6.0
+7. Tag:                       git tag -a v1.8.0 -m "v1.8.0 - <summary>"
+8. Push tag:                  git push origin v1.8.0
 9. Wait for CI release job to complete (~15–30 min)
 10. Edit GitHub Release: add release notes, attach local ZIP if desired
 ```
@@ -859,8 +859,8 @@ See `docs/Compile_Time_Stripping.md` for developer details.
 .\build_windows.ps1 release           # Windows
 
 # Test
-./cmake-build-wsl-release/test/FrankyCPP_v1.6_Test
-.\cmake-build-win-release\test\FrankyCPP_v1.6_Test.exe
+./cmake-build-wsl-release/test/FrankyCPP_v1.8_Test
+.\cmake-build-win-release\test\FrankyCPP_v1.8_Test.exe
 ```
 
 **Ready to build!** 🚀

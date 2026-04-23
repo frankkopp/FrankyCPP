@@ -24,6 +24,7 @@
 
 #include "PawnTT.h"
 #include "common/Logging.h"
+#include "config/ConfigMode.h"
 
 using namespace engine;
 using namespace chess;
@@ -114,14 +115,7 @@ void PawnTT::resize(const uint64_t newSizeInMByte) {
 
 void PawnTT::clear() {
   // reset statistics (also when table is logically disabled)
-  numberOfEntries    = 0;
-  numberOfHits       = 0;
-  numberOfUpdates    = 0;
-  numberOfMisses     = 0;
-  numberOfPuts       = 0;
-  numberOfCollisions = 0;
-  numberOfOverwrites = 0;
-  numberOfQueries    = 0;
+  statsSlots = {};
 
   if (!maxNumberOfEntries) {
     LOG__DEBUG(Logger::get().EVAL_LOG, "PawnTT cleared - no entries");
@@ -144,13 +138,13 @@ void PawnTT::clear() {
 }
 
 void PawnTT::put(Entry* entryPtr, const ZobristKey key, const Score score,
-                 const Bitboard passedWhite, const Bitboard passedBlack) {
+                 const Bitboard passedWhite, const Bitboard passedBlack, const int threadIdx) {
 
   // Replace any existing entries as this should be collisions.
   // Updates should not happen as we should have read this entry and
   // therefore not re-calculated
 
-  numberOfPuts++;
+  TT_STAT_INC(statsSlots[threadIdx].numberOfPuts);
 
   // Read the current key with relaxed order - we only need its value, not synchronization here.
   // The release store below (when we write a new key) provides the ordering guarantee for readers.
@@ -158,10 +152,10 @@ void PawnTT::put(Entry* entryPtr, const ZobristKey key, const Score score,
 
   // New entry
   if (entryKey == 0) {
-    numberOfEntries++;
+    TT_STAT_INC(statsSlots[threadIdx].numberOfEntries);
   } // update - should not happen in single-thread mode
   else if (entryKey == key) {
-    numberOfUpdates++;
+    TT_STAT_INC(statsSlots[threadIdx].numberOfUpdates);
     // Under SMP, concurrent threads may legitimately write the same entry - not a bug.
     // Only warn in single-thread mode where this indicates a missing read optimization.
     if (numSmpThreads <= 1) {
@@ -169,7 +163,7 @@ void PawnTT::put(Entry* entryPtr, const ZobristKey key, const Score score,
     }
   }
   else { // collision replaces former entry
-    numberOfCollisions++;
+    TT_STAT_INC(statsSlots[threadIdx].numberOfCollisions);
   }
 
   // Write value fields first, then publish via release store on key.
@@ -183,16 +177,16 @@ void PawnTT::put(Entry* entryPtr, const ZobristKey key, const Score score,
   // Statistics counters are non-atomic - under SMP they will be approximate but
   // that is acceptable (diagnostics only, no effect on correctness).
   // Assert is skipped under SMP since counters will not sum correctly.
-  assert(numSmpThreads > 1 || numberOfPuts == (numberOfEntries + numberOfCollisions + numberOfUpdates));
+  assert(numSmpThreads > 1 || statsSlots[threadIdx].numberOfPuts == (statsSlots[threadIdx].numberOfEntries + statsSlots[threadIdx].numberOfCollisions + statsSlots[threadIdx].numberOfUpdates));
 }
 
-std::optional<PawnTT::Entry> PawnTT::probe(const ZobristKey key) const {
-  numberOfQueries++;
+std::optional<PawnTT::Entry> PawnTT::probe(const ZobristKey key, const int threadIdx) const {
+  TT_STAT_INC(statsSlots[threadIdx].numberOfQueries);
 
   // Key 0 is reserved for empty entries - never matches.
   // This handles positions with no pawns (valid but uncacheable).
   if (key == 0) {
-    numberOfMisses++;
+    TT_STAT_INC(statsSlots[threadIdx].numberOfMisses);
     return std::nullopt;
   }
 
@@ -208,22 +202,23 @@ std::optional<PawnTT::Entry> PawnTT::probe(const ZobristKey key) const {
 
   // Verify key match
   if (storedKey == key) {
-    numberOfHits++;
+    TT_STAT_INC(statsSlots[threadIdx].numberOfHits);
     return copy;
   }
 
-  numberOfMisses++;
+  TT_STAT_INC(statsSlots[threadIdx].numberOfMisses);
   return std::nullopt;
 }
 
 std::string PawnTT::str() {
+  const auto s = aggregateStats();
   return std::format(
     "PawnTT: size {:L} MB max entries {:L} of size {:L} Bytes entries {:L} puts {:L} "
     "updates {:L} collisions {:L} overwrites {:L} hits {:L} ({:L}%) misses {:L} ({:L}%)",
-    sizeInByte / MB, maxNumberOfEntries, sizeof(Entry), numberOfEntries,
-    numberOfPuts, numberOfUpdates, numberOfCollisions, numberOfOverwrites,
-    numberOfHits, numberOfQueries ? (numberOfHits * 100) / numberOfQueries : 0,
-    numberOfMisses, numberOfQueries ? (numberOfMisses * 100) / numberOfQueries : 0);
+    sizeInByte / MB, maxNumberOfEntries, sizeof(Entry), s.numberOfEntries,
+    s.numberOfPuts, s.numberOfUpdates, s.numberOfCollisions, s.numberOfOverwrites,
+    s.numberOfHits, s.numberOfQueries ? (s.numberOfHits * 100) / s.numberOfQueries : 0,
+    s.numberOfMisses, s.numberOfQueries ? (s.numberOfMisses * 100) / s.numberOfQueries : 0);
 }
 
 std::ostream& operator<<(std::ostream& os, const PawnTT::Entry& entry) {

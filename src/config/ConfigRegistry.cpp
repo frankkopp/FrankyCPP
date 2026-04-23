@@ -51,14 +51,14 @@ ConfigRegistry::ConfigRegistry() {
 #ifdef _MSC_VER
 // Windows MSVC builds
 #ifdef _DEBUG
-  static_assert(sizeof(SearchConfigData) == 640,
+  static_assert(sizeof(SearchConfigData) == 656,
                 "SearchConfigData size changed! Did you add/remove a member? "
                 "Update registry entries in ConfigRegistry.cpp AND this sizeof value.");
   static_assert(sizeof(EvalConfigData) == 584,
                 "EvalConfigData size changed! Did you add/remove a member? "
                 "Update registry entries in ConfigRegistry.cpp AND this sizeof value.");
 #else
-  static_assert(sizeof(SearchConfigData) == 608,
+  static_assert(sizeof(SearchConfigData) == 624,
                 "SearchConfigData size changed! Did you add/remove a member? "
                 "Update registry entries in ConfigRegistry.cpp AND this sizeof value.");
   static_assert(sizeof(EvalConfigData) == 576,
@@ -69,7 +69,7 @@ ConfigRegistry::ConfigRegistry() {
 // Linux GCC/Clang builds (including WSL)
 #ifdef NDEBUG
   // Release build
-  static_assert(sizeof(SearchConfigData) == 608,
+  static_assert(sizeof(SearchConfigData) == 624,
                 "SearchConfigData size changed! Did you add/remove a member? "
                 "Update registry entries in ConfigRegistry.cpp AND this sizeof value.");
   static_assert(sizeof(EvalConfigData) == 576,
@@ -77,7 +77,7 @@ ConfigRegistry::ConfigRegistry() {
                 "Update registry entries in ConfigRegistry.cpp AND this sizeof value.");
 #else
   // Debug build
-  static_assert(sizeof(SearchConfigData) == 608,
+  static_assert(sizeof(SearchConfigData) == 624,
                 "SearchConfigData size changed! Did you add/remove a member? "
                 "Update registry entries in ConfigRegistry.cpp AND this sizeof value.");
   static_assert(sizeof(EvalConfigData) == 600,
@@ -250,6 +250,48 @@ void ConfigRegistry::initializeSearchDefinitions() {
   });
 
   definitions_.push_back({
+    .name = "CONTEMPT",
+    .uciName = "Contempt",
+    .description = "Draw score bias in centipawns (positive = avoid draws, negative = seek draws)",
+    .valueType = Int,
+    .domain = General,
+    .defaultValue = configToString(defaultSearch.CONTEMPT),
+    .minValue = -100,
+    .maxValue = 100,
+    .exposure = {.uci = true, .yaml = true, .display = true},
+    .getter = searchGetter([](const auto& s){ return s.CONTEMPT; }),
+    .setter = SEARCH_CONFIG_SETTER(CONTEMPT, parseInt)
+  });
+
+  definitions_.push_back({
+    .name = "MULTI_PV",
+    .uciName = "MultiPV",
+    .description = "Number of principal variations to report (1 = normal, >1 = analysis mode)",
+    .valueType = Int,
+    .domain = General,
+    .defaultValue = configToString(defaultSearch.MULTI_PV),
+    .minValue = 1,
+    .maxValue = 128,
+    .exposure = {.uci = true, .yaml = true, .display = true},
+    .getter = searchGetter([](const auto& s){ return s.MULTI_PV; }),
+    .setter = SEARCH_CONFIG_SETTER(MULTI_PV, parseInt)
+  });
+
+  definitions_.push_back({
+    .name = "HANDICAP",
+    .uciName = "Handicap",
+    .description = "Strength limitation (0 = full strength, 1-20 = progressively weaker play)",
+    .valueType = Int,
+    .domain = General,
+    .defaultValue = configToString(defaultSearch.HANDICAP),
+    .minValue = 0,
+    .maxValue = 20,
+    .exposure = {.uci = true, .yaml = true, .display = true},
+    .getter = searchGetter([](const auto& s){ return s.HANDICAP; }),
+    .setter = SEARCH_CONFIG_SETTER(HANDICAP, parseInt)
+  });
+
+  definitions_.push_back({
     .name = "USE_BOOK",
     .uciName = "OwnBook",
     .description = "Use internal opening book",
@@ -283,6 +325,20 @@ void ConfigRegistry::initializeSearchDefinitions() {
     .exposure = {.uci = true, .yaml = true, .display = true},
     .getter = searchGetter([](const auto& s){ return s.BOOK_TYPE; }),
     .setter = SEARCH_CONFIG_SETTER(BOOK_TYPE, parseString)
+  });
+
+  definitions_.push_back({
+    .name = "BOOK_VARIETY",
+    .uciName = "OwnBook Variety",
+    .description = "Book move randomness (0 = always best frequency, 100 = pure random)",
+    .valueType = Int,
+    .domain = General,
+    .defaultValue = configToString(defaultSearch.BOOK_VARIETY),
+    .minValue = 0,
+    .maxValue = 100,
+    .exposure = {.uci = true, .yaml = true, .display = true},
+    .getter = searchGetter([](const auto& s){ return s.BOOK_VARIETY; }),
+    .setter = SEARCH_CONFIG_SETTER(BOOK_VARIETY, parseInt)
   });
 
   definitions_.push_back({
@@ -443,7 +499,7 @@ void ConfigRegistry::initializeSearchDefinitions() {
     .domain = Search,
     .defaultValue = configToString(defaultSearch.THREADS),
     .minValue = 1,
-    .maxValue = 256,
+    .maxValue = MAX_SEARCH_THREADS,
     .exposure = {.uci = true, .yaml = true, .display = true},
     .getter = searchGetter([](const auto& s){ return s.THREADS; }),
     .setter = SEARCH_CONFIG_SETTER(THREADS, parseInt)
@@ -487,6 +543,18 @@ void ConfigRegistry::initializeSearchDefinitions() {
     .exposure = {.uci = IS_MUTABLE(defaultSearch, BEST_THREAD_SCORE_MARGIN), .yaml = true, .display = true},
     .getter = searchGetter([](const auto& s){ return s.BEST_THREAD_SCORE_MARGIN; }),
     .setter = SEARCH_CONFIG_SETTER(BEST_THREAD_SCORE_MARGIN, parseInt)
+  });
+
+  definitions_.push_back({
+    .name = "USE_SMP_DEPTH_SKIP",
+    .uciName = "",  // Not exposed via UCI - internal tuning parameter
+    .description = "Skip-table depth diversification for helper threads (when false, uses simple starting depth offset)",
+    .valueType = Bool,
+    .domain = Search,
+    .defaultValue = configToString(defaultSearch.USE_SMP_DEPTH_SKIP),
+    .exposure = {.uci = false, .yaml = true, .display = true},
+    .getter = searchGetter([](const auto& s){ return s.USE_SMP_DEPTH_SKIP; }),
+    .setter = SEARCH_CONFIG_SETTER(USE_SMP_DEPTH_SKIP, parseBool)
   });
 
   definitions_.push_back({
@@ -686,47 +754,7 @@ void ConfigRegistry::initializeSearchDefinitions() {
     .setter = SEARCH_CONFIG_SETTER(USE_HISTORY_MOVES, parseBool)
   });
 
-  definitions_.push_back({
-    .name = "USE_IID",
-    .uciName = "Use Internal Iterative Deepening",
-    .description = "Enable Internal Iterative Deepening (legacy - IIR is more effective)",
-    .valueType = Bool,
-    .domain = Search,
-    .defaultValue = configToString(defaultSearch.USE_IID),
-    .exposure = {.uci = IS_MUTABLE(defaultSearch, USE_IID), .yaml = true, .display = true},
-    .getter = searchGetter([](const auto& s){ return s.USE_IID; }),
-    .setter = SEARCH_CONFIG_SETTER(USE_IID, parseBool)
-  });
-
-  definitions_.push_back({
-    .name = "IID_DEPTH",
-    .uciName = "IID Move Depth",
-    .description = "Minimum depth to trigger IID",
-    .valueType = Int,
-    .domain = Search,
-    .defaultValue = configToString(defaultSearch.IID_DEPTH),
-    .minValue = 1,
-    .maxValue = 20,
-    .exposure = {.uci = IS_MUTABLE(defaultSearch, IID_DEPTH), .yaml = true, .display = true},
-    .getter = searchGetter([](const auto& s){ return s.IID_DEPTH; }),
-    .setter = SEARCH_CONFIG_SETTER(IID_DEPTH, parseInt)
-  });
-
-  definitions_.push_back({
-    .name = "IID_REDUCTION",
-    .uciName = "IID Depth Reduction",
-    .description = "Depth reduction for IID search",
-    .valueType = Int,
-    .domain = Search,
-    .defaultValue = configToString(defaultSearch.IID_REDUCTION),
-    .minValue = 1,
-    .maxValue = 10,
-    .exposure = {.uci = IS_MUTABLE(defaultSearch, IID_REDUCTION), .yaml = true, .display = true},
-    .getter = searchGetter([](const auto& s){ return s.IID_REDUCTION; }),
-    .setter = SEARCH_CONFIG_SETTER(IID_REDUCTION, parseInt)
-  });
-
-  // Internal Iterative Reduction (IIR) - modern alternative to IID
+  // Internal Iterative Reduction (IIR)
   definitions_.push_back({
     .name = "USE_IIR",
     .uciName = "Use Internal Iterative Reduction",
@@ -1438,18 +1466,6 @@ void ConfigRegistry::initializeSearchDefinitions() {
     .exposure = {.uci = IS_MUTABLE(defaultSearch, USE_SINGULAR_EXT), .yaml = true, .display = true},
     .getter = searchGetter([](const auto& s){ return s.USE_SINGULAR_EXT; }),
     .setter = SEARCH_CONFIG_SETTER(USE_SINGULAR_EXT, parseBool)
-  });
-
-  definitions_.push_back({
-    .name = "USE_SINGULAR_TT_BOUND",
-    .uciName = "Singular TT Bound",
-    .description = "Require BETA/EXACT TT bound for singular (too restrictive in practice)",
-    .valueType = Bool,
-    .domain = Search,
-    .defaultValue = configToString(defaultSearch.USE_SINGULAR_TT_BOUND),
-    .exposure = {.uci = IS_MUTABLE(defaultSearch, USE_SINGULAR_TT_BOUND), .yaml = true, .display = true},
-    .getter = searchGetter([](const auto& s){ return s.USE_SINGULAR_TT_BOUND; }),
-    .setter = SEARCH_CONFIG_SETTER(USE_SINGULAR_TT_BOUND, parseBool)
   });
 
   definitions_.push_back({
@@ -2433,7 +2449,7 @@ void ConfigRegistry::initializeEvalDefinitions() {
   });
 
   //===========================================================================
-  // BISHOP MOBILITY
+  // BISHOP MOBILITY AND FILES
   //===========================================================================
   definitions_.push_back({
     .name = "USE_BISHOP_MOBILITY",
@@ -2492,7 +2508,7 @@ void ConfigRegistry::initializeEvalDefinitions() {
   });
 
   //===========================================================================
-  // BAD BISHOP — REMOVED: Texel tuning zeroed both per-pawn weights (Phase 9).
+  // BAD BISHOP — REMOVED: Texel tuner sign-flipped both weights (Phase 9).
   //===========================================================================
 
   //===========================================================================

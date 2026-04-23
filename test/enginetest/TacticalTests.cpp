@@ -158,7 +158,6 @@ static void applyExperimentalConfig() {
   s.USE_THREAT_EXT        = true;
   s.USE_EXT_ADD_DEPTH     = true;
   s.USE_SINGULAR_EXT      = true;
-  s.USE_SINGULAR_TT_BOUND = true;
 
   // Best-move instability time management (disable for fixed-depth tests)
   s.USE_BESTMOVE_INSTABILITY = false;
@@ -340,7 +339,7 @@ protected:
     SearchLimits sl{};
     sl.timeControl = true;
     sl.moveTime    = ERET_MOVE_TIME;
-    if (ERET_MAX_DEPTH > 0) {
+    if constexpr (ERET_MAX_DEPTH > 0) {
       sl.depth = ERET_MAX_DEPTH;
     }
 
@@ -387,7 +386,7 @@ protected:
     SearchLimits sl{};
     sl.timeControl = true;
     sl.moveTime    = ERET_MOVE_TIME;
-    if (ERET_MAX_DEPTH > 0) {
+    if constexpr (ERET_MAX_DEPTH > 0) {
       sl.depth = ERET_MAX_DEPTH;
     }
 

@@ -17,7 +17,8 @@ This is a **Windows** development environment. Use **PowerShell** syntax for all
 - **Allowed triggers:** "implement", "fix", "change", "update", "add", "remove", "refactor", "proceed", "go ahead", "do it"
 - **Forbidden triggers:** "check", "show", "analyze", "review", "what", "how", "why", "explain", "wdyt", "should I", "any issues"
 - **Gray areas:** If a user reports a problem without saying "fix it", ask first before modifying code.
-- **Never commit** without explicit user permission.
+- **Never commit** without explicit user request or approval — not even with `--amend`. Always ask first.
+- **Never push** without explicit user permission.
 - **Never create summary `.md` documents** unless explicitly requested; provide summaries in chat instead.
 
 ## Build Policy
@@ -41,10 +42,10 @@ Build output directories: `cmake-build-win-release`, `cmake-build-win-debug`, `c
 
 ```powershell
 # Run all tests (excluding slow ones) — Windows
-.\cmake-build-win-release\test\FrankyCPP_v1.6_Test.exe --gtest_filter=-*SpeedTests.*:-*TimingTests.*
+.\cmake-build-win-release\test\FrankyCPP_v1.8_Test.exe --gtest_filter=-*SpeedTests.*:-*TimingTests.*
 
 # Run a specific test suite
-.\cmake-build-win-release\test\FrankyCPP_v1.6_Test.exe --gtest_filter=PositionTest.*
+.\cmake-build-win-release\test\FrankyCPP_v1.8_Test.exe --gtest_filter=PositionTest.*
 ```
 
 Tests auto-discovered by CMake; test files mirror source structure under `test/`.
@@ -66,16 +67,16 @@ main.cpp → UciHandler → Search → Evaluator
 
 ### Source Modules (`src/`)
 
-| Module         | Purpose                                                                                                      |
-|----------------|--------------------------------------------------------------------------------------------------------------|
-| `types/`       | Core zero-cost value types: `Bitboard`, `Move` (32-bit), `Square`, `Piece`, `Value`                          |
-| `common/`      | `Logging.h` (spdlog), `ThreadPool.h`, `stringutil.h`                                                         |
-| `chesscore/`   | `Position` (board state, make/unmake, Zobrist), `MoveGenerator`, `Perft`, `Values` (PSTs)                    |
-| `config/`      | `ConfigRegistry` (single source of truth), `ConfigManager` (singleton), `SearchConfigData`, `EvalConfigData` |
-| `engine/`      | `Search`, `PlyInfo`, `Evaluator`, `TT`, `PawnTT`, `See`, `UciHandler`, `UciOptions`, `SearchLimits`          |
-| `openingbook/` | Book loading, querying, platform-specific Boost serialization cache                                          |
-| `tablebase/`   | Fathom library interface (WDL/DTZ probing), path discovery, downloader                                       |
-| `enginetest/`  | EPD test suite runner, search-tree analysis                                                                  |
+| Module         | Purpose                                                                                                         |
+|----------------|-----------------------------------------------------------------------------------------------------------------|
+| `types/`       | Core zero-cost value types: `Bitboard`, `Move` (32-bit), `Square`, `Piece`, `Value`                             |
+| `common/`      | `Logging.h` (spdlog), `ThreadPool.h`, `stringutil.h`                                                            |
+| `chesscore/`   | `Position` (board state, make/unmake, Zobrist), `MoveGenerator`, `Perft`, `Values` (PSTs)                       |
+| `config/`      | `ConfigRegistry` (single source of truth), `ConfigManager` (singleton), `SearchConfigData`, `EvalConfigData`    |
+| `engine/`      | `Search`, `PlyInfo`, `Evaluator`, `TT`, `PawnTT`, `See`, `Handicap`, `UciHandler`, `UciOptions`, `SearchLimits` |
+| `openingbook/` | Book loading, querying, platform-specific Boost serialization cache                                             |
+| `tablebase/`   | Fathom library interface (WDL/DTZ probing), path discovery, downloader                                          |
+| `enginetest/`  | EPD test suite runner, search-tree analysis                                                                     |
 
 ### Search Algorithm
 
@@ -84,12 +85,14 @@ Iterative deepening + PVS (Principal Variation Search) with:
 - Quiescence search with SEE pruning
 - On-demand staged move ordering: PV move → TT move → Captures (MVV-LVA/SEE) → Killers → Counter move → Quiet (history-sorted)
 - Syzygy tablebase probing at root (move filtering) and interior nodes (WDL)
+- **MultiPV analysis mode**: top N moves with batched, score-sorted UCI output (Stockfish-style); helpers always use MultiPV=1
+- **Handicap mode** (UCI `Handicap` 0–20): 5 weakening levers per level — time waste (sleep before search), MultiPV inflation, depth cap, candidate pool size, score-weighted suboptimal move selection. Pondering disabled when active.
 
 ### Threading Model
 
 - **Main thread**: UCI command loop
 - **Search thread (T0)**: Full iterative deepening, aspiration windows, time management, UCI output
-- **Helper threads (T1..Tn)**: Full `iterativeDeepening()` (same code as T0, guarded by `isMainThread()`)
+- **Helper threads (T1..Tn)**: Full `iterativeDeepening()` (same code as T0, guarded by `isMainThread()`); skip-table depth diversification spreads threads across different iteration depths
 - **Timer thread**: time-limit enforcement
 - `std::atomic_bool stopSearchFlag`, `std::binary_semaphore` for init/running state. TT is shared (lock-free).
 - **Best-thread selection**: After search, `selectBestThread()` picks best result by depth+score across all threads.
@@ -159,6 +162,7 @@ public:
 - **Implementation file order** must mirror header declaration order
 - Class layout: static constants → member fields → public methods → private methods → getters/setters
 - **Commenting/documenting style:** Match the existing style in the codebase. See `src/engine/Search.h` as a reference example — header files use a banner block (`//===...`) with a high-level overview of the component (purpose, algorithm, key methods, usage), followed by `///` Doxygen-style comments on individual declarations with `@param`/`@return` tags. Study nearby files before adding new comments to stay consistent.
+- use modern C++20 features where appropriate (e.g., `std::ranges`, `std::optional`, `std::variant`, `std::span`, structured bindings, `if constexpr`, etc.) but maintain readability and avoid overcomplication.
 
 ## Adding Source Files
 

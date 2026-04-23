@@ -58,14 +58,12 @@
 #include <string>
 #include <vector>
 
-#include "types/types.h"
-
 namespace engine {
 
   /// Configuration for the benchmark run
   struct BenchConfig {
-    int hashSizeMB = 128;      ///< Transposition table size in MB
-    int threads    = 1;        ///< Number of threads (future SMP support)
+    int hashSizeMB = 256;      ///< Transposition table size in MB
+    int threads    = 1;        ///< Number of search threads (1 for deterministic signature)
     int depth      = 12;       ///< Search depth limit (1-127)
     milliseconds timeLimit{0}; ///< Time limit per position (0 = use depth only)
   };
@@ -77,6 +75,8 @@ namespace engine {
     double nps       = 0.0;    ///< Nodes per second
     int positionsRun = 0;      ///< Number of positions benchmarked
     std::string version;       ///< Engine version string
+    uint64_t signature = 0;    ///< Deterministic bench signature (== totalNodes) for CI regression gate
+    std::string ttInstrumentationReport; ///< R6 TT instrumentation data (empty if TT_INSTRUMENTATION disabled)
   };
 
   /// Benchmark runner for standardized NPS measurement

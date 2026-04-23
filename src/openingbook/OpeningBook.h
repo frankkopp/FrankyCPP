@@ -44,6 +44,7 @@ FRIEND_TEST_FWD_DECL(OpeningBookTest, readGamesPgn);
 FRIEND_TEST_FWD_DECL(OpeningBookTest, readGamesPgnLarge);
 FRIEND_TEST_FWD_DECL(OpeningBookTest, readGamesPgnXLLarge);
 FRIEND_TEST_FWD_DECL(OpeningBookTest, pgnCleanUpTest);
+FRIEND_TEST_FWD_DECL(OpeningBookTest, getBookMoveVarietyZero);
 
 namespace book {
   using namespace chess;
@@ -103,12 +104,16 @@ namespace book {
     // the extension cache files use after the given opening book filename
     // includes platform tag to avoid cross-platform serialization issues
 #if defined(_WIN32) || defined(_WIN64)
+    // ReSharper disable once CppVariableCanBeMadeConstexpr
     const std::string platformTag = "win";
 #elif defined(__linux__)
+    // ReSharper disable once CppVariableCanBeMadeConstexpr
     const std::string platformTag = "linux";
 #elif defined(__APPLE__)
+    // ReSharper disable once CppVariableCanBeMadeConstexpr
     const std::string platformTag = "macos";
 #else
+    // ReSharper disable once CppVariableCanBeMadeConstexpr
     const std::string platformTag = "unknown";
 #endif
     const std::string cacheExt = std::format(".cache.v{}.{}.{}.bin", FrankyCPP_VERSION_MAJOR, FrankyCPP_VERSION_MINOR, platformTag);
@@ -156,6 +161,17 @@ namespace book {
      * @param zobrist key of the position
      */
     Move getRandomMove(ZobristKey zobrist) const;
+
+    /**
+     * Returns a book move for the given position using frequency-weighted selection.
+     * Moves leading to positions seen more often in the book source are preferred.
+     * The variety parameter controls randomness: 0 = always pick highest frequency,
+     * 100 = pure uniform random (like getRandomMove).
+     * @param zobrist  Zobrist key of the position
+     * @param variety  Randomness level (0–100, default 30)
+     * @return selected book move, or MOVE_NONE if position not in book
+     */
+    Move getBookMove(ZobristKey zobrist, int variety = 30) const;
 
     // Converts a string to a BookFormat enum value. Defaults to SIMPLE
     static BookFormat fromString(const std::string& str) {
@@ -229,6 +245,7 @@ namespace book {
     FRIEND_TEST_NS(OpeningBookTest, readGamesPgnLarge);
     FRIEND_TEST_NS(OpeningBookTest, readGamesPgnXLLarge);
     FRIEND_TEST_NS(OpeningBookTest, pgnCleanUpTest);
+    FRIEND_TEST_NS(OpeningBookTest, getBookMoveVarietyZero);
 
     // returns if a cache is used during initialization
     constexpr bool useCache() const { return _useCache; }

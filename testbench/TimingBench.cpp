@@ -18,12 +18,10 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 
-#include "engine/TT.h"
 #include "init.h"
 
 #include <benchmark/benchmark.h>
 
-#include <openingbook/OpeningBook.h>
 #include <regex>
 
 using namespace chess;
@@ -41,12 +39,12 @@ public:
 };
 
 #if 0
-BENCHMARK_F(TimingBench, TTAge1)(benchmark::State& state) {
+BENCHMARK_F(TimingBench, TTNewGen)(benchmark::State& state) {
   double counter = 0;
   TT tt{1'000};
   for (const auto _ : state) {
     (void)_; // silence unused variable warning
-    tt.ageEntries();
+    tt.newGeneration();
     counter++;
   }
   state.counters["Runs"] = counter;
@@ -55,6 +53,7 @@ BENCHMARK_F(TimingBench, TTAge1)(benchmark::State& state) {
 }
 
 BENCHMARK_F(TimingBench, cleanUp)(benchmark::State& state) {
+  // ReSharper disable once CppVariableCanBeMadeConstexpr
   const std::string testString{"e4(d4) d5!!2.c4$50(Nf3?)e5 Nf3{Comment !}Nc6 Nc3 Nf6 Bc4 {another comment} Bc5 O-O O-O a1=Q  @@@æææ {unexpected characters are skipped}  <> {These symbols are reserved}  1/2-1/2  ; comment     "};
   double counter = 0;
   for (const auto _ : state) {
@@ -69,6 +68,7 @@ BENCHMARK_F(TimingBench, cleanUp)(benchmark::State& state) {
 }
 
 BENCHMARK_F(TimingBench, BM_IllegalCharacter1)(benchmark::State& state) {
+  // ReSharper disable once CppVariableCanBeMadeConstexpr
   const std::string fen{"r3k2r/1ppn3p/2q1q1n1/8/2q1Pp2/6R1/p1p2PPP/1R4K1"};
   const std::regex illegalInFenPosition{R"([^1-8pPnNbBrRqQkK/]+)"};
   double counter{};
@@ -81,7 +81,9 @@ BENCHMARK_F(TimingBench, BM_IllegalCharacter1)(benchmark::State& state) {
 }
 
 BENCHMARK_F(TimingBench, DISABLED_BM_IllegalCharacter2)(benchmark::State& state) {
+  // ReSharper disable once CppVariableCanBeMadeConstexpr
   const std::string fen{"r3k2r/1ppn3p/2q1q1n1/8/2q1Pp2/6R1/p1p2PPP/1R4K1"};
+  // ReSharper disable once CppVariableCanBeMadeConstexpr
   const std::string allowedChars{"12345678pPnNbBrRqQkK/"};
   double counter{};
   for (const auto _ : state) {

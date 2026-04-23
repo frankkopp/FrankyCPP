@@ -40,8 +40,10 @@ inline std::string getTestEnginePath() {
   const std::string exeName = FrankyCPP_EXE_NAME;
 
 #ifdef _WIN32
+  // ReSharper disable once CppVariableCanBeMadeConstexpr
   const std::string ext = ".exe";
 #else
+  // ReSharper disable once CppVariableCanBeMadeConstexpr
   const std::string ext = "";
 #endif
 

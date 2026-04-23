@@ -149,6 +149,7 @@ src/
 │   ├── TT.h/.cpp         # Transposition table
 │   ├── PawnTT.h          # Dedicated pawn hash table
 │   ├── See.h             # Static exchange evaluation
+│   ├── Handicap.h        # Strength limitation (21 levels, 5 weakening levers)
 │   ├── UciHandler.h/.cpp # UCI protocol implementation
 │   ├── UciOptions.h/.cpp # UCI option handling (uses ConfigRegistry)
 │   ├── SearchLimits.h    # Time/depth/node limits
@@ -226,7 +227,8 @@ Represents the complete state of a chess position.
 
 **Key Operations:**
 - `doMove(Move)` / `undoMove()` - make/unmake with full state restoration
-- `isLegalMove(Move)` - legality check
+- `isLegalMove(Move)` - validates a pseudo-legal move: checks the king is not left in check after 
+  the move, or that the king does not cross an attacked square during castling
 - `isAttacked(Square, Color)` - attack detection
 - `getZobristKey()` - hash key for TT lookup
 
@@ -284,7 +286,9 @@ The core search algorithm using alpha-beta with iterative deepening.
 - Quiescence search with SEE pruning
 - Time management with complexity-based allocation and best-move instability detection
 - Syzygy tablebase probing for endgame positions
+- **MultiPV analysis mode** (top N moves with sorted, batched UCI output)
 - **Lazy SMP multi-threaded parallel search**
+- **Handicap mode** (UCI `Handicap` 0–20, strength limitation via 5 independent levers)
 
 **Tablebase Integration:**
 - **Root probing:** Before search, probe tablebases to filter moves to only WDL-optimal moves
@@ -294,12 +298,32 @@ The core search algorithm using alpha-beta with iterative deepening.
 
 **Threading Model (Lazy SMP):**
 - **Main search thread (T0):** Runs the full search with all features — iterative deepening, aspiration windows, time management, UCI `info` output, and best move reporting. Only T0 sends output to the UCI handler.
-- **Helper threads (T1..Tn):** Run the same full `iterativeDeepening()` code as T0 — aspiration windows, LMR, move ordering, etc. — but with `isMainThread()` guards suppressing UCI output and time management. Each helper starts at a different depth offset (1 + id % 3) for search diversification.
+- **Helper threads (T1..Tn):** Run the same full `iterativeDeepening()` code as T0 — aspiration windows, LMR, move ordering, etc. — but with `isMainThread()` guards suppressing UCI output and time management. Each helper uses skip-table depth diversification (interleaved skip-size/skip-phase pattern per thread ID) to ensure threads explore different depth levels and produce diverse TT entries.
 - The only shared state is the **transposition table (TT)** — threads communicate implicitly by reading/writing TT entries.
 - A shared `std::atomic_bool` stop flag coordinates shutdown; when T0 decides to stop (time limit, depth limit, or `stop` command), all threads exit.
 - After all threads stop, **best-thread selection** compares depth and score across all threads to pick the best result (not necessarily T0's).
 - Node counts are aggregated from all threads for UCI `info nodes` output.
 - See `docs/Lazy_SMP_Explained.md` for a full description of the algorithm.
+
+**MultiPV Analysis Mode:**
+- Controlled by UCI option `MultiPV` (default=1, max=128)
+- When MultiPV > 1, the main thread wraps each iteration's root search in a MultiPV loop: pvIdx=0 uses aspiration search, pvIdx=1..N-1 use full-window `rootSearch()` starting from index `pvIdx`
+- Results are collected during the loop, then **sorted by score (descending)** and **reported as a batch** with consistent node counts (Stockfish-style)
+- `rootMoves[0..N]` are re-sorted to match, ensuring post-iteration code sees the true best move
+- Helper threads always use MultiPV=1 for search efficiency
+- Aspiration `lowerbound`/`upperbound` UCI output is suppressed when MultiPV > 1 to prevent GUI display artifacts
+
+**Handicap Mode:**
+- UCI option `Handicap` (spin 0–20, default 0). Level 0 = full strength (zero overhead).
+- Five independent weakening levers per level, defined in `Handicap.h` lookup table:
+  1. **Time waste** (levels 1–2): Main thread sleeps for a fraction of the time budget before searching, consuming real clock time without banking.
+  2. **MultiPV inflation** (levels 3+): Forces MultiPV > 1, spreading search effort across multiple PV lines. Also builds the candidate pool for move selection.
+  3. **Depth cap** (levels 10+): Hard limit on iterative deepening depth.
+  4. **Candidate pool size**: Number of root moves considered for suboptimal selection.
+  5. **Score threshold**: Max centipawns below best move to include; wider = weaker. Moves outside threshold are excluded entirely (hard cutoff).
+- Move selection uses Zobrist-key-seeded PRNG (`splitmix64`) for deterministic, reproducible play from the same position.
+- Pondering is disabled when Handicap > 0.
+- `applyHandicap()` runs after `selectBestThread()`, overriding the best move with the selected candidate.
 
 **Owned Components:**
 - `TT` - Transposition table (shared across all SMP threads)
@@ -368,23 +392,29 @@ class Evaluator {
 Hash table storing search results for positions.
 
 **Entry Structure (16 bytes):**
-- Zobrist key (for verification)
+- Zobrist key (atomic, XOR-verified for thread safety)
 - Best move
 - Evaluation value
 - Depth
 - Value type (exact, lower bound, upper bound)
-- Age (for replacement)
+- Generation tag (3-bit, for replacement staleness)
 
 **Features:**
-- Power-of-two sizing for fast indexing
-- Prefetch support for CPU cache optimization
+- 4-way associative clusters, 64B aligned to cache line
+- Power-of-two sizing for fast indexing via hash masking
+- Single prefetch loads entire cluster (4 entries)
+- Generation counter: O(1) per search, entries stamped on write
+- Replacement: depth-preferred with generation-staleness tiebreak
+- probe() is fully read-only (no writes to entries — SMP-safe)
+- Per-thread statistics (no false sharing under SMP)
 - Configurable size via UCI option
 
 ```cpp
 class TT {
-  std::unique_ptr<TTEntry[]> entries;
-  uint64_t numEntries;
-  uint8_t currentAge;
+  std::unique_ptr<TTCluster[]> _data;
+  uint64_t maxNumberOfClusters;
+  uint64_t clusterMask;
+  uint8_t generation;  // 3-bit, wraps 0-7
   // ...
 };
 ```
@@ -519,7 +549,8 @@ TT store result  (shared TT — all threads contribute)
   selectBestThread() → compare depth+score across all threads
          │
          ├──► TB root override (if applicable)
-         ├──► Ponder move extraction (PV or TT fallback)
+         ├──► Handicap: applyHandicap() → suboptimal move selection (if Handicap > 0)
+         ├──► Ponder move extraction (PV or TT fallback, skipped if Handicap > 0)
          │
          ▼
 UciHandler::sendFinalUciInfo() + sendResult()
@@ -535,7 +566,7 @@ FrankyCPP uses **Lazy SMP** for parallel search — multiple threads run indepen
 |-------------------------|-----------------------------------------------------------------------------------------------------------|
 | Main thread             | UCI command loop (`UciHandler::loop()`)                                                                   |
 | Search thread (T0)      | **Main search:** iterative deepening, aspiration windows, time management, UCI output, best move decision |
-| Helper threads (T1..Tn) | **Full search:** same iterative deepening as T0, with depth offset diversification, no UCI output         |
+| Helper threads (T1..Tn) | **Full search:** same iterative deepening as T0, with skip-table depth diversification, no UCI output     |
 | Timer thread            | Monitors time limits, sets stop flag                                                                      |
 
 **Main Search Thread (T0) Responsibilities:**
@@ -549,7 +580,7 @@ FrankyCPP uses **Lazy SMP** for parallel search — multiple threads run indepen
 - Run full `iterativeDeepening()` — same code as T0 (aspiration windows, LMR, etc.)
 - **No UCI output** — all `send*()` calls guarded by `isMainThread()`
 - **No time management** — only check `stopSearchFlag`, no time decisions
-- **Depth offset diversification** — start at depth (1 + id % 3) to spread search across different depths
+- **Skip-table depth diversification** — each helper skips certain iteration depths based on its thread ID (interleaved skip-size/skip-phase pattern), ensuring threads are spread across different depth levels at any moment for maximum TT entry diversity
 - Contribute to TT population — their search results help all threads find better moves
 - Track `completedIterationDepth` and `lastIterationValue` for best-thread selection
 - Exit immediately when stop flag is set
@@ -609,11 +640,11 @@ ConfigManager::instance().eval().USE_MOBILITY
 
 | Target                     | Description                              |
 |----------------------------|------------------------------------------|
-| `FrankyCPP_v1.7`           | Main UCI engine executable               |
-| `FrankyCPP_v1.7_Test`      | GoogleTest unit tests                    |
-| `FrankyCPP_v1.7_Bench`     | Google Benchmark microbenchmarks         |
-| `FrankyCPP_v1.7_Extractor` | Position extractor (non-production only) |
-| `FrankyCPP_v1.7_Tuner`     | Texel tuning optimizer (non-production)  |
+| `FrankyCPP_v1.8`           | Main UCI engine executable               |
+| `FrankyCPP_v1.8_Test`      | GoogleTest unit tests                    |
+| `FrankyCPP_v1.8_Bench`     | Google Benchmark microbenchmarks         |
+| `FrankyCPP_v1.8_Extractor` | Position extractor (non-production only) |
+| `FrankyCPP_v1.8_Tuner`     | Texel tuning optimizer (non-production)  |
 
 ---
 

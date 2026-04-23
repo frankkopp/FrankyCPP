@@ -1,0 +1,30 @@
+{
+  "arenaVersion": "v1.8",
+  "durationMs": 1557393,
+  "engine1": {
+    "name": "FrankyCPP v1.8.0",
+    "path": "Release/FrankyCPP_v1.8/FrankyCPP_v1.8.exe",
+    "version": "v1.8"
+  },
+  "engine2": {
+    "name": "Stockfish 18",
+    "path": "D:/_DEV/Stockfish/src/stockfish.exe",
+    "version": "SF18-2700"
+  },
+  "match": {
+    "name": "v1.8_thread_scaling_16T_vs_SF2700",
+    "rounds": 100,
+    "timeControl": "5+0.05"
+  },
+  "pgnPath": "results/matches/thread_scaling/v1.8_16T_vs_SF2700.pgn",
+  "results": {
+    "draws": 13,
+    "eloDifference": 24.36033165250981,
+    "engine1Score": 53.5,
+    "engine1Wins": 47,
+    "engine2Score": 46.5,
+    "engine2Wins": 40
+  },
+  "tag": "thread-scaling-sf",
+  "timestamp": "2026-04-10T17:16:26Z"
+}

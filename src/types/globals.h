@@ -56,6 +56,9 @@ constexpr int GAME_PHASE_MAX = 24;
 // max depth
 constexpr int MAX_DEPTH = 128;
 
+// max search threads (matches UCI Threads option maxValue)
+constexpr int MAX_SEARCH_THREADS = 256;
+
 // Maximum game history length in half-moves (plies).
 // Must accommodate game plies + search depth (doMove/doNullMove during search
 // push to the same history array). 1024 supports games up to ~896 plies
@@ -73,6 +76,7 @@ constexpr uint64_t GB = KB * MB;
 
 // defines a locale for European style numbers
 struct deLocaleDecimals final : std::numpunct<char> {
+protected:
   char do_decimal_point() const override { return ','; }
   char do_thousands_sep() const override { return '.'; }
   std::string do_grouping() const override { return "\03"; }

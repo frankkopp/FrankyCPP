@@ -57,7 +57,7 @@ TEST_F(TT_Test, entrySize) {
     Value eval     = VALUE_NONE; // 16 bit signed
     Value value    = VALUE_NONE; // 16 bit signed
     int8_t depth : 7;            // 0-127
-    uint8_t age : 3;             // 0-7
+    uint8_t gen : 3;             // 0-7
     ValueType type : 2;          // 4 values
     bool mateThreat : 1;         // 1-bit bool
   };
@@ -404,8 +404,9 @@ TEST_F(TT_Test, bucketReplacement) {
   EXPECT_EQ(4, tt.getNumberOfEntries());
   EXPECT_EQ(0, tt.getNumberOfCollisions());
 
-  // Age all entries so replacement tiebreak can work
-  tt.ageEntries();
+  // Advance generation so existing entries become stale (staleness=1),
+  // making them cheaper to replace. key5 will be in the current generation (staleness=0).
+  tt.newGeneration();
 
   // 5th entry with depth 12 should replace key2 (depth 5, the shallowest)
   tt.put(key5, static_cast<Depth>(12), Move(SQ_C2, SQ_C4), static_cast<Value>(105), EXACT, VALUE_NONE);
@@ -440,7 +441,7 @@ TEST_F(TT_Test, bucketAlwaysReplacesWeakest) {
   const ZobristKey key4        = baseKey + 3 * cd;
   const ZobristKey key5        = baseKey + 4 * cd;
 
-  // Fill all 4 slots with same depth, age = 1 (recently used)
+  // Fill all 4 slots with same depth, gen = current (staleness 0)
   tt.put(key1, static_cast<Depth>(10), Move(SQ_E2, SQ_E4), static_cast<Value>(101), EXACT, VALUE_NONE);
   tt.put(key2, static_cast<Depth>(10), Move(SQ_D2, SQ_D4), static_cast<Value>(102), EXACT, VALUE_NONE);
   tt.put(key3, static_cast<Depth>(10), Move(SQ_G1, SQ_F3), static_cast<Value>(103), EXACT, VALUE_NONE);
@@ -464,7 +465,7 @@ TEST_F(TT_Test, bucketAlwaysReplacesWeakest) {
   EXPECT_EQ(3, e5->depth);
 
   // One of the original entries was evicted (the one with lowest score)
-  // With equal depth/age/move, the first entry (key1) is the victim
+  // With equal depth/gen/move, the first entry (key1) is the victim
   int presentCount = 0;
   if (tt.getMatch(key1).has_value()) presentCount++;
   if (tt.getMatch(key2).has_value()) presentCount++;
@@ -498,7 +499,7 @@ TEST_F(TT_Test, ConcurrentPutProbeNoUB) {
   constexpr int TT_SIZE_MB  = 4; // small = high collision rate = more contention
 
   TT tt(TT_SIZE_MB);
-  tt.setSmpThreads(NUM_THREADS); // disables age-- to avoid bitfield race
+  tt.setSmpThreads(NUM_THREADS); // sets SMP thread count for stats aggregation
 
   // Depth and value ranges written by all threads.
   constexpr int DEPTH_LO = 1;

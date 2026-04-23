@@ -69,6 +69,7 @@ int main(int argc, char* argv[]) {
     std::cout << "----------------------------------------" << std::endl;
     engine.newGame(); // Clear state before first position
 
+    // ReSharper disable once CppVariableCanBeMadeConstexpr
     const std::string startFen = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
 
     if (!engine.setPosition(startFen)) {
@@ -95,6 +96,7 @@ int main(int argc, char* argv[]) {
     std::cout << "----------------------------------------" << std::endl;
     engine.newGame(); // Clear state before new position (isolate from Test 1)
 
+    // ReSharper disable once CppVariableCanBeMadeConstexpr
     const std::string tacticalFen = "r1bqkb1r/pppp1ppp/2n2n2/4p2Q/2B1P3/8/PPPP1PPP/RNB1K1NR w KQkq - 4 4";
 
     if (!engine.setPosition(tacticalFen)) {

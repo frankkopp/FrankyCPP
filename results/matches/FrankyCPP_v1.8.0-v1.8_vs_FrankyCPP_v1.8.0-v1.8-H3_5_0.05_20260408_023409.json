@@ -1,0 +1,30 @@
+{
+  "arenaVersion": "v1.8",
+  "durationMs": 471879,
+  "engine1": {
+    "name": "FrankyCPP v1.8.0",
+    "path": "Release/FrankyCPP_v1.8/FrankyCPP_v1.8.exe",
+    "version": "v1.8"
+  },
+  "engine2": {
+    "name": "FrankyCPP v1.8.0",
+    "path": "Release/FrankyCPP_v1.8/FrankyCPP_v1.8.exe",
+    "version": "v1.8-H3"
+  },
+  "match": {
+    "name": "Handicap_0_vs_3",
+    "rounds": 200,
+    "timeControl": "5+0.05"
+  },
+  "pgnPath": "results/matches/Handicap_0_vs_3.pgn",
+  "results": {
+    "draws": 31,
+    "eloDifference": 207.46217076930046,
+    "engine1Score": 153.5,
+    "engine1Wins": 138,
+    "engine2Score": 46.5,
+    "engine2Wins": 31
+  },
+  "tag": "handicap-validation",
+  "timestamp": "2026-04-07T23:35:02Z"
+}

@@ -383,6 +383,7 @@ TEST_F(UCIEngineOptionsTest, OptionsAfter_newGame) {
     engine.newGame();
 
     // Set position and search to verify engine still functional
+    // ReSharper disable once CppVariableCanBeMadeConstexpr
     const std::string startFen = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
     engine.setPosition(startFen);
 
